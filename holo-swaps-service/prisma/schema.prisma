@@ -1,0 +1,714 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum CardGame {
+  POKEMON
+  MAGIC_THE_GATHERING
+  ONE_PIECE
+  YUGIOH
+  DIGIMON
+  OTHER
+}
+
+enum CardStatus {
+  AVAILABLE        // listed and open for trade offers
+  UNAVAILABLE      // owner has it but doesn't want to trade right now
+  IN_TRADE         // locked in an active trade
+  TRADED_AWAY      // ownership transferred out (kept as historical record)
+}
+
+enum GradingCompany {
+  UNGRADED
+  PSA
+  BGS
+  CGC
+  SGC
+}
+
+enum TradeStatus {
+  PROPOSED
+  COUNTERED
+  ACCEPTED
+  BOTH_SHIPPED
+  A_RECEIVED
+  B_RECEIVED
+  BOTH_RECEIVED
+  VERIFIED
+  COMPLETED
+  DISPUTED
+  CANCELLED
+}
+
+enum DisputeStatus {
+  OPENED
+  EVIDENCE_SUBMITTED
+  UNDER_REVIEW
+  RESOLVED_FOR_PROPOSER
+  RESOLVED_FOR_RECEIVER
+  RESOLVED_MUTUAL
+  CLOSED
+}
+
+enum TradeMatchStatus {
+  PENDING    // shown to users, no action taken yet
+  PROPOSED   // a trade has been proposed from this match
+  DISMISSED  // user dismissed the suggestion
+  EXPIRED    // one or more cards are no longer available
+}
+
+enum ShipmentDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum ShipmentStatus {
+  PENDING
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+enum CardCondition {
+  MINT
+  NEAR_MINT
+  LIGHTLY_PLAYED
+  MODERATELY_PLAYED
+  HEAVILY_PLAYED
+  DAMAGED
+}
+
+enum WantPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+}
+
+enum MediaAngle {
+  FRONT
+  BACK
+  DETAIL    // close-up of damage, holographic, signature etc.
+  OVERVIEW  // full spread / multiple cards
+}
+
+enum PriceAlertDirection {
+  ABOVE
+  BELOW
+}
+
+enum CollectionVisibility {
+  PUBLIC
+  PRIVATE
+  FOLLOWERS_ONLY
+}
+
+enum UserTier {
+  BRONZE
+  SILVER
+  GOLD
+  DIAMOND
+}
+
+enum NotificationType {
+  TRADE_PROPOSED
+  TRADE_COUNTERED
+  TRADE_ACCEPTED
+  TRADE_CANCELLED
+  TRADE_COMPLETED
+  TRADE_MATCH          // auto-matched with another user
+  TRADE_EXPIRY_WARNING // 24-hour expiry warning
+  SHIPMENT_UPDATED
+  REVIEW_RECEIVED
+  CARD_MATCH          // someone listed a card on your want list
+  PRICE_ALERT         // a card hit your target price
+  DISPUTE_OPENED
+  DISPUTE_UPDATED
+  LISTING_OFFER        // someone made an offer on your open listing
+  EMAIL_VERIFIED       // email verification completed
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  username              String    @unique
+  passwordHash          String
+  avatarUrl             String?
+  bio                   String?
+  location              String?
+  isEmailVerified       Boolean   @default(false)
+  lastLoginAt           DateTime?
+  reputationScore       Float     @default(0)
+  tradeCount            Int       @default(0)
+  stripeCustomerId      String?
+  stripeAccountId       String?   // Stripe Connect Express account
+  stripeAccountVerified Boolean   @default(false)
+  isAdmin               Boolean   @default(false)
+  isBanned              Boolean   @default(false)
+  bannedAt              DateTime?
+  emailVerificationToken     String?   @unique
+  emailVerificationExpiresAt DateTime?
+  passwordResetToken         String?   @unique
+  passwordResetExpiresAt     DateTime?
+  collectionVisibility       CollectionVisibility @default(PUBLIC)
+  tier                       UserTier  @default(BRONZE)
+  twoFactorEnabled           Boolean   @default(false)
+  twoFactorSecret            String?   // TOTP secret — treat as sensitive
+  twoFactorBackupCodes       Json?     // array of bcrypt-hashed one-time backup codes
+  isIdentityVerified         Boolean   @default(false)
+  stripeIdentitySessionId    String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  collection            UserCollection[]
+  wants                 UserWant[]
+  addresses             UserAddress[]
+  priceAlerts           PriceAlert[]
+  proposedTrades        Trade[]                @relation("ProposerTrades")
+  receivedTrades        Trade[]                @relation("ReceiverTrades")
+  tradeOffers           TradeOffer[]
+  tradeMessages         TradeMessage[]
+  shipmentsSent         Shipment[]             @relation("ShipmentSender")
+  shipmentsReceived     Shipment[]             @relation("ShipmentReceiver")
+  reviews               TradeReview[]          @relation("ReviewAuthor")
+  reviewsReceived       TradeReview[]          @relation("ReviewSubject")
+  transfersSent         CardOwnershipHistory[] @relation("TransfersSent")
+  transfersReceived     CardOwnershipHistory[] @relation("TransfersReceived")
+  notifications         Notification[]
+  disputesOpened        Dispute[]              @relation("DisputeOpener")
+  matchesAsUserA        TradeMatch[]           @relation("MatchUserA")
+  matchesAsUserB        TradeMatch[]           @relation("MatchUserB")
+  deviceTokens          DeviceToken[]
+  refreshTokens         RefreshToken[]
+  blockedUsers          UserBlock[]            @relation("Blocker")
+  blockedBy             UserBlock[]            @relation("Blocked")
+  reports               UserReport[]           @relation("Reporter")
+  reportsReceived       UserReport[]           @relation("Reported")
+  following             UserFollow[]           @relation("Follower")
+  followers             UserFollow[]           @relation("Following")
+
+  @@map("users")
+}
+
+model UserAddress {
+  id           String   @id @default(uuid())
+  userId       String
+  label        String?  // e.g. "Home", "Work"
+  fullName     String
+  line1        String
+  line2        String?
+  city         String
+  state        String
+  postalCode   String
+  country      String   @default("US")
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_addresses")
+}
+
+model Card {
+  id              String    @id @default(uuid())
+  game            CardGame  @default(POKEMON)
+  name            String
+  setName         String
+  setCode         String
+  cardNumber      String
+  rarity          String?
+  cardType        String?
+  imageUrl        String?
+  tcgplayerId     String?   @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  collectionItems UserCollection[]
+  wants           UserWant[]
+  priceHistory    CardPriceHistory[]
+  priceAlerts     PriceAlert[]
+
+  @@unique([setCode, cardNumber])
+  @@index([game])
+  @@index([name])
+  @@map("cards")
+}
+
+model CardSet {
+  id          String    @id @default(uuid())
+  game        CardGame
+  setCode     String    @unique
+  name        String
+  releaseDate DateTime?
+  totalCards  Int?
+  logoUrl     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([game])
+  @@map("card_sets")
+}
+
+model CardPriceHistory {
+  id          String   @id @default(uuid())
+  cardId      String
+  marketPrice Float
+  lowPrice    Float?
+  highPrice   Float?
+  recordedAt  DateTime @default(now())
+
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@index([recordedAt])
+  @@map("card_price_history")
+}
+
+model PriceAlert {
+  id           String              @id @default(uuid())
+  userId       String
+  cardId       String
+  targetPrice  Float
+  direction    PriceAlertDirection // notify when price goes ABOVE or BELOW target
+  isTriggered  Boolean             @default(false)
+  triggeredAt  DateTime?
+  createdAt    DateTime            @default(now())
+
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card         Card                @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cardId, direction])
+  @@index([userId])
+  @@map("price_alerts")
+}
+
+model UserCollection {
+  id                    String         @id @default(uuid())
+  userId                String
+  cardId                String
+  condition             CardCondition  @default(NEAR_MINT)
+  status                CardStatus     @default(AVAILABLE)
+  isFoil                Boolean        @default(false)
+  isFirstEdition        Boolean        @default(false)
+  language              String         @default("English")
+  gradingCompany        GradingCompany @default(UNGRADED)
+  gradingScore          Float?         // e.g. 9.5 for PSA 9.5
+  gradingCertNumber     String?        // certificate number for verification lookup
+  notes                 String?
+  lockedByTradeId       String?        // set when card is in an active trade
+  askingValueOverride   Float?         // override market price for this card
+  currentMarketValue    Float?         // cached from TCGPlayer
+  marketValueUpdatedAt  DateTime?
+  isOpenListing         Boolean        @default(false)
+  listingDescription    String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card                  Card                   @relation(fields: [cardId], references: [id])
+  media                 CardMedia[]
+  tradeItems            TradeItem[]
+  ownershipHistory      CardOwnershipHistory[]
+  verifications         CardVerification[]
+  matchItemsAsHave      TradeMatchItem[]       @relation("MatchCollectionItem")
+
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([cardId])
+  @@map("user_collections")
+}
+
+model UserWant {
+  id                       String         @id @default(uuid())
+  userId                   String
+  cardId                   String
+  maxCondition             CardCondition  @default(LIGHTLY_PLAYED)
+  priority                 WantPriority   @default(MEDIUM)
+  preferredGradingCompany  GradingCompany @default(UNGRADED) // UNGRADED = any
+  minGradingScore          Float?         // e.g. only want PSA 9+
+  notes                    String?
+  isFulfilled              Boolean        @default(false)
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+
+  user                     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card                     Card           @relation(fields: [cardId], references: [id])
+  matchItems               TradeMatchItem[] @relation("MatchWantItem")
+
+  @@unique([userId, cardId])
+  @@index([userId])
+  @@index([cardId])
+  @@map("user_wants")
+}
+
+model Trade {
+  id                        String      @id @default(uuid())
+  tradeCode                 String      @unique // human readable e.g. TRD-00142
+  proposerId                String
+  receiverId                String
+  // Market values snapshot from TCGPlayer at time of proposal
+  proposerMarketValue       Float       @default(0)
+  receiverMarketValue       Float       @default(0)
+  valueDifference           Float       @default(0)  // receiverMarketValue - proposerMarketValue
+  // Cash on top — positive = proposer pays receiver, negative = receiver pays proposer
+  cashDifference            Float       @default(0)
+  cashPayerId               String?
+  priceLockedAt             DateTime?   // set on ACCEPTED — values frozen after this
+  priceRefreshCount         Int         @default(0) // rate-limit refreshes to prevent gaming
+  status                    TradeStatus @default(PROPOSED)
+  expiresAt                 DateTime?   // auto-cancel if no response by this date
+  stripePaymentIntentId     String?
+  adminNotes                String?
+  createdAt                 DateTime    @default(now())
+  updatedAt                 DateTime    @updatedAt
+
+  proposer                  User                   @relation("ProposerTrades", fields: [proposerId], references: [id])
+  receiver                  User                   @relation("ReceiverTrades", fields: [receiverId], references: [id])
+  items                     TradeItem[]
+  offers                    TradeOffer[]
+  messages                  TradeMessage[]
+  shipments                 Shipment[]
+  verifications             CardVerification[]
+  reviews                   TradeReview[]
+  ownershipTransfers        CardOwnershipHistory[]
+  dispute                   Dispute?
+
+  @@index([proposerId])
+  @@index([receiverId])
+  @@index([status])
+  @@index([proposerId, status])
+  @@index([receiverId, status])
+  @@map("trades")
+}
+
+model TradeItem {
+  id                    String         @id @default(uuid())
+  tradeId               String
+  collectionItemId      String
+  ownedByProposer       Boolean        // true = proposer's card, false = receiver's card
+  valueAtTimeOfTrade    Float?         // snapshot of market value when added to trade
+
+  trade                 Trade          @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  collectionItem        UserCollection @relation(fields: [collectionItemId], references: [id])
+
+  @@index([tradeId])
+  @@map("trade_items")
+}
+
+model TradeOffer {
+  id                String      @id @default(uuid())
+  tradeId           String
+  offeredById       String
+  cashAdjustment    Float       @default(0)
+  message           String?
+  isAccepted        Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+
+  trade             Trade       @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  offeredBy         User        @relation(fields: [offeredById], references: [id])
+
+  @@index([tradeId])
+  @@map("trade_offers")
+}
+
+model TradeMessage {
+  id          String   @id @default(uuid())
+  tradeId     String
+  senderId    String
+  body        String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  trade       Trade    @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  sender      User     @relation(fields: [senderId], references: [id])
+
+  @@index([tradeId])
+  @@map("trade_messages")
+}
+
+model TradeMatch {
+  id           String           @id @default(uuid())
+  userAId      String
+  userBId      String
+  matchScore   Float            @default(0) // higher = better value alignment
+  status       TradeMatchStatus @default(PENDING)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  userA        User             @relation("MatchUserA", fields: [userAId], references: [id])
+  userB        User             @relation("MatchUserB", fields: [userBId], references: [id])
+  items        TradeMatchItem[]
+
+  @@unique([userAId, userBId])
+  @@index([userAId, status])
+  @@index([userBId, status])
+  @@map("trade_matches")
+}
+
+// Each row = "userA's collection item fulfills userB's want (or vice versa)"
+model TradeMatchItem {
+  id               String         @id @default(uuid())
+  matchId          String
+  wantId           String         // the UserWant being fulfilled
+  collectionItemId String         // the UserCollection item that fulfills it
+
+  match            TradeMatch     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  want             UserWant       @relation("MatchWantItem", fields: [wantId], references: [id])
+  collectionItem   UserCollection @relation("MatchCollectionItem", fields: [collectionItemId], references: [id])
+
+  @@map("trade_match_items")
+}
+
+model CardVerification {
+  id                 String         @id @default(uuid())
+  tradeId            String
+  collectionItemId   String         // which specific card is being verified
+  cardOwnerId        String
+  conditionConfirmed Boolean        @default(false)
+  conditionNotes     String?
+  isAuthentic        Boolean?
+  verifiedById       String?        // admin user id
+  submittedAt        DateTime?      // when the user submitted their media for review
+  verifiedAt         DateTime?
+  createdAt          DateTime       @default(now())
+
+  trade              Trade          @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  collectionItem     UserCollection @relation(fields: [collectionItemId], references: [id])
+  media              CardMedia[]
+
+  @@index([tradeId])
+  @@map("card_verifications")
+}
+
+model Shipment {
+  id              String            @id @default(uuid())
+  tradeId         String
+  senderId        String
+  receiverId      String
+  trackingNumber  String?
+  carrier         String?
+  direction       ShipmentDirection
+  isInsured       Boolean           @default(false)
+  insuredValue    Float?
+  status          ShipmentStatus    @default(PENDING)
+  // Address snapshot at time of shipment (in case user changes address later)
+  toFullName      String?
+  toLine1         String?
+  toLine2         String?
+  toCity          String?
+  toState         String?
+  toPostalCode    String?
+  toCountry       String?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  trade           Trade             @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  sender          User              @relation("ShipmentSender", fields: [senderId], references: [id])
+  receiver        User              @relation("ShipmentReceiver", fields: [receiverId], references: [id])
+
+  @@index([tradeId])
+  @@map("shipments")
+}
+
+model Dispute {
+  id            String        @id @default(uuid())
+  tradeId       String        @unique
+  openedById    String
+  reason        String
+  details       String?
+  status        DisputeStatus @default(OPENED)
+  resolution    String?
+  resolvedById  String?       // admin user id
+  resolvedAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  trade         Trade         @relation(fields: [tradeId], references: [id])
+  openedBy      User          @relation("DisputeOpener", fields: [openedById], references: [id])
+  evidence      DisputeEvidence[]
+
+  @@map("disputes")
+}
+
+model DisputeEvidence {
+  id              String   @id @default(uuid())
+  disputeId       String
+  submittedById   String
+  description     String?
+  mediaUrls       String[] // Supabase Storage URLs
+  createdAt       DateTime @default(now())
+
+  dispute         Dispute  @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+
+  @@index([disputeId])
+  @@map("dispute_evidence")
+}
+
+model TradeReview {
+  id          String    @id @default(uuid())
+  tradeId     String
+  authorId    String
+  subjectId   String
+  rating      Int       // 1-5
+  comment     String?
+  createdAt   DateTime  @default(now())
+
+  trade       Trade     @relation(fields: [tradeId], references: [id])
+  author      User      @relation("ReviewAuthor", fields: [authorId], references: [id])
+  subject     User      @relation("ReviewSubject", fields: [subjectId], references: [id])
+
+  @@unique([tradeId, authorId]) // one review per person per trade
+  @@index([subjectId])
+  @@map("trade_reviews")
+}
+
+model CardOwnershipHistory {
+  id               String         @id @default(uuid())
+  collectionItemId String
+  fromUserId       String
+  toUserId         String
+  tradeId          String
+  transferredAt    DateTime       @default(now())
+
+  collectionItem   UserCollection @relation(fields: [collectionItemId], references: [id])
+  fromUser         User           @relation("TransfersSent", fields: [fromUserId], references: [id])
+  toUser           User           @relation("TransfersReceived", fields: [toUserId], references: [id])
+  trade            Trade          @relation(fields: [tradeId], references: [id])
+
+  @@index([collectionItemId])
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@map("card_ownership_history")
+}
+
+model CardMedia {
+  id                   String            @id @default(uuid())
+  collectionItemId     String?           // attached to a collection item
+  verificationId       String?           // attached to a trade verification
+  type                 MediaType
+  angle                MediaAngle
+  url                  String            // Supabase Storage URL
+  order                Int               @default(0) // display order
+  createdAt            DateTime          @default(now())
+
+  collectionItem       UserCollection?   @relation(fields: [collectionItemId], references: [id], onDelete: Cascade)
+  verification         CardVerification? @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+
+  @@index([collectionItemId])
+  @@map("card_media")
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  type        NotificationType
+  title       String
+  body        String
+  data        Json?            // flexible payload e.g. { tradeId, tradeCode }
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model UserBlock {
+  id          String   @id @default(uuid())
+  blockerId   String
+  blockedId   String
+  createdAt   DateTime @default(now())
+
+  blocker     User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked     User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@map("user_blocks")
+}
+
+model DeviceToken {
+  id          String         @id @default(uuid())
+  userId      String
+  token       String         @unique // Expo push token or APNs/FCM token
+  platform    DevicePlatform
+  deviceInfo  String?        // e.g. "iPhone 15 Pro / iOS 17.4"
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  userId      String
+  token       String    @unique
+  deviceInfo  String?   // e.g. "iPhone 15 Pro / iOS 17.4"
+  expiresAt   DateTime
+  revokedAt   DateTime? // set when logged out or rotated
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model UserReport {
+  id           String   @id @default(uuid())
+  reporterId   String
+  reportedId   String
+  tradeId      String?  // optional — link to a specific trade if relevant
+  reason       String
+  details      String?
+  isResolved   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  reporter     User     @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported     User     @relation("Reported", fields: [reportedId], references: [id], onDelete: Cascade)
+
+  @@map("user_reports")
+}
+
+model UserFollow {
+  id           String   @id @default(uuid())
+  followerId   String   // person doing the following
+  followingId  String   // person being followed
+  createdAt    DateTime @default(now())
+
+  follower     User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following    User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("user_follows")
+}

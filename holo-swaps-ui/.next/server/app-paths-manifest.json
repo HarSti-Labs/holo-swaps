@@ -1,0 +1,7 @@
+{
+  "/cards/page": "app/cards/page.js",
+  "/matches/page": "app/matches/page.js",
+  "/how-it-works/page": "app/how-it-works/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/auth/register/page": "app/auth/register/page.js"
+}
