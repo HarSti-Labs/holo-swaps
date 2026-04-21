@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/settings/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/settings/page.js"
+      "static/chunks/app/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -11,70 +11,80 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/collection/page": [
+    "/auth/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/collection/page.js"
-    ],
-    "/cards/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/cards/page.js"
+      "static/chunks/app/auth/login/page.js"
     ],
     "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/page.js"
     ],
-    "/page": [
+    "/profile/[username]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/profile/[username]/page.js"
     ],
-    "/auth/login/page": [
+    "/cards/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/auth/login/page.js"
+      "static/chunks/app/cards/page.js"
     ],
-    "/trades/page": [
+    "/collection/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/trades/page.js"
+      "static/chunks/app/collection/page.js"
     ],
-    "/matches/page": [
+    "/support/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/matches/page.js"
+      "static/chunks/app/support/page.js"
+    ],
+    "/support/tickets/[ticketNumber]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/support/tickets/[ticketNumber]/page.js"
     ],
     "/auth/register/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/auth/register/page.js"
     ],
-    "/legal/tos/page": [
+    "/how-it-works/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/legal/tos/page.js"
+      "static/chunks/app/how-it-works/page.js"
+    ],
+    "/card-condition-guide/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/card-condition-guide/page.js"
     ],
     "/legal/privacy/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/legal/privacy/page.js"
     ],
-    "/how-it-works/page": [
+    "/legal/tos/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/how-it-works/page.js"
+      "static/chunks/app/legal/tos/page.js"
     ],
-    "/verify-email/page": [
+    "/settings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/verify-email/page.js"
+      "static/chunks/app/settings/page.js"
     ],
-    "/profile/[username]/page": [
+    "/profile/[username]/followers/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/profile/[username]/page.js"
+      "static/chunks/app/profile/[username]/followers/page.js"
+    ],
+    "/trades/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/trades/page.js"
     ]
   }
 }

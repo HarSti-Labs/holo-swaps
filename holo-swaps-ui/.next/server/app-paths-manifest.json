@@ -1,7 +1,8 @@
 {
-  "/cards/page": "app/cards/page.js",
-  "/matches/page": "app/matches/page.js",
-  "/how-it-works/page": "app/how-it-works/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/collection/page": "app/collection/page.js",
+  "/trades/page": "app/trades/page.js",
+  "/profile/[username]/page": "app/profile/[username]/page.js",
   "/settings/page": "app/settings/page.js",
-  "/auth/register/page": "app/auth/register/page.js"
+  "/card-condition-guide/page": "app/card-condition-guide/page.js"
 }

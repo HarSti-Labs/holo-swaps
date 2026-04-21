@@ -1,4 +1,4 @@
-// File: /Users/harrynguyen/Desktop/holo-swaps/holo-swaps-ui/src/app/how-it-works/page.tsx
+// File: /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-ui/src/app/how-it-works/page.tsx
 import * as entry from '../../../../src/app/how-it-works/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
