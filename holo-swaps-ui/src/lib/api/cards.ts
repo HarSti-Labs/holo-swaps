@@ -29,6 +29,7 @@ export interface SearchCardsParams {
   game?: "POKEMON" | "MAGIC_THE_GATHERING" | "ONE_PIECE" | "YUGIOH" | "DIGIMON" | "OTHER";
   setCode?: string;
   setName?: string;
+  rarity?: string;
   page?: number;
   limit?: number;
 }
@@ -87,6 +88,14 @@ export async function getCardHolders(cardId: string, page = 1, limit = 20) {
 export async function getSets(game?: string) {
   const { data } = await api.get<ApiResponse<CardSet[]>>("/sets", {
     params: game ? { game } : undefined,
+  });
+  return data.data!;
+}
+
+// GET /api/cards/rarities?setCode=XXX - Get distinct rarities (optionally scoped to a set)
+export async function getRarities(setCode?: string) {
+  const { data } = await api.get<ApiResponse<string[]>>("/cards/rarities", {
+    params: setCode ? { setCode } : undefined,
   });
   return data.data!;
 }

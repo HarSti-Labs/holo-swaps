@@ -38,7 +38,7 @@ export default function RegisterPage() {
       try {
         const result = await authApi.checkUsername(form.username);
         setUsernameStatus(result.available ? "available" : "taken");
-        setUsernameMessage(result.reason || (result.available ? "Username is available!" : ""));
+        setUsernameMessage(result.reason || (result.available ? "Username is available!" : "Username is already taken"));
       } catch {
         setUsernameStatus("idle");
       }
@@ -59,7 +59,7 @@ export default function RegisterPage() {
       try {
         const result = await authApi.checkEmail(form.email);
         setEmailStatus(result.available ? "available" : "taken");
-        setEmailMessage(result.reason || (result.available ? "Email is available!" : ""));
+        setEmailMessage(result.reason || (result.available ? "Email is available!" : "Email is already registered"));
       } catch {
         setEmailStatus("idle");
       }
@@ -117,7 +117,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950 relative overflow-hidden">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950 relative overflow-hidden">
       {/* Animated background orbs */}
       <div className="absolute top-0 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700" />
@@ -174,7 +174,7 @@ export default function RegisterPage() {
                   value={form.username}
                   onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
                   required
-                  placeholder="pikachu_trader"
+                  placeholder="ProfessorOak"
                   minLength={3}
                   maxLength={20}
                   className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"

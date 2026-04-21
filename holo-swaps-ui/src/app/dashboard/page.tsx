@@ -1,6 +1,5 @@
 "use client";
 
-import { Navbar } from "@/components/shared/Navbar";
 import { EmailVerificationBanner } from "@/components/shared/EmailVerificationBanner";
 import { TradeCard } from "@/components/trade/TradeCard";
 import { useMyTrades } from "@/lib/hooks/useTrades";
@@ -21,8 +20,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Email Verification Banner */}
         {user && !user.isEmailVerified && <EmailVerificationBanner />}

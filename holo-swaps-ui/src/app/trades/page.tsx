@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Navbar } from "@/components/shared/Navbar";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { tradesApi } from "@/lib/api/trades";
 import { Trade, TradeStatus } from "@/types";
@@ -86,8 +85,7 @@ export default function TradesPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="container mx-auto px-4 py-8 max-w-4xl">
           <p className="text-center text-slate-400">Please log in to view your trades</p>
         </div>
       </div>
@@ -96,7 +94,6 @@ export default function TradesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-      <Navbar />
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">

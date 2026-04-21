@@ -8,21 +8,6 @@ const CONTACT_EMAIL = "admin@holoswaps.com";
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
-      {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <span className="text-white font-black text-sm">H</span>
-            </div>
-            <span className="font-black text-white text-lg">HoloSwaps</span>
-          </Link>
-          <Link href="/auth/register" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
-            ← Back to sign up
-          </Link>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Title */}
         <div className="mb-12 text-center">
@@ -246,19 +231,6 @@ export default function PrivacyPolicyPage() {
             <p className="text-slate-400 text-sm">
               By using HoloSwaps, you acknowledge that you have read and understood this Privacy Policy.
             </p>
-            <div className="flex items-center justify-center gap-6 mt-4">
-              <Link href="/legal/tos" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
-                Terms of Service
-              </Link>
-              <span className="text-slate-600">·</span>
-              <Link href="/auth/register" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
-                Create Account
-              </Link>
-              <span className="text-slate-600">·</span>
-              <Link href="/" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
-                Home
-              </Link>
-            </div>
           </div>
 
         </div>

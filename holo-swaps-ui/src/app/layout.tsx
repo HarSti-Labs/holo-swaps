@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans, DM_Mono } from "next/font/google";
 import { Providers } from "@/components/shared/Providers";
+import { Navbar } from "@/components/shared/Navbar";
+import { Footer } from "@/components/shared/Footer";
 import "@/styles/globals.css";
 
 const syne = Syne({
@@ -38,7 +40,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${syne.variable} ${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
       <body className="dark">
-        <Providers>{children}</Providers>
+        <Providers>
+          <Navbar />
+          <main className="flex flex-col min-h-[calc(100vh-4rem)]">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

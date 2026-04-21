@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Navbar } from "@/components/shared/Navbar";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { authApi } from "@/lib/api/auth";
 import { Trash2, AlertTriangle, Edit2, Plus, MapPin, Check, Loader2, CheckCircle, XCircle } from "lucide-react";
@@ -301,8 +300,6 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-      <Navbar />
-
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Settings</h1>
 

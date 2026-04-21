@@ -3,13 +3,12 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Navbar } from "@/components/shared/Navbar";
 import { collectionApi } from "@/lib/api/collection";
 import { searchCards } from "@/lib/api/cards";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import {
   Plus, Search, Filter, Grid3x3, List, Trash2, Edit2,
-  ArrowLeftRight, X, Star, BookMarked, Heart,
+  ArrowLeftRight, X, Star, BookMarked, Heart, CheckSquare, Square,
 } from "lucide-react";
 import { Card as CardType, CollectionItem, CardCondition, WantItem, WantPriority } from "@/types";
 import { CONDITION_LABELS } from "@/types";
@@ -51,9 +50,21 @@ export default function MyCardsPage() {
   const [filterFoil, setFilterFoil] = useState<boolean | null>(null);
   const [filterFirstEdition, setFilterFirstEdition] = useState<boolean | null>(null);
   const [filterSet, setFilterSet] = useState("");
+  const [collectionSelectMode, setCollectionSelectMode] = useState(false);
+  const [selectedCollectionIds, setSelectedCollectionIds] = useState<Set<string>>(new Set());
+  const [isBulkCollectionLoading, setIsBulkCollectionLoading] = useState(false);
 
   // ── Want list state ───────────────────────────────────────────────
   const [showAddWantDialog, setShowAddWantDialog] = useState(false);
+  const [editingWant, setEditingWant] = useState<WantItem | null>(null);
+  const [wantViewMode, setWantViewMode] = useState<"grid" | "list">("list");
+  const [showWantFilters, setShowWantFilters] = useState(false);
+  const [filterWantPriorities, setFilterWantPriorities] = useState<WantPriority[]>([]);
+  const [filterWantCondition, setFilterWantCondition] = useState<CardCondition | "">("");
+  const [filterWantSet, setFilterWantSet] = useState("");
+  const [wantSelectMode, setWantSelectMode] = useState(false);
+  const [selectedWantIds, setSelectedWantIds] = useState<Set<string>>(new Set());
+  const [isBulkWantLoading, setIsBulkWantLoading] = useState(false);
 
   // ── Queries ───────────────────────────────────────────────────────
   const { data: collectionData, isLoading: collectionLoading } = useQuery({
@@ -85,8 +96,111 @@ export default function MyCardsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["myWants"] }),
   });
 
+  const updateWantMutation = useMutation({
+    mutationFn: ({ wantId, data }: { wantId: string; data: { priority: WantPriority; maxCondition: CardCondition; notes: string } }) =>
+      collectionApi.updateWant(wantId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["myWants"] });
+      setEditingWant(null);
+    },
+  });
+
   const handleToggleTrade = (item: CollectionItem) => {
     toggleTradeMutation.mutate({ itemId: item.id, availableForTrade: item.status !== "AVAILABLE" });
+  };
+
+  // ── Collection selection helpers ──────────────────────────────────
+  const toggleCollectionSelect = (id: string) => {
+    setSelectedCollectionIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllCollection = () => {
+    if (selectedCollectionIds.size === filteredCollection.length) {
+      setSelectedCollectionIds(new Set());
+    } else {
+      setSelectedCollectionIds(new Set(filteredCollection.map((i) => i.id)));
+    }
+  };
+
+  const exitCollectionSelect = () => {
+    setCollectionSelectMode(false);
+    setSelectedCollectionIds(new Set());
+  };
+
+  const bulkSetTradeCollection = async (available: boolean) => {
+    setIsBulkCollectionLoading(true);
+    try {
+      await Promise.all(
+        [...selectedCollectionIds].map((id) =>
+          collectionApi.updateCollectionItem(id, { status: available ? "AVAILABLE" : "UNAVAILABLE" })
+        )
+      );
+      await queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+      exitCollectionSelect();
+    } finally {
+      setIsBulkCollectionLoading(false);
+    }
+  };
+
+  const bulkDeleteCollection = async () => {
+    if (!confirm(`Delete ${selectedCollectionIds.size} card(s)? This cannot be undone.`)) return;
+    setIsBulkCollectionLoading(true);
+    try {
+      await Promise.all([...selectedCollectionIds].map((id) => collectionApi.removeFromCollection(id)));
+      await queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+      exitCollectionSelect();
+    } finally {
+      setIsBulkCollectionLoading(false);
+    }
+  };
+
+  // ── Want selection helpers ────────────────────────────────────────
+  const toggleWantSelect = (id: string) => {
+    setSelectedWantIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllWants = () => {
+    if (selectedWantIds.size === filteredWants.length) {
+      setSelectedWantIds(new Set());
+    } else {
+      setSelectedWantIds(new Set(filteredWants.map((w) => w.id)));
+    }
+  };
+
+  const exitWantSelect = () => {
+    setWantSelectMode(false);
+    setSelectedWantIds(new Set());
+  };
+
+  const bulkUpdateWants = async (data: { priority?: WantPriority; maxCondition?: CardCondition }) => {
+    setIsBulkWantLoading(true);
+    try {
+      await Promise.all([...selectedWantIds].map((id) => collectionApi.updateWant(id, data)));
+      await queryClient.invalidateQueries({ queryKey: ["myWants"] });
+      exitWantSelect();
+    } finally {
+      setIsBulkWantLoading(false);
+    }
+  };
+
+  const bulkDeleteWants = async () => {
+    if (!confirm(`Remove ${selectedWantIds.size} item(s) from your want list?`)) return;
+    setIsBulkWantLoading(true);
+    try {
+      await Promise.all([...selectedWantIds].map((id) => collectionApi.removeFromWants(id)));
+      await queryClient.invalidateQueries({ queryKey: ["myWants"] });
+      exitWantSelect();
+    } finally {
+      setIsBulkWantLoading(false);
+    }
   };
 
   // ── Card counts (how many copies of each card) ────────────────────
@@ -131,9 +245,35 @@ export default function MyCardsPage() {
     setFilterSet("");
   };
 
+  // ── Want list filters ─────────────────────────────────────────────
+  const availableWantSets = useMemo(
+    () => [...new Set(wants.map((w) => w.card.setName))].sort(),
+    [wants]
+  );
+
+  const wantActiveFilterCount = [
+    filterWantPriorities.length > 0,
+    filterWantCondition !== "",
+    filterWantSet !== "",
+  ].filter(Boolean).length;
+
+  const filteredWants = useMemo(() => {
+    return wants.filter((w) => {
+      if (filterWantPriorities.length > 0 && !filterWantPriorities.includes(w.priority)) return false;
+      if (filterWantCondition && w.maxCondition !== filterWantCondition) return false;
+      if (filterWantSet && w.card.setName !== filterWantSet) return false;
+      return true;
+    });
+  }, [wants, filterWantPriorities, filterWantCondition, filterWantSet]);
+
+  const clearWantFilters = () => {
+    setFilterWantPriorities([]);
+    setFilterWantCondition("");
+    setFilterWantSet("");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
-      <Navbar />
 
       <main className="container mx-auto px-4 py-8">
         {/* Header */}
@@ -236,6 +376,17 @@ export default function MyCardsPage() {
                 >
                   <List size={20} />
                 </button>
+                <button
+                  onClick={() => { setCollectionSelectMode(!collectionSelectMode); setSelectedCollectionIds(new Set()); }}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors text-sm font-bold ${
+                    collectionSelectMode
+                      ? "bg-blue-600/20 border-blue-500 text-blue-300"
+                      : "bg-slate-800/50 border-transparent text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <CheckSquare size={18} />
+                  Select
+                </button>
               </div>
 
               <button
@@ -255,6 +406,51 @@ export default function MyCardsPage() {
                 )}
               </button>
             </div>
+
+            {/* Collection bulk action bar */}
+            {collectionSelectMode && (
+              <div className="mb-4 flex flex-wrap items-center gap-3 p-4 bg-slate-900/90 border-2 border-blue-500/50 rounded-2xl relative z-10">
+                <button onClick={toggleSelectAllCollection} className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors">
+                  {selectedCollectionIds.size === filteredCollection.length ? "Deselect All" : "Select All"}
+                </button>
+                <span className="text-slate-600">|</span>
+                <span className="text-sm text-slate-400">
+                  {selectedCollectionIds.size} selected
+                </span>
+                {selectedCollectionIds.size > 0 && (
+                  <>
+                    <span className="text-slate-600">|</span>
+                    <button
+                      onClick={() => bulkSetTradeCollection(true)}
+                      disabled={isBulkCollectionLoading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600/20 border border-green-600/50 text-green-400 text-sm font-bold hover:bg-green-600/30 disabled:opacity-50 transition-colors"
+                    >
+                      <ArrowLeftRight size={14} />
+                      Mark Available
+                    </button>
+                    <button
+                      onClick={() => bulkSetTradeCollection(false)}
+                      disabled={isBulkCollectionLoading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700/50 border border-slate-600 text-slate-300 text-sm font-bold hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                    >
+                      <ArrowLeftRight size={14} />
+                      Mark Unavailable
+                    </button>
+                    <button
+                      onClick={bulkDeleteCollection}
+                      disabled={isBulkCollectionLoading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 text-sm font-bold hover:bg-red-600/30 disabled:opacity-50 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                      Delete
+                    </button>
+                  </>
+                )}
+                <button onClick={exitCollectionSelect} className="ml-auto text-sm text-slate-500 hover:text-slate-300 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            )}
 
             {/* Filter Panel */}
             {showFilters && (
@@ -365,8 +561,11 @@ export default function MyCardsPage() {
                     item={item}
                     viewMode={viewMode}
                     count={cardCounts[item.card.id] ?? 1}
-                    onEdit={() => setEditingItem(item)}
+                    onEdit={() => !collectionSelectMode && setEditingItem(item)}
                     onToggleTrade={() => handleToggleTrade(item)}
+                    selectMode={collectionSelectMode}
+                    selected={selectedCollectionIds.has(item.id)}
+                    onToggleSelect={() => toggleCollectionSelect(item.id)}
                   />
                 ))}
               </div>
@@ -377,6 +576,182 @@ export default function MyCardsPage() {
         {/* ── WANT LIST TAB ── */}
         {activeTab === "wants" && (
           <>
+            {/* View Toggle & Filters */}
+            <div className="mb-4 flex items-center justify-between relative z-10">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setWantViewMode("grid")}
+                  className={`p-3 rounded-xl transition-all ${
+                    wantViewMode === "grid"
+                      ? "bg-pink-600 text-white shadow-lg shadow-pink-500/50"
+                      : "bg-slate-800/50 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Grid3x3 size={20} />
+                </button>
+                <button
+                  onClick={() => setWantViewMode("list")}
+                  className={`p-3 rounded-xl transition-all ${
+                    wantViewMode === "list"
+                      ? "bg-pink-600 text-white shadow-lg shadow-pink-500/50"
+                      : "bg-slate-800/50 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <List size={20} />
+                </button>
+                <button
+                  onClick={() => { setWantSelectMode(!wantSelectMode); setSelectedWantIds(new Set()); }}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors text-sm font-bold ${
+                    wantSelectMode
+                      ? "bg-pink-600/20 border-pink-500 text-pink-300"
+                      : "bg-slate-800/50 border-transparent text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <CheckSquare size={18} />
+                  Select
+                </button>
+              </div>
+
+              <button
+                onClick={() => setShowWantFilters(!showWantFilters)}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors ${
+                  showWantFilters || wantActiveFilterCount > 0
+                    ? "bg-pink-600/20 border-pink-500 text-pink-300"
+                    : "bg-slate-800/50 border-transparent text-white hover:bg-slate-700/50"
+                }`}
+              >
+                <Filter size={18} />
+                Filters
+                {wantActiveFilterCount > 0 && (
+                  <span className="w-5 h-5 rounded-full bg-pink-500 text-white text-xs font-bold flex items-center justify-center">
+                    {wantActiveFilterCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Want list bulk action bar */}
+            {wantSelectMode && (
+              <div className="mb-4 p-4 bg-slate-900/90 border-2 border-pink-500/50 rounded-2xl relative z-10 space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button onClick={toggleSelectAllWants} className="text-sm font-bold text-pink-400 hover:text-pink-300 transition-colors">
+                    {selectedWantIds.size === filteredWants.length ? "Deselect All" : "Select All"}
+                  </button>
+                  <span className="text-slate-600">|</span>
+                  <span className="text-sm text-slate-400">{selectedWantIds.size} selected</span>
+                  {selectedWantIds.size > 0 && (
+                    <button
+                      onClick={bulkDeleteWants}
+                      disabled={isBulkWantLoading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 text-sm font-bold hover:bg-red-600/30 disabled:opacity-50 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                      Remove
+                    </button>
+                  )}
+                  <button onClick={exitWantSelect} className="ml-auto text-sm text-slate-500 hover:text-slate-300 transition-colors">
+                    Cancel
+                  </button>
+                </div>
+
+                {selectedWantIds.size > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-700/50">
+                    <span className="text-xs text-slate-500 self-center mr-1">Set priority:</span>
+                    {(["HIGH", "MEDIUM", "LOW"] as WantPriority[]).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => bulkUpdateWants({ priority: p })}
+                        disabled={isBulkWantLoading}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold border-2 disabled:opacity-50 transition-colors ${PRIORITY_COLORS[p]}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <span className="text-slate-600 self-center mx-1">|</span>
+                    <span className="text-xs text-slate-500 self-center mr-1">Set max condition:</span>
+                    <select
+                      onChange={(e) => e.target.value && bulkUpdateWants({ maxCondition: e.target.value as CardCondition })}
+                      disabled={isBulkWantLoading}
+                      defaultValue=""
+                      className="px-3 py-1 rounded-lg border-2 border-slate-700 bg-slate-950/50 text-white text-xs focus:border-pink-500 focus:outline-none disabled:opacity-50"
+                    >
+                      <option value="" disabled>Pick condition…</option>
+                      {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([v, l]) => (
+                        <option key={v} value={v}>{l}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Filter Panel */}
+            {showWantFilters && (
+              <div className="mb-6 p-6 bg-slate-900/80 backdrop-blur-xl border-2 border-slate-700 rounded-2xl relative z-10 space-y-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-white">Filter Want List</h3>
+                  {wantActiveFilterCount > 0 && (
+                    <button onClick={clearWantFilters} className="flex items-center gap-1 text-sm text-pink-400 hover:text-pink-300">
+                      <X size={14} />
+                      Clear all
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Priority</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(["HIGH", "MEDIUM", "LOW"] as WantPriority[]).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setFilterWantPriorities((prev) => prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p])}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 transition-colors ${
+                          filterWantPriorities.includes(p)
+                            ? PRIORITY_COLORS[p]
+                            : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"
+                        }`}
+                      >
+                        {PRIORITY_LABELS[p]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Max Condition</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([value, label]) => (
+                      <button
+                        key={value}
+                        onClick={() => setFilterWantCondition(filterWantCondition === value ? "" : value)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 transition-colors ${
+                          filterWantCondition === value
+                            ? "bg-pink-500/20 text-pink-300 border-pink-500"
+                            : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {availableWantSets.length > 1 && (
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Set</p>
+                    <select
+                      value={filterWantSet}
+                      onChange={(e) => setFilterWantSet(e.target.value)}
+                      className="px-4 py-2 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white focus:border-pink-500 focus:outline-none"
+                    >
+                      <option value="">All Sets</option>
+                      {availableWantSets.map((set) => <option key={set} value={set}>{set}</option>)}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+
             {wantsLoading && (
               <div className="text-center py-20">
                 <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-pink-500 border-r-transparent"></div>
@@ -401,16 +776,47 @@ export default function MyCardsPage() {
               </div>
             )}
 
-            {!wantsLoading && wants.length > 0 && (
-              <div className="space-y-3">
-                {wants.map((want) => (
-                  <WantCard
-                    key={want.id}
-                    want={want}
-                    onRemove={() => removeWantMutation.mutate(want.id)}
-                  />
-                ))}
+            {!wantsLoading && wants.length > 0 && filteredWants.length === 0 && (
+              <div className="text-center py-20">
+                <p className="text-slate-400 text-lg mb-4">No cards match your filters.</p>
+                <button onClick={clearWantFilters} className="px-4 py-2 rounded-xl bg-slate-800 text-white hover:bg-slate-700 transition-colors">
+                  Clear filters
+                </button>
               </div>
+            )}
+
+            {!wantsLoading && filteredWants.length > 0 && (
+              wantViewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {filteredWants.map((want) => (
+                    <WantCard
+                      key={want.id}
+                      want={want}
+                      viewMode="grid"
+                      onEdit={() => !wantSelectMode && setEditingWant(want)}
+                      onRemove={() => removeWantMutation.mutate(want.id)}
+                      selectMode={wantSelectMode}
+                      selected={selectedWantIds.has(want.id)}
+                      onToggleSelect={() => toggleWantSelect(want.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredWants.map((want) => (
+                    <WantCard
+                      key={want.id}
+                      want={want}
+                      viewMode="list"
+                      onEdit={() => !wantSelectMode && setEditingWant(want)}
+                      onRemove={() => removeWantMutation.mutate(want.id)}
+                      selectMode={wantSelectMode}
+                      selected={selectedWantIds.has(want.id)}
+                      onToggleSelect={() => toggleWantSelect(want.id)}
+                    />
+                  ))}
+                </div>
+              )
             )}
           </>
         )}
@@ -418,9 +824,13 @@ export default function MyCardsPage() {
 
       {showAddDialog && <AddCardDialog onClose={() => setShowAddDialog(false)} />}
       {editingItem && <EditCardDialog item={editingItem} onClose={() => setEditingItem(null)} />}
-      {showAddWantDialog && (
-        <AddWantDialog
-          onClose={() => setShowAddWantDialog(false)}
+      {showAddWantDialog && <AddWantDialog onClose={() => setShowAddWantDialog(false)} />}
+      {editingWant && (
+        <EditWantDialog
+          want={editingWant}
+          onClose={() => setEditingWant(null)}
+          onSave={(data) => updateWantMutation.mutate({ wantId: editingWant.id, data })}
+          isSaving={updateWantMutation.isPending}
         />
       )}
     </div>
@@ -437,16 +847,32 @@ function CollectionCard({
   count,
   onEdit,
   onToggleTrade,
+  selectMode,
+  selected,
+  onToggleSelect,
 }: {
   item: CollectionItem;
   viewMode: "grid" | "list";
   count: number;
   onEdit: () => void;
   onToggleTrade: () => void;
+  selectMode: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
 }) {
   if (viewMode === "list") {
     return (
-      <div className="bg-slate-900/80 backdrop-blur-xl border-2 border-slate-700 rounded-2xl p-4 hover:border-blue-500/50 transition-all">
+      <div
+        onClick={selectMode ? onToggleSelect : undefined}
+        className={`bg-slate-900/80 backdrop-blur-xl border-2 rounded-2xl p-4 transition-all ${
+          selectMode ? "cursor-pointer" : ""
+        } ${selected ? "border-blue-500 bg-blue-500/10" : "border-slate-700 hover:border-blue-500/50"}`}
+      >
+        {selectMode && (
+          <div className="flex items-center gap-3 mb-3">
+            {selected ? <CheckSquare size={18} className="text-blue-400 flex-shrink-0" /> : <Square size={18} className="text-slate-500 flex-shrink-0" />}
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div className="flex-1 grid grid-cols-5 gap-4 items-center">
             <div className="col-span-2">
@@ -478,30 +904,45 @@ function CollectionCard({
               </div>
             </div>
           </div>
-          <div className="ml-4 flex items-center gap-2">
-            <button
-              onClick={onToggleTrade}
-              title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
-              className={`p-3 rounded-lg border-2 transition-colors ${
-                item.status === "AVAILABLE"
-                  ? "bg-green-500/20 border-green-500 text-green-400 hover:bg-green-500/30"
-                  : "bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300"
-              }`}
-            >
-              <ArrowLeftRight size={18} />
-            </button>
-            <button onClick={onEdit} className="p-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors">
-              <Edit2 size={18} />
-            </button>
-          </div>
+          {!selectMode && (
+            <div className="ml-4 flex items-center gap-2">
+              <button
+                onClick={onToggleTrade}
+                title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
+                className={`p-3 rounded-lg border-2 transition-colors ${
+                  item.status === "AVAILABLE"
+                    ? "bg-green-500/20 border-green-500 text-green-400 hover:bg-green-500/30"
+                    : "bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300"
+                }`}
+              >
+                <ArrowLeftRight size={18} />
+              </button>
+              <button onClick={onEdit} className="p-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors">
+                <Edit2 size={18} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="group relative bg-slate-900/50 backdrop-blur-sm border-2 border-slate-700/50 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 hover:border-blue-500/70 hover:-translate-y-2 transition-all duration-500">
-      <div onClick={onEdit} className="cursor-pointer">
+    <div
+      onClick={selectMode ? onToggleSelect : undefined}
+      className={`group relative bg-slate-900/50 backdrop-blur-sm border-2 rounded-3xl overflow-hidden transition-all duration-300 ${
+        selectMode ? "cursor-pointer" : "hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 hover:-translate-y-2 duration-500"
+      } ${selected ? "border-blue-500 shadow-lg shadow-blue-500/30" : "border-slate-700/50 hover:border-blue-500/70"}`}
+    >
+      {/* Selection checkbox */}
+      {selectMode && (
+        <div className="absolute top-2 left-2 z-20">
+          {selected
+            ? <CheckSquare size={22} className="text-blue-400 drop-shadow-lg" />
+            : <Square size={22} className="text-slate-400 drop-shadow-lg" />}
+        </div>
+      )}
+      <div onClick={!selectMode ? onEdit : undefined} className={!selectMode ? "cursor-pointer" : ""}>
         <div className="aspect-[2/3] bg-gradient-to-br from-blue-950 via-purple-950 to-slate-950 flex items-center justify-center relative">
           {count > 1 && (
             <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm border border-blue-500/50 text-blue-300 text-xs font-black leading-none">
@@ -529,18 +970,20 @@ function CollectionCard({
           </div>
         </div>
       </div>
-      <button
-        onClick={onToggleTrade}
-        title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
-        className={`w-full py-2 flex items-center justify-center gap-2 text-xs font-bold border-t-2 transition-colors ${
-          item.status === "AVAILABLE"
-            ? "bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30"
-            : "bg-slate-900/90 border-slate-700/50 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
-        }`}
-      >
-        <ArrowLeftRight size={12} />
-        {item.status === "AVAILABLE" ? "Available for Trade" : "Mark for Trade"}
-      </button>
+      {!selectMode && (
+        <button
+          onClick={onToggleTrade}
+          title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
+          className={`w-full py-2 flex items-center justify-center gap-2 text-xs font-bold border-t-2 transition-colors ${
+            item.status === "AVAILABLE"
+              ? "bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30"
+              : "bg-slate-900/90 border-slate-700/50 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+          }`}
+        >
+          <ArrowLeftRight size={12} />
+          {item.status === "AVAILABLE" ? "Available for Trade" : "Mark for Trade"}
+        </button>
+      )}
     </div>
   );
 }
@@ -549,12 +992,82 @@ function CollectionCard({
 // Want list card
 // ─────────────────────────────────────────────────────────────────────────────
 
-function WantCard({ want, onRemove }: { want: WantItem; onRemove: () => void }) {
+function WantCard({ want, viewMode, onEdit, onRemove, selectMode = false, selected = false, onToggleSelect }: {
+  want: WantItem;
+  viewMode: "grid" | "list";
+  onEdit: () => void;
+  onRemove: () => void;
+  selectMode?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
+}) {
+  if (viewMode === "grid") {
+    return (
+      <div
+        onClick={selectMode ? onToggleSelect : undefined}
+        className={`group relative bg-slate-900/50 backdrop-blur-sm border-2 rounded-3xl overflow-hidden transition-all duration-300 ${
+          selectMode ? "cursor-pointer" : "hover:shadow-2xl hover:shadow-pink-500/30 hover:scale-105 hover:-translate-y-2 duration-500"
+        } ${selected ? "border-pink-500 shadow-lg shadow-pink-500/30" : "border-slate-700/50 hover:border-pink-500/70"}`}
+      >
+        <div className="aspect-[2/3] bg-gradient-to-br from-pink-950 via-purple-950 to-slate-950 flex items-center justify-center relative">
+          {selectMode ? (
+            <div className="absolute top-2 left-2 z-20">
+              {selected ? <CheckSquare size={22} className="text-pink-400 drop-shadow-lg" /> : <Square size={22} className="text-slate-400 drop-shadow-lg" />}
+            </div>
+          ) : (
+            <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-lg text-xs font-bold border ${PRIORITY_COLORS[want.priority]}`}>
+              {want.priority}
+            </span>
+          )}
+          {want.card.imageUrl ? (
+            <img src={want.card.imageUrl} alt={want.card.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="text-center p-6">
+              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-500/40 via-purple-500/40 to-blue-500/40 flex items-center justify-center border-4 border-pink-400/40">
+                <span className="text-5xl">🃏</span>
+              </div>
+              <p className="text-xs text-slate-400 font-semibold">No Image</p>
+            </div>
+          )}
+        </div>
+        <div onClick={!selectMode ? onEdit : undefined} className={`p-4 space-y-2 bg-gradient-to-b from-slate-900/90 to-slate-950/90 ${!selectMode ? "cursor-pointer" : ""}`}>
+          <h3 className="font-bold text-white line-clamp-2 min-h-[2.5rem]">{want.card.name}</h3>
+          <p className="text-xs text-slate-400">{want.card.setName}</p>
+          <span className="inline-block px-2 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
+            Max: {CONDITION_LABELS[want.maxCondition]}
+          </span>
+          {want.notes && <p className="text-xs text-slate-500 truncate">{want.notes}</p>}
+        </div>
+        {!selectMode && (
+          <div className="flex border-t-2 border-slate-700/50">
+            <button onClick={onEdit} className="flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold bg-slate-900/90 text-pink-400 hover:bg-pink-600/20 transition-colors">
+              <Edit2 size={12} />
+              Edit
+            </button>
+            <button onClick={onRemove} className="flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold bg-slate-900/90 text-red-400 hover:bg-red-600/20 border-l-2 border-slate-700/50 transition-colors">
+              <Trash2 size={12} />
+              Remove
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-slate-900/80 backdrop-blur-xl border-2 border-slate-700 rounded-2xl p-4 hover:border-pink-500/50 transition-all">
+    <div
+      onClick={selectMode ? onToggleSelect : undefined}
+      className={`bg-slate-900/80 backdrop-blur-xl border-2 rounded-2xl p-4 transition-all ${
+        selectMode ? "cursor-pointer" : "hover:border-pink-500/50"
+      } ${selected ? "border-pink-500 bg-pink-500/5" : "border-slate-700"}`}
+    >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-1 min-w-0">
-          {/* Card image placeholder */}
+          {selectMode && (
+            <div className="flex-shrink-0">
+              {selected ? <CheckSquare size={18} className="text-pink-400" /> : <Square size={18} className="text-slate-500" />}
+            </div>
+          )}
           <div className="w-12 h-16 rounded-lg bg-gradient-to-br from-pink-950 via-purple-950 to-slate-950 flex items-center justify-center flex-shrink-0 border border-slate-700">
             {want.card.imageUrl ? (
               <img src={want.card.imageUrl} alt={want.card.name} className="w-full h-full object-cover rounded-lg" />
@@ -579,13 +1092,16 @@ function WantCard({ want, onRemove }: { want: WantItem; onRemove: () => void }) 
               Max: {CONDITION_LABELS[want.maxCondition]}
             </span>
           </div>
-          <button
-            onClick={onRemove}
-            title="Remove from want list"
-            className="p-2.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 hover:bg-red-600/30 transition-colors"
-          >
-            <Trash2 size={16} />
-          </button>
+          {!selectMode && (
+            <>
+              <button onClick={onEdit} title="Edit want" className="p-2.5 rounded-lg bg-pink-600/20 border border-pink-600/50 text-pink-400 hover:bg-pink-600/30 transition-colors">
+                <Edit2 size={16} />
+              </button>
+              <button onClick={onRemove} title="Remove from want list" className="p-2.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 hover:bg-red-600/30 transition-colors">
+                <Trash2 size={16} />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -597,6 +1113,94 @@ function WantCard({ want, onRemove }: { want: WantItem; onRemove: () => void }) 
         <span className="px-2 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
           Max: {CONDITION_LABELS[want.maxCondition]}
         </span>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Edit Want dialog
+// ─────────────────────────────────────────────────────────────────────────────
+
+function EditWantDialog({
+  want,
+  onClose,
+  onSave,
+  isSaving,
+}: {
+  want: WantItem;
+  onClose: () => void;
+  onSave: (data: { priority: WantPriority; maxCondition: CardCondition; notes: string }) => void;
+  isSaving: boolean;
+}) {
+  const [priority, setPriority] = useState<WantPriority>(want.priority);
+  const [maxCondition, setMaxCondition] = useState<CardCondition>(want.maxCondition);
+  const [notes, setNotes] = useState(want.notes ?? "");
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-900 border-2 border-slate-700 rounded-3xl p-8 max-w-md w-full">
+        <h2 className="text-2xl font-black text-white mb-1">Edit Want</h2>
+        <p className="text-slate-400 text-sm mb-6">{want.card.name} · {want.card.setName}</p>
+
+        <div className="space-y-5">
+          <div>
+            <label className="block text-sm font-bold text-white mb-2">Priority</label>
+            <div className="flex gap-2">
+              {(["HIGH", "MEDIUM", "LOW"] as WantPriority[]).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPriority(p)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-colors ${
+                    priority === p ? PRIORITY_COLORS[p] : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-white mb-2">Max Acceptable Condition</label>
+            <select
+              value={maxCondition}
+              onChange={(e) => setMaxCondition(e.target.value as CardCondition)}
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white focus:border-pink-500 focus:outline-none"
+            >
+              {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-white mb-2">Notes <span className="text-slate-500 font-normal">(optional)</span></label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any specific details (e.g. 1st edition only, specific language…)"
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white placeholder:text-slate-500 focus:border-pink-500 focus:outline-none resize-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-8">
+          <button
+            onClick={onClose}
+            className="flex-1 px-6 py-4 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onSave({ priority, maxCondition, notes })}
+            disabled={isSaving}
+            className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold hover:from-pink-500 hover:to-purple-500 transition-all shadow-xl shadow-pink-500/30 disabled:opacity-50"
+          >
+            {isSaving ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
       </div>
     </div>
   );

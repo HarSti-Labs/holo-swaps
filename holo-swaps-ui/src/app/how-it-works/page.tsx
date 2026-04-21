@@ -184,23 +184,6 @@ const faqs = [
 export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
-      {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <span className="text-white font-black text-sm">H</span>
-            </div>
-            <span className="font-black text-white text-lg">HoloSwaps</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/auth/register" className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-bold hover:from-blue-500 hover:to-purple-500 transition-all">
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </header>
-
       <main>
         {/* Hero */}
         <section className="relative overflow-hidden py-20 px-4 text-center">
@@ -407,7 +390,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* FAQ */}
-        <section className="py-16 px-4 bg-slate-900/50 border-t border-slate-800">
+        <section id="faq" className="py-16 px-4 bg-slate-900/50 border-t border-slate-800">
           <div className="container mx-auto max-w-3xl">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-medium mb-4">

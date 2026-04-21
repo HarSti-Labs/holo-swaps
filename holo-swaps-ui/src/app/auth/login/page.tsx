@@ -11,7 +11,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const deleted = searchParams.get("deleted");
   const { login, isLoading } = useAuthStore();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -20,8 +20,9 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     try {
-      await login(email, password);
-      router.push("/dashboard");
+      await login(identifier, password);
+      const { user } = useAuthStore.getState();
+      router.push(user?.isAdmin ? "/admin/support" : "/dashboard");
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
@@ -31,7 +32,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950 relative overflow-hidden">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950 relative overflow-hidden">
       {/* Animated background orbs */}
       <div className="absolute top-0 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700" />
@@ -69,19 +70,24 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-bold text-white mb-2">Email</label>
+              <label className="block text-sm font-bold text-white mb-2">Email or Username</label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 required
-                placeholder="you@example.com"
+                placeholder="ProfessorOak"
                 className="w-full px-4 py-3.5 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-white mb-2">Password</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-bold text-white">Password</label>
+                <Link href="/auth/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}

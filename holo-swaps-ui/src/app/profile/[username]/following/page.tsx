@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Navbar } from "@/components/shared/Navbar";
 import { User } from "@/types";
 import api from "@/lib/api/client";
 import { Loader2, Users, ArrowLeft } from "lucide-react";
@@ -39,8 +38,6 @@ export default function FollowingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-      <Navbar />
-
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <button
           onClick={() => router.back()}

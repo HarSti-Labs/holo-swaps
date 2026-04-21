@@ -1,12 +1,14 @@
+"use client";
+
 import Link from "next/link";
-import { Navbar } from "@/components/shared/Navbar";
 import { ArrowRight, ShieldCheck, Repeat2, Sparkles, DollarSign } from "lucide-react";
+import { useAuthStore } from "@/lib/hooks/useAuth";
 
 export default function HomePage() {
+  const { isAuthenticated, user } = useAuthStore();
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       {/* Hero */}
       <section className="flex-1 flex flex-col items-center justify-center px-4 py-24 text-center relative overflow-hidden">
         {/* Background decoration */}
@@ -32,19 +34,41 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-            <Link
-              href="/auth/register"
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
-            >
-              Start trading free
-              <ArrowRight size={18} />
-            </Link>
-            <Link
-              href="/auth/login"
-              className="px-6 py-3 rounded-xl border border-border text-foreground font-medium hover:bg-muted transition-colors"
-            >
-              Sign in
-            </Link>
+            {isAuthenticated && user ? (
+              <>
+                <Link
+                  href={user.isAdmin ? "/admin/support" : "/dashboard"}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Go to {user.isAdmin ? "Support Board" : "Dashboard"}
+                  <ArrowRight size={18} />
+                </Link>
+                {!user.isAdmin && (
+                  <Link
+                    href="/collection"
+                    className="px-6 py-3 rounded-xl border border-border text-foreground font-medium hover:bg-muted transition-colors"
+                  >
+                    My Cards
+                  </Link>
+                )}
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/auth/register"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Start trading free
+                  <ArrowRight size={18} />
+                </Link>
+                <Link
+                  href="/auth/login"
+                  className="px-6 py-3 rounded-xl border border-border text-foreground font-medium hover:bg-muted transition-colors"
+                >
+                  Sign in
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -97,9 +121,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="py-8 px-4 border-t border-border text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} HoloSwaps. Built for collectors, by collectors.</p>
-      </footer>
     </div>
   );
 }

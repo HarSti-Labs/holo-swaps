@@ -149,6 +149,8 @@ export interface TradeMatch {
   youHave: MatchCard[];
   matchScore: number;
   valueDifference: number;
+  reputationScore: number;
+  tradeCount: number;
 }
 
 export interface MatchCard {

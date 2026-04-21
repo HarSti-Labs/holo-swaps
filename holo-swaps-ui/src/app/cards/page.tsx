@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { searchCards, getSets, SearchCardsParams } from "@/lib/api/cards";
-import { Navbar } from "@/components/shared/Navbar";
+import { searchCards, getSets, getRarities, SearchCardsParams } from "@/lib/api/cards";
 import { Input } from "@/components/ui/input";
 import { Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { Card } from "@/types";
@@ -13,6 +12,7 @@ export default function CardsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedSet, setSelectedSet] = useState("");
+  const [selectedRarity, setSelectedRarity] = useState("");
   const [page, setPage] = useState(1);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const limit = 20;
@@ -31,16 +31,24 @@ export default function CardsPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: raritiesData } = useQuery({
+    queryKey: ["rarities", selectedSet],
+    queryFn: () => getRarities(selectedSet || undefined),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const sets = setsData ?? [];
+  const rarities = raritiesData ?? [];
 
   const params: SearchCardsParams = {
     ...(debouncedQuery && { q: debouncedQuery }),
     ...(selectedSet && { setCode: selectedSet }),
+    ...(selectedRarity && { rarity: selectedRarity }),
     page,
     limit,
   };
 
-  const hasFilter = debouncedQuery.trim().length > 0 || selectedSet !== "";
+  const hasFilter = debouncedQuery.trim().length > 0 || selectedSet !== "" || selectedRarity !== "";
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["cards", params],
@@ -50,8 +58,6 @@ export default function CardsPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
-      <Navbar />
-
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Header with animated gradient */}
         <div className="mb-12 relative">
@@ -70,10 +76,10 @@ export default function CardsPage() {
           </div>
         </div>
 
-        {/* Search + Set filter */}
-        <div className="mb-10 flex flex-col sm:flex-row gap-3 max-w-3xl mx-auto">
+        {/* Search + Set + Rarity filters */}
+        <div className="mb-10 flex flex-col sm:flex-row gap-3 max-w-4xl mx-auto flex-wrap">
           {/* Search input */}
-          <div className="relative flex-1 group">
+          <div className="relative flex-1 min-w-[200px] group">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
             <div className="relative">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-blue-400 transition-colors" size={20} />
@@ -88,17 +94,34 @@ export default function CardsPage() {
           </div>
 
           {/* Set filter dropdown */}
-          <div className="relative sm:w-64">
+          <div className="relative sm:w-56">
             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
             <select
               value={selectedSet}
-              onChange={(e) => { setSelectedSet(e.target.value); setPage(1); }}
+              onChange={(e) => { setSelectedSet(e.target.value); setSelectedRarity(""); setPage(1); }}
               className="w-full h-14 pl-4 pr-10 rounded-2xl bg-slate-800 border-2 border-slate-600 hover:border-slate-400 hover:bg-slate-700 focus:border-slate-400 text-white appearance-none cursor-pointer transition-all outline-none shadow-2xl"
             >
               <option value="">All Sets</option>
               {sets.map((s) => (
                 <option key={s.setCode} value={s.setCode}>
                   {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Rarity filter dropdown */}
+          <div className="relative sm:w-48">
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+            <select
+              value={selectedRarity}
+              onChange={(e) => { setSelectedRarity(e.target.value); setPage(1); }}
+              className="w-full h-14 pl-4 pr-10 rounded-2xl bg-slate-800 border-2 border-slate-600 hover:border-slate-400 hover:bg-slate-700 focus:border-slate-400 text-white appearance-none cursor-pointer transition-all outline-none shadow-2xl"
+            >
+              <option value="">All Rarities</option>
+              {rarities.map((r) => (
+                <option key={r} value={r}>
+                  {r.replace(/\b\w/g, (c) => c.toUpperCase())}
                 </option>
               ))}
             </select>
@@ -128,7 +151,7 @@ export default function CardsPage() {
           <div className="text-center py-24">
             <div className="text-6xl mb-6">🔍</div>
             <p className="text-xl text-slate-400 font-semibold">Search or pick a set to get started</p>
-            <p className="text-slate-500 mt-2">Search by card name, or browse an entire set from the dropdown</p>
+            <p className="text-slate-500 mt-2">Search by name, filter by set, or narrow down by rarity</p>
           </div>
         )}
 

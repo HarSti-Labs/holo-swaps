@@ -97,6 +97,11 @@ export const collectionApi = {
     return res.data.data!;
   },
 
+  updateWant: async (wantId: string, data: Partial<Omit<AddWantPayload, "cardId">>): Promise<WantItem> => {
+    const res = await api.patch<ApiResponse<WantItem>>(`/wants/${wantId}`, data);
+    return res.data.data!;
+  },
+
   removeFromWants: async (wantId: string): Promise<void> => {
     await api.delete(`/wants/${wantId}`);
   },

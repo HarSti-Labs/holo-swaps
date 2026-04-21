@@ -2,7 +2,7 @@ import { api } from "./client";
 import { ApiResponse, User } from "@/types";
 
 export interface LoginPayload {
-  email: string;
+  identifier: string;
   password: string;
 }
 
@@ -58,5 +58,13 @@ export const authApi = {
 
   deleteAccount: async (password: string): Promise<void> => {
     await api.delete<ApiResponse<null>>("/auth/delete-account", { data: { password } });
+  },
+
+  forgotPassword: async (email: string): Promise<void> => {
+    await api.post<ApiResponse<null>>("/auth/forgot-password", { email });
+  },
+
+  resetPassword: async (token: string, newPassword: string): Promise<void> => {
+    await api.post<ApiResponse<null>>("/auth/reset-password", { token, newPassword });
   },
 };
