@@ -573,6 +573,8 @@ export class TradeService implements ITradeService {
           youHave,
           matchScore: theyHave.length + youHave.length,
           valueDifference: Math.abs(theyHaveValue - youHaveValue),
+          reputationScore: match.reputationScore,
+          tradeCount: match.tradeCount,
         };
       })
       .sort((a, b) => b.matchScore - a.matchScore);

@@ -23,6 +23,7 @@ import adminRoutes from "@/routes/adminRoutes";
 import listingRoutes from "@/routes/listingRoutes";
 import setRoutes from "@/routes/setRoutes";
 import uploadRoutes from "@/routes/uploadRoutes";
+import supportRoutes from "@/routes/supportRoutes";
 import { handleWebhook } from "@/controllers/stripeController";
 import { handleTrackingWebhook } from "@/controllers/trackingWebhookController";
 import { startTradeExpiryJob } from "@/jobs/tradeExpiryJob";
@@ -85,6 +86,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/sets", setRoutes);
 app.use("/api", uploadRoutes);
+app.use("/api/support", supportRoutes);
 
 // 404 and error handling — must be last
 app.use(notFound);

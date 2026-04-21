@@ -43,8 +43,8 @@ export class UserRepository implements IUserRepository {
   }
 
   async findByUsername(username: string): Promise<SafeUser | null> {
-    const user = await prisma.user.findUnique({
-      where: { username: username.toLowerCase() },
+    const user = await prisma.user.findFirst({
+      where: { username: { equals: username, mode: "insensitive" } },
       select: selectSafeUser,
     });
     return user as SafeUser | null;

@@ -52,6 +52,8 @@ export interface TradeMatch {
   }[];
   matchScore: number;
   valueDifference: number;
+  reputationScore: number;
+  tradeCount: number;
 }
 
 export interface CardPriceData {

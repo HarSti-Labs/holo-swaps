@@ -68,7 +68,12 @@ export class AuthService implements IAuthService {
   }
 
   async login(data: LoginData, deviceInfo?: string): Promise<LoginResult> {
-    const user = await this.userRepository.findByEmail(data.email);
+    const isEmail = data.identifier.includes("@");
+    const user = isEmail
+      ? await this.userRepository.findByEmail(data.identifier)
+      : await prisma.user.findFirst({
+          where: { username: { equals: data.identifier, mode: "insensitive" } },
+        });
     if (!user) throw ApiError.unauthorized("Invalid email or password");
     if (user.isBanned) throw ApiError.forbidden("Your account has been suspended");
 

@@ -5,6 +5,7 @@ import { ApiError } from "@/utils/ApiError";
 import { prisma } from "@/config/prisma";
 import { TradeStatus } from "@prisma/client";
 import { AuthenticatedRequest } from "@/types";
+import { listAllTickets } from "@/controllers/supportController";
 
 const router = Router();
 
@@ -142,6 +143,9 @@ router.get("/reports", async (req: Request, res: Response) => {
 
   sendSuccess(res, { data, total, page, limit, totalPages: Math.ceil(total / limit) });
 });
+
+// GET /api/admin/support
+router.get("/support", listAllTickets);
 
 // PATCH /api/admin/reports/:reportId/resolve
 router.patch("/reports/:reportId/resolve", async (req: AuthenticatedRequest, res: Response) => {

@@ -392,8 +392,8 @@ export const getPublicCollection = async (
 ): Promise<void> => {
   const { username } = req.params;
 
-  const targetUser = await prisma.user.findUnique({
-    where: { username },
+  const targetUser = await prisma.user.findFirst({
+    where: { username: { equals: username, mode: "insensitive" } },
     select: { id: true, isBanned: true, collectionVisibility: true },
   });
   if (!targetUser || targetUser.isBanned) throw ApiError.notFound("User not found");

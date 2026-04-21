@@ -114,6 +114,12 @@ enum PriceAlertDirection {
   BELOW
 }
 
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
 enum CollectionVisibility {
   PUBLIC
   PRIVATE
@@ -205,6 +211,8 @@ model User {
   reportsReceived       UserReport[]           @relation("Reported")
   following             UserFollow[]           @relation("Follower")
   followers             UserFollow[]           @relation("Following")
+  supportTickets        SupportTicket[]
+  supportMessages       SupportTicketMessage[]
 
   @@map("users")
 }
@@ -711,4 +719,41 @@ model UserFollow {
   @@index([followerId])
   @@index([followingId])
   @@map("user_follows")
+}
+
+model SupportTicket {
+  id           String              @id @default(uuid())
+  ticketNumber String              @unique
+  userId       String?
+  email        String
+  category     String
+  urgency      String
+  subject      String
+  description  String
+  tradeCode    String?
+  userAgent    String?
+  status       SupportTicketStatus @default(OPEN)
+  createdAt    DateTime            @default(now())
+
+  user         User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages     SupportTicketMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("support_tickets")
+}
+
+model SupportTicketMessage {
+  id           String   @id @default(uuid())
+  ticketId     String
+  authorId     String?
+  body         String
+  isAdminReply Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author       User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId])
+  @@map("support_ticket_messages")
 }

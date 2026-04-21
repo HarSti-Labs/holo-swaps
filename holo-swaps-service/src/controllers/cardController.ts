@@ -38,6 +38,7 @@ const searchSchema = z.object({
   game: z.nativeEnum(CardGame).optional(),
   setCode: z.string().optional(),
   setName: z.string().optional(),
+  rarity: z.string().optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
@@ -49,7 +50,7 @@ export const searchCards = async (req: Request, res: Response): Promise<void> =>
     throw ApiError.badRequest("Invalid query parameters");
   }
 
-  const { q, game, setCode, setName, page, limit } = parsed.data;
+  const { q, game, setCode, setName, rarity, page, limit } = parsed.data;
   const skip = (page - 1) * limit;
 
   const where = {
@@ -57,6 +58,7 @@ export const searchCards = async (req: Request, res: Response): Promise<void> =>
     ...(game && { game }),
     ...(setCode && { setCode }),
     ...(setName && { setName: { contains: setName, mode: "insensitive" as const } }),
+    ...(rarity && { rarity: { equals: rarity, mode: "insensitive" as const } }),
   };
 
   const [data, total] = await prisma.$transaction([
@@ -171,6 +173,20 @@ export const getCardHolders = async (req: Request, res: Response): Promise<void>
     limit,
     totalPages: Math.ceil(total / limit),
   });
+};
+
+// GET /api/cards/rarities?setCode=XXX
+export const getRarities = async (req: Request, res: Response): Promise<void> => {
+  const { setCode } = req.query;
+  const where = setCode ? { setCode: setCode as string, rarity: { not: null } } : { rarity: { not: null } };
+  const rows = await prisma.card.findMany({
+    where,
+    select: { rarity: true },
+    distinct: ["rarity"],
+    orderBy: { rarity: "asc" },
+  });
+  const rarities = rows.map((r) => r.rarity).filter(Boolean) as string[];
+  sendSuccess(res, rarities);
 };
 
 // GET /api/cards/:cardId/price

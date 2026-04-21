@@ -22,6 +22,24 @@ export const authenticate = async (
   next();
 };
 
+// Attaches req.user if a valid token is present, but does not block unauthenticated requests.
+export const optionalAuthenticate = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith("Bearer ")) {
+    try {
+      const token = authHeader.split(" ")[1];
+      req.user = await authService.verifyToken(token);
+    } catch {
+      // Invalid token — proceed as unauthenticated
+    }
+  }
+  next();
+};
+
 export const requireAdmin = (
   req: AuthenticatedRequest,
   res: Response,
