@@ -7,7 +7,7 @@ import {
 } from "@/repositories/interfaces/IUserRepository";
 import { SafeUser } from "@/types";
 
-const selectSafeUser = {
+export const selectSafeUser = {
   id: true,
   email: true,
   username: true,
@@ -27,6 +27,7 @@ const selectSafeUser = {
   emailOnTradeAccepted: true,
   emailOnTradeDeclined: true,
   emailOnTradeCancelled: true,
+  emailOnTradeMessage: true,
   createdAt: true,
   updatedAt: true,
   passwordHash: false,

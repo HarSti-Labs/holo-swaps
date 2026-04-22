@@ -92,6 +92,7 @@ export const me = async (req: AuthenticatedRequest, res: Response): Promise<void
       emailOnTradeAccepted: true,
       emailOnTradeDeclined: true,
       emailOnTradeCancelled: true,
+      emailOnTradeMessage: true,
       createdAt: true,
     },
   });

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { CONDITION_LABELS } from "@/types";
+import { CounterOfferModal } from "@/components/trades/CounterOfferModal";
 
 const STATUS_LABELS: Record<TradeStatus, string> = {
   PROPOSED: "Proposed",
@@ -64,12 +65,10 @@ export default function TradeDetailPage() {
   const [isAccepting, setIsAccepting] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [showCounterForm, setShowCounterForm] = useState(false);
-  const [counterCash, setCounterCash] = useState("");
-  const [counterMessage, setCounterMessage] = useState("");
-  const [isCountering, setIsCountering] = useState(false);
+  const [showCounterModal, setShowCounterModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageCountRef = useRef(0);
+  const messagesInitializedRef = useRef(false);
 
   useEffect(() => {
     if (user) {
@@ -82,6 +81,11 @@ export default function TradeDetailPage() {
   }, [user, tradeId]);
 
   useEffect(() => {
+    if (!messagesInitializedRef.current) {
+      messagesInitializedRef.current = true;
+      messageCountRef.current = messages.length;
+      return;
+    }
     if (messages.length > messageCountRef.current) {
       scrollToBottom();
     }
@@ -172,27 +176,7 @@ export default function TradeDetailPage() {
     }
   };
 
-  const handleCounter = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsCountering(true);
-    try {
-      const cashNum = parseFloat(counterCash) || 0;
-      await tradesApi.counter(tradeId, {
-        cashAdjustment: cashNum,
-        message: counterMessage.trim() || undefined,
-      });
-      setShowCounterForm(false);
-      setCounterCash("");
-      setCounterMessage("");
-      await loadTrade();
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to send counter offer");
-    } finally {
-      setIsCountering(false);
-    }
-  };
-
-  if (!user) {
+if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
           <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -269,10 +253,10 @@ export default function TradeDetailPage() {
                   <h3 className="text-sm font-semibold text-slate-400 mb-3">
                     You're Trading
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                     {myItems.map((item) => {
                       const card =
-                        item.proposerCollection || item.receiverCollection;
+                        (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
                       if (!card) return null;
 
                       return (
@@ -284,18 +268,18 @@ export default function TradeDetailPage() {
                             <img
                               src={card.card.imageUrl}
                               alt={card.card.name}
-                              className="w-16 h-20 object-cover rounded"
+                              className="w-16 h-20 object-cover rounded flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-16 h-20 bg-slate-700 rounded flex items-center justify-center">
+                            <div className="w-16 h-20 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
                               <Package className="h-8 w-8 text-slate-500" />
                             </div>
                           )}
-                          <div className="flex-1">
-                            <p className="font-semibold text-sm">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate">
                               {card.card.name}
                             </p>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-slate-400 truncate">
                               {card.card.setName}
                             </p>
                             <p className="text-xs text-slate-500">
@@ -309,17 +293,6 @@ export default function TradeDetailPage() {
                         </div>
                       );
                     })}
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-slate-700">
-                    <p className="text-sm text-slate-400">
-                      Total Value:{" "}
-                      <span className="text-white font-semibold">
-                        $
-                        {isProposer
-                          ? trade.proposerMarketValue.toFixed(2)
-                          : trade.receiverMarketValue.toFixed(2)}
-                      </span>
-                    </p>
                   </div>
                 </div>
 
@@ -328,10 +301,10 @@ export default function TradeDetailPage() {
                   <h3 className="text-sm font-semibold text-slate-400 mb-3">
                     You're Receiving
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                     {theirItems.map((item) => {
                       const card =
-                        item.proposerCollection || item.receiverCollection;
+                        (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
                       if (!card) return null;
 
                       return (
@@ -343,18 +316,18 @@ export default function TradeDetailPage() {
                             <img
                               src={card.card.imageUrl}
                               alt={card.card.name}
-                              className="w-16 h-20 object-cover rounded"
+                              className="w-16 h-20 object-cover rounded flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-16 h-20 bg-slate-700 rounded flex items-center justify-center">
+                            <div className="w-16 h-20 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
                               <Package className="h-8 w-8 text-slate-500" />
                             </div>
                           )}
-                          <div className="flex-1">
-                            <p className="font-semibold text-sm">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate">
                               {card.card.name}
                             </p>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-slate-400 truncate">
                               {card.card.setName}
                             </p>
                             <p className="text-xs text-slate-500">
@@ -369,31 +342,52 @@ export default function TradeDetailPage() {
                       );
                     })}
                   </div>
-                  <div className="mt-3 pt-3 border-t border-slate-700">
-                    <p className="text-sm text-slate-400">
-                      Total Value:{" "}
-                      <span className="text-white font-semibold">
-                        $
-                        {isProposer
-                          ? trade.receiverMarketValue.toFixed(2)
-                          : trade.proposerMarketValue.toFixed(2)}
-                      </span>
-                    </p>
-                  </div>
                 </div>
               </div>
 
-              {/* Value Difference */}
-              <div className="mt-6 pt-6 border-t border-slate-700">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">
-                    Value Difference:
-                  </span>
-                  <span className="text-lg font-bold text-yellow-400">
-                    ${Math.abs(trade.valueDifference).toFixed(2)}
-                  </span>
-                </div>
-              </div>
+              {/* Trade Summary — always aligned at the bottom */}
+              {(() => {
+                const myMarketValue = isProposer ? trade.proposerMarketValue : trade.receiverMarketValue;
+                const theirMarketValue = isProposer ? trade.receiverMarketValue : trade.proposerMarketValue;
+                const iPayCash = trade.cashDifference > 0 && trade.cashPayerId === user.id;
+                const theyPayCash = trade.cashDifference > 0 && trade.cashPayerId !== user.id;
+                const myTotal = myMarketValue + (iPayCash ? trade.cashDifference : 0);
+                const theirTotal = theirMarketValue + (theyPayCash ? trade.cashDifference : 0);
+                const netValue = theirTotal - myTotal;
+                const isEven = Math.abs(netValue) < 0.5;
+                return (
+                  <div className="mt-6 pt-5 border-t border-slate-700 space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-800/50 rounded-lg p-3">
+                        <p className="text-xs text-slate-500 mb-1">You're offering</p>
+                        <p className="text-lg font-bold text-white">${myMarketValue.toFixed(2)}</p>
+                        {iPayCash && (
+                          <p className="text-xs text-amber-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash</p>
+                        )}
+                        <p className="text-xs text-slate-500 mt-1">{myItems.length} card{myItems.length !== 1 ? "s" : ""}</p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-3">
+                        <p className="text-xs text-slate-500 mb-1">You're receiving</p>
+                        <p className="text-lg font-bold text-white">${theirMarketValue.toFixed(2)}</p>
+                        {theyPayCash && (
+                          <p className="text-xs text-green-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash from them</p>
+                        )}
+                        <p className="text-xs text-slate-500 mt-1">{theirItems.length} card{theirItems.length !== 1 ? "s" : ""}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-sm text-slate-400">Trade Balance</span>
+                      {isEven ? (
+                        <span className="text-sm font-semibold text-green-400">Even trade</span>
+                      ) : netValue > 0 ? (
+                        <span className="text-sm font-semibold text-blue-400">+${netValue.toFixed(2)} in your favor</span>
+                      ) : (
+                        <span className="text-sm font-semibold text-amber-400">+${Math.abs(netValue).toFixed(2)} in their favor</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Action Buttons */}
@@ -422,7 +416,7 @@ export default function TradeDetailPage() {
                   )}
                   {canCounter && (
                     <button
-                      onClick={() => setShowCounterForm((v) => !v)}
+                      onClick={() => setShowCounterModal(true)}
                       className="flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-medium transition-colors"
                     >
                       <RefreshCw className="h-4 w-4" />
@@ -469,80 +463,6 @@ export default function TradeDetailPage() {
                   )}
                 </div>
 
-                {/* Counter Offer Form */}
-                {showCounterForm && (
-                  <form
-                    onSubmit={handleCounter}
-                    className="border-t border-slate-700 pt-4 space-y-4"
-                  >
-                    <h4 className="text-sm font-semibold text-orange-400">Send Counter Offer</h4>
-                    <div>
-                      <label className="block text-xs text-slate-400 mb-1">
-                        Cash to add (optional)
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                          $
-                        </span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={counterCash}
-                          onChange={(e) => setCounterCash(e.target.value)}
-                          placeholder="0.00"
-                          className="w-full pl-7 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                        />
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Amount you'll add on top of your cards to sweeten the deal
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-400 mb-1">
-                        Message (optional)
-                      </label>
-                      <textarea
-                        value={counterMessage}
-                        onChange={(e) => setCounterMessage(e.target.value)}
-                        rows={2}
-                        maxLength={500}
-                        placeholder="Explain your counter offer..."
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        disabled={isCountering}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 disabled:bg-orange-800 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
-                      >
-                        {isCountering ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Sending...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="h-4 w-4" />
-                            Send Counter
-                          </>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowCounterForm(false);
-                          setCounterCash("");
-                          setCounterMessage("");
-                        }}
-                        className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium text-sm transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                )}
               </div>
             )}
           </div>
@@ -636,6 +556,16 @@ export default function TradeDetailPage() {
           </div>
         </div>
       </main>
+
+      {trade && (
+        <CounterOfferModal
+          isOpen={showCounterModal}
+          onClose={() => setShowCounterModal(false)}
+          trade={trade}
+          currentUserId={user.id}
+          onSuccess={loadTrade}
+        />
+      )}
     </div>
   );
 }

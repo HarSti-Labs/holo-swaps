@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { tradesApi } from "@/lib/api/trades";
 import { Trade, TradeStatus } from "@/types";
@@ -38,11 +38,15 @@ const STATUS_COLORS: Record<TradeStatus, string> = {
 
 export default function TradesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuthStore();
 
   const [trades, setTrades] = useState<Trade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+  const initialFilter = (searchParams.get("filter") as "all" | "active" | "completed") ?? "all";
+  const [filter, setFilter] = useState<"all" | "active" | "completed">(
+    ["all", "active", "completed"].includes(initialFilter) ? initialFilter : "all"
+  );
 
   useEffect(() => {
     if (user) {

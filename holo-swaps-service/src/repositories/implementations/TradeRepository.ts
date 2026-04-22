@@ -5,10 +5,11 @@ import {
   CreateTradeData,
 } from "@/repositories/interfaces/ITradeRepository";
 import { PaginatedResult, PaginationParams } from "@/types";
+import { selectSafeUser } from "./UserRepository";
 
 const tradeInclude = {
-  proposer: { omit: { passwordHash: true } },
-  receiver: { omit: { passwordHash: true } },
+  proposer: { select: selectSafeUser },
+  receiver: { select: selectSafeUser },
   items: {
     include: {
       collectionItem: {
@@ -18,7 +19,7 @@ const tradeInclude = {
   },
   shipments: true,
   verifications: { include: { media: true } },
-  offers: { include: { offeredBy: { omit: { passwordHash: true } } } },
+  offers: { include: { offeredBy: { select: selectSafeUser } } },
 };
 
 export class TradeRepository implements ITradeRepository {

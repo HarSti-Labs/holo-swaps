@@ -6,6 +6,7 @@ import { z } from "zod";
 import { prisma } from "@/config/prisma";
 import { TradeStatus } from "@prisma/client";
 import { recalculateTier } from "@/utils/tierUtils";
+import { selectSafeUser } from "@/repositories/implementations/UserRepository";
 
 const reviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
@@ -53,7 +54,7 @@ export const submitReview = async (
       subjectId,
       ...parsed.data,
     },
-    include: { author: { omit: { passwordHash: true } } },
+    include: { author: { select: selectSafeUser } },
   });
 
   // Recalculate reputation score for the reviewed user

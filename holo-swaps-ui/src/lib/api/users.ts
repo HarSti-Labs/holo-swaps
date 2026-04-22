@@ -1,6 +1,12 @@
 import { api } from "./client";
 import { ApiResponse, User, PaginatedResult, CollectionItem } from "@/types";
 
+export interface ReportPayload {
+  reason: string;
+  details?: string;
+  tradeId?: string;
+}
+
 export const usersApi = {
   getProfile: async (username: string): Promise<User> => {
     const res = await api.get<ApiResponse<User>>(`/users/${username}`);
@@ -21,6 +27,18 @@ export const usersApi = {
 
   unfollow: async (userId: string): Promise<void> => {
     await api.delete(`/users/${userId}/follow`);
+  },
+
+  block: async (userId: string): Promise<void> => {
+    await api.post(`/users/${userId}/block`);
+  },
+
+  unblock: async (userId: string): Promise<void> => {
+    await api.delete(`/users/${userId}/block`);
+  },
+
+  report: async (userId: string, payload: ReportPayload): Promise<void> => {
+    await api.post(`/users/${userId}/report`, payload);
   },
 
   getFollowers: async (username: string, page = 1, limit = 20): Promise<PaginatedResult<User>> => {

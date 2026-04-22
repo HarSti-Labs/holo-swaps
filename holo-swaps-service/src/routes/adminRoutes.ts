@@ -6,6 +6,11 @@ import { prisma } from "@/config/prisma";
 import { TradeStatus } from "@prisma/client";
 import { AuthenticatedRequest } from "@/types";
 import { listAllTickets } from "@/controllers/supportController";
+import { selectSafeUser } from "@/repositories/implementations/UserRepository";
+import { EmailService } from "@/services/implementations/EmailService";
+import { config } from "@/config";
+
+const emailService = new EmailService();
 
 const router = Router();
 
@@ -30,7 +35,7 @@ router.get("/users", async (req: Request, res: Response) => {
   const [data, total] = await prisma.$transaction([
     prisma.user.findMany({
       where,
-      omit: { passwordHash: true },
+      select: selectSafeUser,
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },
@@ -50,7 +55,7 @@ router.patch("/users/:userId/ban", async (req: Request, res: Response) => {
   const updated = await prisma.user.update({
     where: { id: req.params.userId },
     data: { isBanned: true },
-    omit: { passwordHash: true },
+    select: selectSafeUser,
   });
 
   sendSuccess(res, updated, "User banned");
@@ -61,7 +66,7 @@ router.patch("/users/:userId/unban", async (req: Request, res: Response) => {
   const updated = await prisma.user.update({
     where: { id: req.params.userId },
     data: { isBanned: false },
-    omit: { passwordHash: true },
+    select: selectSafeUser,
   });
 
   sendSuccess(res, updated, "User unbanned");
@@ -80,8 +85,8 @@ router.get("/trades", async (req: Request, res: Response) => {
     prisma.trade.findMany({
       where,
       include: {
-        proposer: { omit: { passwordHash: true } },
-        receiver: { omit: { passwordHash: true } },
+        proposer: { select: selectSafeUser },
+        receiver: { select: selectSafeUser },
         dispute: true,
       },
       skip,
@@ -105,11 +110,11 @@ router.get("/disputes", async (req: Request, res: Response) => {
       include: {
         trade: {
           include: {
-            proposer: { omit: { passwordHash: true } },
-            receiver: { omit: { passwordHash: true } },
+            proposer: { select: selectSafeUser },
+            receiver: { select: selectSafeUser },
           },
         },
-        openedBy: { omit: { passwordHash: true } },
+        openedBy: { select: selectSafeUser },
         evidence: true,
       },
       skip,
@@ -131,8 +136,9 @@ router.get("/reports", async (req: Request, res: Response) => {
   const [data, total] = await prisma.$transaction([
     prisma.userReport.findMany({
       include: {
-        reporter: { omit: { passwordHash: true } },
-        reported: { omit: { passwordHash: true } },
+        reporter: { select: selectSafeUser },
+        reported: { select: selectSafeUser },
+        messages: { orderBy: { createdAt: "asc" } },
       },
       skip,
       take: limit,
@@ -144,20 +150,82 @@ router.get("/reports", async (req: Request, res: Response) => {
   sendSuccess(res, { data, total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
+// GET /api/admin/reports/:reportId
+router.get("/reports/:reportId", async (req: Request, res: Response) => {
+  const report = await prisma.userReport.findUnique({
+    where: { id: req.params.reportId },
+    include: {
+      reporter: { select: selectSafeUser },
+      reported: { select: selectSafeUser },
+      messages: { orderBy: { createdAt: "asc" } },
+    },
+  });
+  if (!report) throw ApiError.notFound("Report not found");
+  sendSuccess(res, report);
+});
+
+// POST /api/admin/reports/:reportId/messages
+router.post("/reports/:reportId/messages", async (req: AuthenticatedRequest, res: Response) => {
+  const { body } = req.body;
+  if (!body?.trim()) throw ApiError.badRequest("Message body is required");
+
+  const report = await prisma.userReport.findUnique({
+    where: { id: req.params.reportId },
+    include: { reporter: { select: { email: true, username: true } } },
+  });
+  if (!report) throw ApiError.notFound("Report not found");
+
+  const message = await prisma.userReportMessage.create({
+    data: { reportId: report.id, body: body.trim(), isAdminReply: true },
+  });
+
+  const reportUrl = `${config.frontend.url}/admin/reports/${report.id}`;
+  emailService.sendReportAdminReplyEmail(
+    report.reporter.email,
+    report.reporter.username,
+    body.trim(),
+    reportUrl
+  ).catch(() => {});
+
+  sendSuccess(res, message, "Message sent");
+});
+
 // GET /api/admin/support
 router.get("/support", listAllTickets);
 
 // PATCH /api/admin/reports/:reportId/resolve
 router.patch("/reports/:reportId/resolve", async (req: AuthenticatedRequest, res: Response) => {
+  const { note } = req.body;
+
   const report = await prisma.userReport.findUnique({
     where: { id: req.params.reportId },
+    include: {
+      reporter: { select: { email: true, username: true } },
+      reported: { select: { username: true } },
+    },
   });
   if (!report) throw ApiError.notFound("Report not found");
 
   const updated = await prisma.userReport.update({
     where: { id: req.params.reportId },
-    data: { isResolved: true },
+    data: {
+      isResolved: true,
+      resolvedNote: note?.trim() || null,
+    },
+    include: {
+      reporter: { select: selectSafeUser },
+      reported: { select: selectSafeUser },
+      messages: { orderBy: { createdAt: "asc" } },
+    },
   });
+
+  emailService.sendReportResolvedEmail(
+    report.reporter.email,
+    report.reporter.username,
+    report.reported.username,
+    report.reason,
+    note?.trim() || null
+  ).catch(() => {});
 
   sendSuccess(res, updated, "Report resolved");
 });

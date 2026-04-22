@@ -183,32 +183,108 @@ export class TradeService implements ITradeService {
       throw ApiError.badRequest("This trade cannot be countered at this stage");
     }
 
-    // Compute net cash from the two independent offers
-    const proposerCashAdd = data.proposerCashAdd ?? 0;
-    const receiverCashAdd = data.receiverCashAdd ?? 0;
-    const netCash = proposerCashAdd - receiverCashAdd;
-    const cashPayerId =
-      netCash > 0 ? trade.proposerId : netCash < 0 ? trade.receiverId : undefined;
+    const isProposer = userId === trade.proposerId;
 
-    await prisma.$transaction([
-      prisma.tradeOffer.create({
+    // The countering user sets their own side's card list and cash
+    const newMyItemIds = isProposer ? data.proposerCollectionItemIds : data.receiverCollectionItemIds;
+    const myCashAdd = isProposer ? (data.proposerCashAdd ?? 0) : (data.receiverCashAdd ?? 0);
+
+    // Current items for my side
+    const tradeItems = trade.items as any[];
+    const currentMyItems = tradeItems.filter((i) => i.ownedByProposer === isProposer);
+    const currentMyItemIds = currentMyItems.map((i: any) => i.collectionItemId as string);
+
+    let toRemoveIds: string[] = [];
+    let toAddIds: string[] = [];
+    let newMarketValue = isProposer ? trade.proposerMarketValue : trade.receiverMarketValue;
+
+    if (newMyItemIds && newMyItemIds.length > 0) {
+      if (newMyItemIds.length === 0) {
+        throw ApiError.badRequest("You must include at least one card on your side");
+      }
+
+      toRemoveIds = currentMyItemIds.filter((id) => !newMyItemIds.includes(id));
+      toAddIds = newMyItemIds.filter((id) => !currentMyItemIds.includes(id));
+
+      // Validate new cards belong to user and are available
+      if (toAddIds.length > 0) {
+        const validNewItems = await prisma.userCollection.findMany({
+          where: { id: { in: toAddIds }, userId, status: CardStatus.AVAILABLE },
+        });
+        if (validNewItems.length !== toAddIds.length) {
+          throw ApiError.badRequest("One or more of your cards are not available for trade");
+        }
+      }
+
+      // Recalculate market value from the full new item set
+      const allMyNewItems = await prisma.userCollection.findMany({
+        where: { id: { in: newMyItemIds } },
+        select: { currentMarketValue: true },
+      });
+      newMarketValue = allMyNewItems.reduce((sum, i) => sum + (i.currentMarketValue ?? 0), 0);
+    }
+
+    // The counter offer replaces cash terms: countering user sets their own cash,
+    // other side's cash is cleared to 0 (they can counter again if they want to add cash)
+    const proposerCashAdd = isProposer ? myCashAdd : 0;
+    const receiverCashAdd = isProposer ? 0 : myCashAdd;
+    const netCash = proposerCashAdd - receiverCashAdd;
+    const cashPayerId = netCash > 0 ? trade.proposerId : netCash < 0 ? trade.receiverId : undefined;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.tradeOffer.create({
         data: {
           tradeId,
           offeredById: userId,
-          cashAdjustment: netCash, // store the signed net for history
+          cashAdjustment: netCash,
           message: data.message,
         },
-      }),
-      // Write the new cash terms onto the Trade row so acceptTrade always reads current values
-      prisma.trade.update({
+      });
+
+      await tx.trade.update({
         where: { id: tradeId },
         data: {
           cashDifference: Math.abs(netCash),
           cashPayerId: cashPayerId ?? null,
           status: TradeStatus.COUNTERED,
+          proposerMarketValue: isProposer ? newMarketValue : trade.proposerMarketValue,
+          receiverMarketValue: isProposer ? trade.receiverMarketValue : newMarketValue,
         },
-      }),
-    ]);
+      });
+
+      if (newMyItemIds && newMyItemIds.length > 0) {
+        // Unlock and delete removed items
+        if (toRemoveIds.length > 0) {
+          await tx.userCollection.updateMany({
+            where: { id: { in: toRemoveIds } },
+            data: { status: CardStatus.AVAILABLE, lockedByTradeId: null },
+          });
+          await tx.tradeItem.deleteMany({
+            where: { tradeId, collectionItemId: { in: toRemoveIds } },
+          });
+        }
+
+        // Lock and create new items
+        if (toAddIds.length > 0) {
+          const newItemValues = await tx.userCollection.findMany({
+            where: { id: { in: toAddIds } },
+            select: { id: true, currentMarketValue: true },
+          });
+          await tx.userCollection.updateMany({
+            where: { id: { in: toAddIds } },
+            data: { status: CardStatus.IN_TRADE, lockedByTradeId: tradeId },
+          });
+          await tx.tradeItem.createMany({
+            data: toAddIds.map((id) => ({
+              tradeId,
+              collectionItemId: id,
+              ownedByProposer: isProposer,
+              valueAtTimeOfTrade: newItemValues.find((i) => i.id === id)?.currentMarketValue,
+            })),
+          });
+        }
+      }
+    });
 
     const updated = await this.tradeRepository.findById(tradeId) as Trade;
 

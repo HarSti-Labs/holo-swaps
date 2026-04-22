@@ -124,6 +124,23 @@ User A proposes a trade to User B
 
 ---
 
+## 3b. Email Notification Preferences
+
+Every user has 5 boolean flags (all default `true`):
+```
+emailOnTradeProposed
+emailOnTradeCountered
+emailOnTradeAccepted
+emailOnTradeDeclined
+emailOnTradeCancelled
+```
+
+Before sending any trade lifecycle email, `TradeService` fetches the recipient's latest user record and checks the relevant flag. If `false`, the email is skipped silently. The in-app `Notification` record is always created regardless of email preference.
+
+Users can toggle these in Settings → Email Notifications. `PATCH /api/users/me` accepts the 5 booleans.
+
+---
+
 ## 4. Counter Offer
 
 ```

@@ -25,7 +25,7 @@ export function TradeCard({ trade, className }: TradeCardProps) {
   );
 
   return (
-    <Link href={`/trade/${trade.id}`}>
+    <Link href={`/trades/${trade.id}`}>
       <div
         className={cn(
           "bg-card border border-border rounded-xl p-4 card-hover cursor-pointer",

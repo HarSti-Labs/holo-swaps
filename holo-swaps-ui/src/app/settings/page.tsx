@@ -69,6 +69,7 @@ export default function SettingsPage() {
     emailOnTradeAccepted: true,
     emailOnTradeDeclined: true,
     emailOnTradeCancelled: true,
+    emailOnTradeMessage: true,
   });
   const [isSavingEmailPrefs, setIsSavingEmailPrefs] = useState(false);
   const [emailPrefsSaved, setEmailPrefsSaved] = useState(false);
@@ -182,6 +183,7 @@ export default function SettingsPage() {
         emailOnTradeAccepted: user.emailOnTradeAccepted ?? true,
         emailOnTradeDeclined: user.emailOnTradeDeclined ?? true,
         emailOnTradeCancelled: user.emailOnTradeCancelled ?? true,
+        emailOnTradeMessage: user.emailOnTradeMessage ?? true,
       });
       fetchAddresses();
     }
@@ -566,6 +568,7 @@ export default function SettingsPage() {
               { key: "emailOnTradeAccepted", label: "Trade accepted" },
               { key: "emailOnTradeDeclined", label: "Trade declined" },
               { key: "emailOnTradeCancelled", label: "Trade cancelled" },
+              { key: "emailOnTradeMessage", label: "New message in a trade" },
             ] as const).map(({ key, label }) => (
               <label key={key} className="flex items-center gap-3 cursor-pointer">
                 <input

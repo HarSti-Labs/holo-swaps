@@ -1,12 +1,15 @@
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "@/types";
-import { UserRepository } from "@/repositories/implementations/UserRepository";
+import { UserRepository, selectSafeUser } from "@/repositories/implementations/UserRepository";
 import { sendSuccess } from "@/utils/response";
 import { ApiError } from "@/utils/ApiError";
 import { z } from "zod";
 import { prisma } from "@/config/prisma";
 import { CollectionRepository } from "@/repositories/implementations/CollectionRepository";
 import { CardStatus } from "@prisma/client";
+import { EmailService } from "@/services/implementations/EmailService";
+
+const emailService = new EmailService();
 
 const collectionRepo = new CollectionRepository();
 
@@ -28,6 +31,7 @@ const updateProfileSchema = z.object({
   emailOnTradeAccepted: z.boolean().optional(),
   emailOnTradeDeclined: z.boolean().optional(),
   emailOnTradeCancelled: z.boolean().optional(),
+  emailOnTradeMessage: z.boolean().optional(),
 });
 
 const addressSchema = z.object({
@@ -69,18 +73,20 @@ export const getPublicProfile = async (
     prisma.userFollow.count({ where: { followerId: user.id } }),
   ]);
 
-  // Check following status separately (not a Prisma promise chain)
+  // Check following + blocked status (only when authenticated)
   let isFollowing = false;
+  let isBlocked = false;
   if (currentUserId) {
-    const followRecord = await prisma.userFollow.findUnique({
-      where: {
-        followerId_followingId: {
-          followerId: currentUserId,
-          followingId: user.id,
-        },
-      },
-    });
+    const [followRecord, blockRecord] = await Promise.all([
+      prisma.userFollow.findUnique({
+        where: { followerId_followingId: { followerId: currentUserId, followingId: user.id } },
+      }),
+      prisma.userBlock.findUnique({
+        where: { blockerId_blockedId: { blockerId: currentUserId, blockedId: user.id } },
+      }),
+    ]);
     isFollowing = !!followRecord;
+    isBlocked = !!blockRecord;
   }
 
   sendSuccess(res, {
@@ -96,6 +102,7 @@ export const getPublicProfile = async (
     followerCount,
     followingCount,
     isFollowing,
+    isBlocked,
     createdAt: user.createdAt,
   });
 };
@@ -287,6 +294,21 @@ export const reportUser = async (
     data: { reporterId: req.user!.id, reportedId: userId, ...parsed.data },
   });
 
+  // Fire-and-forget: email all admins
+  const reportsUrl = `${process.env.FRONTEND_URL}/admin/reports`;
+  prisma.user.findMany({ where: { isAdmin: true }, select: { email: true } }).then((admins) => {
+    for (const admin of admins) {
+      emailService.sendUserReportEmail(
+        admin.email,
+        req.user!.username,
+        target.username,
+        parsed.data.reason,
+        parsed.data.details ?? null,
+        reportsUrl
+      );
+    }
+  }).catch(() => {});
+
   sendSuccess(res, null, "Report submitted");
 };
 
@@ -459,7 +481,7 @@ export const getUserReviews = async (
   const [data, total] = await prisma.$transaction([
     prisma.tradeReview.findMany({
       where: { subjectId: user.id },
-      include: { author: { omit: { passwordHash: true } } },
+      include: { author: { select: selectSafeUser } },
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },

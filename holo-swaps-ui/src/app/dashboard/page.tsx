@@ -43,6 +43,7 @@ export default function DashboardPage() {
               icon: Repeat2,
               color: "text-primary",
               bg: "bg-primary/10",
+              href: "/trades",
             },
             {
               label: "Active Trades",
@@ -50,6 +51,7 @@ export default function DashboardPage() {
               icon: Clock,
               color: "text-yellow-500",
               bg: "bg-yellow-500/10",
+              href: "/trades?filter=active",
             },
             {
               label: "Completed",
@@ -57,6 +59,7 @@ export default function DashboardPage() {
               icon: CheckCircle,
               color: "text-emerald-500",
               bg: "bg-emerald-500/10",
+              href: "/trades?filter=completed",
             },
             {
               label: "Reputation",
@@ -64,19 +67,32 @@ export default function DashboardPage() {
               icon: Sparkles,
               color: "text-accent",
               bg: "bg-accent/10",
+              href: null,
             },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
-            <div
-              key={label}
-              className="bg-card border border-border rounded-xl p-5"
-            >
-              <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center mb-3`}>
-                <Icon size={18} className={color} />
+          ].map(({ label, value, icon: Icon, color, bg, href }) => {
+            const inner = (
+              <>
+                <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center mb-3`}>
+                  <Icon size={18} className={color} />
+                </div>
+                <p className="font-display text-2xl font-bold">{value}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{label}</p>
+              </>
+            );
+            return href ? (
+              <Link
+                key={label}
+                href={href}
+                className="bg-card border border-border rounded-xl p-5 hover:border-primary/50 hover:shadow-md transition-all"
+              >
+                {inner}
+              </Link>
+            ) : (
+              <div key={label} className="bg-card border border-border rounded-xl p-5">
+                {inner}
               </div>
-              <p className="font-display text-2xl font-bold">{value}</p>
-              <p className="text-sm text-muted-foreground mt-0.5">{label}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

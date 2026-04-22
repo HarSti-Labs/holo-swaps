@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Star,
   Headphones,
+  Flag,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -76,19 +77,33 @@ export function Navbar() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {user?.isAdmin ? (
-            /* Admin nav — only support board */
-            <Link
-              href="/admin/support"
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                pathname.startsWith("/admin/support")
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              <Headphones size={16} />
-              Support Board
-            </Link>
+            /* Admin nav */
+            <>
+              <Link
+                href="/admin/support"
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  pathname.startsWith("/admin/support")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <Headphones size={16} />
+                Support Board
+              </Link>
+              <Link
+                href="/admin/reports"
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  pathname.startsWith("/admin/reports")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <Flag size={16} />
+                Reports
+              </Link>
+            </>
           ) : (
             <>
               {/* Browse Cards — always visible */}
@@ -222,17 +237,30 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-card px-4 py-3 space-y-1">
           {user?.isAdmin ? (
-            <Link
-              href="/admin/support"
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                pathname.startsWith("/admin/support") ? "bg-primary/10 text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Headphones size={16} />
-              Support Board
-            </Link>
+            <>
+              <Link
+                href="/admin/support"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  pathname.startsWith("/admin/support") ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                )}
+              >
+                <Headphones size={16} />
+                Support Board
+              </Link>
+              <Link
+                href="/admin/reports"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  pathname.startsWith("/admin/reports") ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                )}
+              >
+                <Flag size={16} />
+                Reports
+              </Link>
+            </>
           ) : (
             <Link
               href="/cards"

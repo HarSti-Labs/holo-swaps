@@ -8,7 +8,8 @@ import {
   ChevronLeft, ChevronRight, X, ArrowUpDown,
 } from "lucide-react";
 import Link from "next/link";
-import { TradeMatch } from "@/types";
+import { TradeMatch, User } from "@/types";
+import { TradeProposalModal } from "@/components/trades/TradeProposalModal";
 
 const PAGE_SIZE = 12;
 
@@ -37,7 +38,7 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 // ── MatchCard component ───────────────────────────────────────────────────────
-function MatchCard({ match }: { match: TradeMatch }) {
+function MatchCard({ match, onPropose }: { match: TradeMatch; onPropose: (m: TradeMatch) => void }) {
   return (
     <div className="bg-card border border-border rounded-xl p-5 card-hover flex flex-col">
       {/* User header */}
@@ -114,13 +115,13 @@ function MatchCard({ match }: { match: TradeMatch }) {
       </div>
 
       {/* Action */}
-      <Link
-        href={`/trade/propose?receiverId=${match.userId}`}
+      <button
+        onClick={() => onPropose(match)}
         className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors mt-auto"
       >
         <ArrowLeftRight size={15} />
         Propose Trade
-      </Link>
+      </button>
     </div>
   );
 }
@@ -182,6 +183,7 @@ export default function MatchesPage() {
   const [sortBy, setSortBy] = useState<SortKey>("matchScore");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [proposalTarget, setProposalTarget] = useState<TradeMatch | null>(null);
 
   const setFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -379,13 +381,22 @@ export default function MatchesPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {paginated.map((match) => (
-                <MatchCard key={match.userId} match={match} />
+                <MatchCard key={match.userId} match={match} onPropose={setProposalTarget} />
               ))}
             </div>
             <Pagination page={page} totalPages={totalPages} onChange={setPage} />
           </>
         )}
       </main>
+
+      {proposalTarget && (
+        <TradeProposalModal
+          isOpen={true}
+          onClose={() => setProposalTarget(null)}
+          targetUser={proposalTarget as unknown as User}
+          preselectedCards={[]}
+        />
+      )}
     </div>
   );
 }

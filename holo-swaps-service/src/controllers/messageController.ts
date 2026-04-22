@@ -4,6 +4,11 @@ import { sendSuccess, sendCreated } from "@/utils/response";
 import { ApiError } from "@/utils/ApiError";
 import { z } from "zod";
 import { prisma } from "@/config/prisma";
+import { selectSafeUser } from "@/repositories/implementations/UserRepository";
+import { EmailService } from "@/services/implementations/EmailService";
+import { config } from "@/config";
+
+const emailService = new EmailService();
 
 const sendMessageSchema = z.object({
   body: z.string().min(1).max(2000),
@@ -23,7 +28,7 @@ export const getMessages = async (
 
   const messages = await prisma.tradeMessage.findMany({
     where: { tradeId: req.params.tradeId },
-    include: { sender: { omit: { passwordHash: true } } },
+    include: { sender: { select: selectSafeUser } },
     orderBy: { createdAt: "asc" },
   });
 
@@ -66,8 +71,24 @@ export const sendMessage = async (
       senderId: req.user!.id,
       body: parsed.data.body,
     },
-    include: { sender: { omit: { passwordHash: true } } },
+    include: { sender: { select: selectSafeUser } },
   });
+
+  // Fire-and-forget: notify the other party
+  const recipientId = trade.proposerId === req.user!.id ? trade.receiverId : trade.proposerId;
+  prisma.user.findUnique({ where: { id: recipientId }, select: { email: true, username: true, emailOnTradeMessage: true } }).then((recipient) => {
+    if (recipient?.emailOnTradeMessage) {
+      const tradeUrl = `${config.frontend.url}/trades/${trade.id}`;
+      emailService.sendTradeMessageEmail(
+        recipient.email,
+        recipient.username,
+        req.user!.username,
+        trade.tradeCode,
+        parsed.data.body,
+        tradeUrl
+      );
+    }
+  }).catch(() => {});
 
   sendCreated(res, message, "Message sent");
 };

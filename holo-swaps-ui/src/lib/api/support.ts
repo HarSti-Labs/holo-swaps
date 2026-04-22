@@ -46,6 +46,26 @@ export interface AdminTicketRow extends SupportTicketSummary {
   messages: { id: string }[];
 }
 
+export interface ReportMessage {
+  id: string;
+  body: string;
+  isAdminReply: boolean;
+  createdAt: string;
+}
+
+export interface AdminReport {
+  id: string;
+  reason: string;
+  details: string | null;
+  tradeId: string | null;
+  isResolved: boolean;
+  resolvedNote: string | null;
+  createdAt: string;
+  reporter: { id: string; username: string; avatarUrl: string | null };
+  reported: { id: string; username: string; avatarUrl: string | null };
+  messages: ReportMessage[];
+}
+
 export const supportApi = {
   submit: async (data: SupportTicketPayload): Promise<{ ticketNumber: string }> => {
     const res = await api.post<ApiResponse<{ ticketNumber: string }>>("/support", data);
@@ -78,6 +98,29 @@ export const supportApi = {
       "/admin/support",
       { params }
     );
+    return res.data.data!;
+  },
+
+  getAdminReports: async (params?: { page?: number; limit?: number }): Promise<{ data: AdminReport[]; total: number; totalPages: number; page: number }> => {
+    const res = await api.get<ApiResponse<{ data: AdminReport[]; total: number; totalPages: number; page: number }>>(
+      "/admin/reports",
+      { params }
+    );
+    return res.data.data!;
+  },
+
+  getAdminReport: async (reportId: string): Promise<AdminReport> => {
+    const res = await api.get<ApiResponse<AdminReport>>(`/admin/reports/${reportId}`);
+    return res.data.data!;
+  },
+
+  sendReportMessage: async (reportId: string, body: string): Promise<ReportMessage> => {
+    const res = await api.post<ApiResponse<ReportMessage>>(`/admin/reports/${reportId}/messages`, { body });
+    return res.data.data!;
+  },
+
+  resolveReport: async (reportId: string, note?: string): Promise<AdminReport> => {
+    const res = await api.patch<ApiResponse<AdminReport>>(`/admin/reports/${reportId}/resolve`, { note });
     return res.data.data!;
   },
 };

@@ -38,10 +38,12 @@ export interface User {
   emailOnTradeAccepted: boolean;
   emailOnTradeDeclined: boolean;
   emailOnTradeCancelled: boolean;
+  emailOnTradeMessage: boolean;
   createdAt: string;
   followerCount?: number;
   followingCount?: number;
   isFollowing?: boolean;
+  isBlocked?: boolean;
 }
 
 export interface Card {

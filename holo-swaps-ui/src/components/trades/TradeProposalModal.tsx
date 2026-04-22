@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Plus, Minus, Package, Send, Loader2, AlertTriangle, DollarSign } from "lucide-react";
+import { X, Plus, Minus, Package, Send, Loader2, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Minus as MinusIcon } from "lucide-react";
 import { CollectionItem, User } from "@/types";
 import { collectionApi } from "@/lib/api/collection";
 import { tradesApi } from "@/lib/api/trades";
@@ -112,7 +112,9 @@ export function TradeProposalModal({
   const myTotal = calculateTotalValue(myCards);
   const theirTotal = calculateTotalValue(theirCards);
   const cashAddNumber = parseFloat(cashAdd) || 0;
-  const difference = Math.abs((myTotal + cashAddNumber) - theirTotal);
+  // positive = you receive more than you give; negative = you give more than you receive
+  const netValue = theirTotal - (myTotal + cashAddNumber);
+  const isEven = Math.abs(netValue) < 0.50;
 
   const handleSubmit = async () => {
     if (myCards.length === 0 || theirCards.length === 0) return;
@@ -373,32 +375,44 @@ export function TradeProposalModal({
 
             {/* Value breakdown */}
             {(myCards.length > 0 || theirCards.length > 0) && (
-              <div className="space-y-1 pt-2 border-t border-slate-700">
+              <div className="space-y-1.5 pt-2 border-t border-slate-700">
                 <div className="flex items-center justify-between text-sm text-slate-400">
-                  <span>Your cards value:</span>
-                  <span>${myTotal.toFixed(2)}</span>
-                </div>
-                {cashAddNumber > 0 && (
-                  <div className="flex items-center justify-between text-sm text-green-400">
-                    <span>+ Cash you add:</span>
-                    <span>+${cashAddNumber.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between text-sm text-slate-400">
-                  <span>Their cards value:</span>
-                  <span>${theirTotal.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center justify-between pt-1 border-t border-slate-700">
-                  <span className="text-sm text-slate-400">Remaining difference:</span>
-                  <span className={`text-lg font-bold ${difference > 10 ? "text-yellow-400" : "text-green-400"}`}>
-                    ${difference.toFixed(2)}
+                  <span>You're offering:</span>
+                  <span className="text-white font-medium">
+                    ${myTotal.toFixed(2)}{cashAddNumber > 0 && ` + $${cashAddNumber.toFixed(2)} cash`}
                   </span>
                 </div>
-                {difference > 10 && cashAddNumber === 0 && (
-                  <p className="text-xs text-slate-500">
-                    Consider adding cash or more cards to balance the trade
-                  </p>
-                )}
+                <div className="flex items-center justify-between text-sm text-slate-400">
+                  <span>You're receiving:</span>
+                  <span className="text-white font-medium">${theirTotal.toFixed(2)}</span>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-700">
+                  <span className="text-sm font-medium text-slate-300">Trade Balance</span>
+                  {isEven ? (
+                    <span className="flex items-center gap-1.5 text-green-400 font-semibold text-sm">
+                      <MinusIcon className="h-3.5 w-3.5" />
+                      Even trade
+                    </span>
+                  ) : netValue > 0 ? (
+                    <span className="flex items-center gap-1.5 text-blue-400 font-semibold text-sm">
+                      <TrendingUp className="h-3.5 w-3.5" />
+                      +${netValue.toFixed(2)} in your favor
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-amber-400 font-semibold text-sm">
+                      <TrendingDown className="h-3.5 w-3.5" />
+                      +${Math.abs(netValue).toFixed(2)} in their favor
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500">
+                  {isEven
+                    ? "Values are roughly equal."
+                    : netValue > 0
+                    ? "You're receiving more value — they may counter or decline."
+                    : "You're offering more value — a generous trade for them."}
+                </p>
               </div>
             )}
           </div>

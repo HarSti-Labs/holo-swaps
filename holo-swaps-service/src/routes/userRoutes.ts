@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticate } from "@/middleware/auth";
+import { authenticate, optionalAuthenticate } from "@/middleware/auth";
 import {
   getPublicProfile,
   updateProfile,
@@ -32,9 +32,9 @@ router.patch("/me/addresses/:addressId", authenticate, updateAddress);
 router.delete("/me/addresses/:addressId", authenticate, deleteAddress);
 
 // Dynamic user routes
-router.get("/:username", getPublicProfile);
+router.get("/:username", optionalAuthenticate, getPublicProfile);
 router.get("/:username/reviews", getUserReviews);
-router.get("/:username/collection", getPublicCollection);
+router.get("/:username/collection", optionalAuthenticate, getPublicCollection);
 router.get("/:username/followers", getFollowers);
 router.get("/:username/following", getFollowing);
 router.post("/:userId/block", authenticate, blockUser);

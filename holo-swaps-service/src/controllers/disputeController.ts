@@ -5,6 +5,7 @@ import { ApiError } from "@/utils/ApiError";
 import { z } from "zod";
 import { prisma } from "@/config/prisma";
 import { DisputeStatus, TradeStatus } from "@prisma/client";
+import { selectSafeUser } from "@/repositories/implementations/UserRepository";
 
 const openDisputeSchema = z.object({
   reason: z.string().min(1).max(200),
@@ -91,7 +92,7 @@ export const getDispute = async (
     where: { id: req.params.disputeId },
     include: {
       trade: true,
-      openedBy: { omit: { passwordHash: true } },
+      openedBy: { select: selectSafeUser },
       evidence: true,
     },
   });

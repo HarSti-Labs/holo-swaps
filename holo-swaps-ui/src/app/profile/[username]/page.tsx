@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { usersApi } from "@/lib/api/users";
+import { usersApi, ReportPayload } from "@/lib/api/users";
 import { supportApi, SupportTicketSummary } from "@/lib/api/support";
 import { collectionApi } from "@/lib/api/collection";
 import { User, CollectionItem, CONDITION_LABELS } from "@/types";
-import { Loader2, Star, TrendingUp, MapPin, Calendar, UserPlus, UserMinus, Users, Headphones, ChevronRight, Package, ArrowLeftRight } from "lucide-react";
+import { Loader2, Star, TrendingUp, MapPin, Calendar, UserPlus, UserMinus, Users, Headphones, ChevronRight, Package, ArrowLeftRight, MoreHorizontal, ShieldOff, Shield, Flag, X, ChevronDown } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import Link from "next/link";
@@ -24,6 +24,15 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"stats" | "tickets" | "collection">("stats");
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isBlockLoading, setIsBlockLoading] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
+  const [reportSent, setReportSent] = useState(false);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [theirCollection, setTheirCollection] = useState<CollectionItem[]>([]);
   const [isLoadingCollection, setIsLoadingCollection] = useState(false);
@@ -37,7 +46,8 @@ export default function ProfilePage() {
       try {
         const profileData = await usersApi.getProfile(username);
         setUser(profileData);
-        setIsFollowing(profileData.isFollowing || false);
+        setIsFollowing(profileData.isFollowing ?? false);
+        setIsBlocked(profileData.isBlocked ?? false);
 
         if (currentUser?.username === username) {
           try {
@@ -78,9 +88,19 @@ export default function ProfilePage() {
     }
   };
 
+  // Close more-menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setMoreMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const handleFollow = async () => {
     if (!currentUser || !user) return;
-
     setIsFollowLoading(true);
     try {
       if (isFollowing) {
@@ -96,6 +116,39 @@ export default function ProfilePage() {
       console.error("Failed to follow/unfollow:", err);
     } finally {
       setIsFollowLoading(false);
+    }
+  };
+
+  const handleBlock = async () => {
+    if (!currentUser || !user) return;
+    setMoreMenuOpen(false);
+    setIsBlockLoading(true);
+    try {
+      if (isBlocked) {
+        await usersApi.unblock(user.id);
+        setIsBlocked(false);
+      } else {
+        await usersApi.block(user.id);
+        setIsBlocked(true);
+        setIsFollowing(false);
+      }
+    } catch (err: any) {
+      console.error("Failed to block/unblock:", err);
+    } finally {
+      setIsBlockLoading(false);
+    }
+  };
+
+  const handleReport = async () => {
+    if (!currentUser || !user || !reportReason) return;
+    setIsReporting(true);
+    try {
+      await usersApi.report(user.id, { reason: reportReason, details: reportDetails || undefined });
+      setReportSent(true);
+    } catch (err: any) {
+      console.error("Failed to report:", err);
+    } finally {
+      setIsReporting(false);
     }
   };
 
@@ -139,21 +192,69 @@ export default function ProfilePage() {
               <div className="flex items-center gap-3 mb-2 flex-wrap">
                 <h1 className="text-3xl font-bold">{user.username}</h1>
                 {!isOwnProfile && currentUser && (
-                  <button
-                    onClick={handleFollow}
-                    disabled={isFollowLoading}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                      isFollowing
-                        ? "bg-slate-700 hover:bg-slate-600 text-white"
-                        : "bg-blue-600 hover:bg-blue-500 text-white"
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {isFollowing ? (
-                      <><UserMinus className="h-4 w-4" /> Unfollow</>
-                    ) : (
-                      <><UserPlus className="h-4 w-4" /> Follow</>
+                  <div className="flex items-center gap-2">
+                    {/* Follow / Unfollow */}
+                    {!isBlocked && (
+                      <button
+                        onClick={handleFollow}
+                        disabled={isFollowLoading}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                          isFollowing
+                            ? "bg-slate-700 hover:bg-slate-600 text-white"
+                            : "bg-blue-600 hover:bg-blue-500 text-white"
+                        }`}
+                      >
+                        {isFollowLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : isFollowing ? (
+                          <><UserMinus className="h-4 w-4" /> Unfollow</>
+                        ) : (
+                          <><UserPlus className="h-4 w-4" /> Follow</>
+                        )}
+                      </button>
                     )}
-                  </button>
+
+                    {/* ⋮ More actions */}
+                    <div ref={moreMenuRef} className="relative">
+                      <button
+                        onClick={() => setMoreMenuOpen((v) => !v)}
+                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                        title="More actions"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
+
+                      {moreMenuOpen && (
+                        <div className="absolute right-0 top-full mt-1.5 w-44 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-20">
+                          <button
+                            onClick={handleBlock}
+                            disabled={isBlockLoading}
+                            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-left hover:bg-slate-700 transition-colors disabled:opacity-50"
+                          >
+                            {isBlocked ? (
+                              <><Shield className="h-4 w-4 text-green-400" /><span className="text-green-400">Unblock user</span></>
+                            ) : (
+                              <><ShieldOff className="h-4 w-4 text-orange-400" /><span className="text-orange-400">Block user</span></>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => { setMoreMenuOpen(false); setShowReportModal(true); }}
+                            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-left hover:bg-slate-700 transition-colors"
+                          >
+                            <Flag className="h-4 w-4 text-red-400" />
+                            <span className="text-red-400">Report user</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Blocked banner */}
+                {isBlocked && (
+                  <span className="text-xs text-orange-400 bg-orange-400/10 border border-orange-400/30 px-2.5 py-1 rounded-lg">
+                    You've blocked this user
+                  </span>
                 )}
               </div>
 
@@ -447,6 +548,86 @@ export default function ProfilePage() {
           </div>
         )}
       </main>
+
+      {/* Report Modal */}
+      {showReportModal && user && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-slate-800">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Flag className="h-4 w-4 text-red-400" /> Report @{user.username}
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">Reports are reviewed by our admin team</p>
+              </div>
+              <button onClick={() => { setShowReportModal(false); setReportSent(false); setReportReason(""); setReportDetails(""); }} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="p-5">
+              {reportSent ? (
+                <div className="text-center py-6">
+                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
+                    <Flag className="h-6 w-6 text-green-400" />
+                  </div>
+                  <p className="text-white font-semibold">Report submitted</p>
+                  <p className="text-sm text-slate-400 mt-1">Our team will review it shortly.</p>
+                  <button onClick={() => { setShowReportModal(false); setReportSent(false); setReportReason(""); setReportDetails(""); }} className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition-colors">
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1.5">Reason <span className="text-red-400">*</span></label>
+                    <div className="relative">
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none h-4 w-4" />
+                      <select
+                        value={reportReason}
+                        onChange={(e) => setReportReason(e.target.value)}
+                        className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-red-500/50 pr-8"
+                      >
+                        <option value="">Select a reason…</option>
+                        <option value="Card condition misrepresented">Card condition misrepresented</option>
+                        <option value="Suspected scam or fraud">Suspected scam or fraud</option>
+                        <option value="Counterfeit card">Counterfeit card</option>
+                        <option value="Harassment or inappropriate behaviour">Harassment or inappropriate behaviour</option>
+                        <option value="Spam or fake account">Spam or fake account</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1.5">Additional details <span className="text-slate-600">(optional)</span></label>
+                    <textarea
+                      value={reportDetails}
+                      onChange={(e) => setReportDetails(e.target.value)}
+                      placeholder="Describe what happened…"
+                      rows={3}
+                      maxLength={1000}
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 resize-none"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-1">
+                    <button
+                      onClick={handleReport}
+                      disabled={!reportReason || isReporting}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors"
+                    >
+                      {isReporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Flag className="h-4 w-4" />}
+                      Submit Report
+                    </button>
+                    <button onClick={() => setShowReportModal(false)} className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold transition-colors">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Trade Proposal Modal */}
       {user && !isOwnProfile && currentUser && (

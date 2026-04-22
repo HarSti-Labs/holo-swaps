@@ -51,7 +51,13 @@ export const tradesApi = {
 
   counter: async (
     tradeId: string,
-    data: Partial<ProposeTradePayload> & { cashAdjustment?: number; message?: string }
+    data: {
+      proposerCollectionItemIds?: string[];
+      receiverCollectionItemIds?: string[];
+      proposerCashAdd?: number;
+      receiverCashAdd?: number;
+      message?: string;
+    }
   ): Promise<Trade> => {
     const res = await api.post<ApiResponse<Trade>>(
       `/trades/${tradeId}/counter`,

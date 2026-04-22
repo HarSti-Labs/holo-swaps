@@ -422,6 +422,167 @@ export class EmailService implements IEmailService {
     }
   }
 
+  async sendTradeMessageEmail(to: string, recipientUsername: string, senderUsername: string, tradeCode: string, messageBody: string, tradeUrl: string): Promise<void> {
+    const preview = messageBody.length > 200 ? messageBody.slice(0, 200) + "…" : messageBody;
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `New message from ${senderUsername} — ${tradeCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <h1 style="color: #1a1a2e; font-size: 22px; margin-top: 0;">New Message in Your Trade</h1>
+              <p style="color: #444; font-size: 15px; line-height: 1.6;">
+                Hi ${recipientUsername}, <strong>${senderUsername}</strong> sent you a message in trade <span style="font-family: monospace; font-weight: bold;">${tradeCode}</span>.
+              </p>
+              <div style="background: #f3f4f6; border-left: 4px solid #4f46e5; border-radius: 4px; padding: 16px; margin: 24px 0; color: #333; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${preview}</div>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${tradeUrl}" style="background: #4f46e5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                  Reply in Trade
+                </a>
+              </div>
+              <p style="color: #888; font-size: 12px; margin-top: 24px;">
+                You can manage your email preferences in <a href="${config.frontend.url}/settings" style="color: #4f46e5;">account settings</a>.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send trade message email", { to, tradeCode, err });
+    }
+  }
+
+  async sendUserReportEmail(to: string, reporterUsername: string, reportedUsername: string, reason: string, details: string | null, reportsUrl: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `[Report] @${reportedUsername} has been reported`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; border: 1px solid #e0e0e0; overflow: hidden;">
+
+              <div style="background: #dc2626; padding: 16px 24px;">
+                <h1 style="color: #fff; font-size: 18px; margin: 0;">User Report — Action Required</h1>
+                <p style="color: rgba(255,255,255,0.85); font-size: 14px; margin: 4px 0 0;">
+                  A user has been reported on Holo Swaps
+                </p>
+              </div>
+
+              <div style="padding: 24px;">
+                <table style="width: 100%; border-collapse: collapse; background: #f8f8f8; border-radius: 6px; overflow: hidden;">
+                  <tbody>
+                    <tr>
+                      <td style="padding: 8px 12px; font-weight: bold; color: #555; white-space: nowrap; width: 140px;">Reported User</td>
+                      <td style="padding: 8px 12px; color: #222; font-weight: bold;">@${reportedUsername}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 12px; font-weight: bold; color: #555;">Reported By</td>
+                      <td style="padding: 8px 12px; color: #222;">@${reporterUsername}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 12px; font-weight: bold; color: #555;">Reason</td>
+                      <td style="padding: 8px 12px; color: #222;">${reason}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                ${details ? `
+                <div style="margin-top: 20px;">
+                  <p style="font-size: 13px; font-weight: bold; color: #555; margin-bottom: 6px;">Additional Details</p>
+                  <div style="background: #f3f4f6; border-left: 4px solid #dc2626; border-radius: 4px; padding: 14px; color: #333; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${details}</div>
+                </div>
+                ` : ""}
+
+                <div style="text-align: center; margin: 28px 0;">
+                  <a href="${reportsUrl}"
+                     style="background: #dc2626; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                    Review Report
+                  </a>
+                </div>
+
+                <p style="font-size: 12px; color: #aaa; margin-top: 8px;">
+                  Submitted at ${new Date().toUTCString()}. Review and resolve from the admin reports dashboard.
+                </p>
+              </div>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send user report email", { to, reportedUsername, err });
+    }
+  }
+
+  async sendReportAdminReplyEmail(to: string, reporterUsername: string, messageBody: string, reportUrl: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: "An admin has responded to your report — Holo Swaps",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; border: 1px solid #e0e0e0; overflow: hidden;">
+              <div style="background: #4f46e5; padding: 16px 24px;">
+                <h1 style="color: #fff; font-size: 18px; margin: 0;">Update on Your Report</h1>
+                <p style="color: rgba(255,255,255,0.85); font-size: 14px; margin: 4px 0 0;">A Holo Swaps admin has replied to your report</p>
+              </div>
+              <div style="padding: 24px;">
+                <p style="color: #444; font-size: 15px;">Hi <strong>${reporterUsername}</strong>,</p>
+                <p style="color: #444; font-size: 15px; line-height: 1.6;">An admin has left a response on your report:</p>
+                <div style="background: #f3f4f6; border-left: 4px solid #4f46e5; border-radius: 4px; padding: 14px; color: #333; font-size: 14px; line-height: 1.7; margin: 16px 0; white-space: pre-wrap;">${messageBody}</div>
+                <div style="text-align: center; margin: 28px 0;">
+                  <a href="${reportUrl}" style="background: #4f46e5; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">View Report</a>
+                </div>
+                <p style="font-size: 12px; color: #aaa;">You're receiving this because you submitted a report on Holo Swaps.</p>
+              </div>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send report admin reply email", { to, err });
+    }
+  }
+
+  async sendReportResolvedEmail(to: string, reporterUsername: string, reportedUsername: string, reason: string, note: string | null): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: "Your report has been resolved — Holo Swaps",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; border: 1px solid #e0e0e0; overflow: hidden;">
+              <div style="background: #16a34a; padding: 16px 24px;">
+                <h1 style="color: #fff; font-size: 18px; margin: 0;">Report Resolved</h1>
+                <p style="color: rgba(255,255,255,0.85); font-size: 14px; margin: 4px 0 0;">Thank you for helping keep Holo Swaps safe</p>
+              </div>
+              <div style="padding: 24px;">
+                <p style="color: #444; font-size: 15px;">Hi <strong>${reporterUsername}</strong>,</p>
+                <p style="color: #444; font-size: 15px; line-height: 1.6;">
+                  Your report about <strong>@${reportedUsername}</strong> (Reason: <em>${reason}</em>) has been reviewed and resolved by our team.
+                </p>
+                ${note ? `
+                <p style="color: #444; font-size: 14px; font-weight: bold; margin-bottom: 4px;">Admin Note:</p>
+                <div style="background: #f3f4f6; border-left: 4px solid #16a34a; border-radius: 4px; padding: 14px; color: #333; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${note}</div>
+                ` : ""}
+                <p style="color: #444; font-size: 14px; margin-top: 20px; line-height: 1.6;">
+                  We take all reports seriously. If you experience any further issues, please don't hesitate to reach out.
+                </p>
+                <p style="font-size: 12px; color: #aaa; margin-top: 24px;">You're receiving this because you submitted a report on Holo Swaps.</p>
+              </div>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send report resolved email", { to, err });
+    }
+  }
+
   async sendTicketResolved(to: string, ticketNumber: string, subject: string): Promise<void> {
     const ticketUrl = `${config.frontend.url}/support/tickets/${ticketNumber}`;
     try {

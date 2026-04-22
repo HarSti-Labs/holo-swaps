@@ -167,6 +167,52 @@
 
 ---
 
+## Session — 2026-04-22
+
+### Admin Reports Dashboard + Detail
+- [x] Schema: added `resolvedNote String?` to `UserReport`; new `UserReportMessage` model for threaded messaging — `prisma db push` applied
+- [x] `GET /api/admin/reports/:reportId` — single report with messages
+- [x] `POST /api/admin/reports/:reportId/messages` — admin sends message to reporter, fires `sendReportAdminReplyEmail` (fire-and-forget)
+- [x] `PATCH /api/admin/reports/:reportId/resolve` — accepts optional `note`, saves as `resolvedNote`, fires `sendReportResolvedEmail` (fire-and-forget)
+- [x] `IEmailService` + `EmailService` — added `sendReportAdminReplyEmail` and `sendReportResolvedEmail`
+- [x] `support.ts` API client — added `ReportMessage` interface; updated `AdminReport` with `messages` + `resolvedNote`; added `getAdminReport`, `sendReportMessage`; updated `resolveReport` to accept optional `note`
+- [x] `admin/reports/page.tsx` — rows converted to `<Link>` pointing to detail page; inline resolve removed; status badge shows Pending/Resolved
+- [x] `admin/reports/[reportId]/page.tsx` — full detail: report info (reported/reporter/reason/details/trade ref), message thread, reply composer (emails reporter), resolve form with optional note (emails reporter on resolve)
+- [x] `Navbar.tsx` — admin nav now shows "Support Board" + "Reports" as separate links (desktop + mobile)
+
+### Admin Email on User Report
+- [x] `IEmailService` — added `sendUserReportEmail` method
+- [x] `EmailService` — `sendUserReportEmail` implementation with red-header alert, reporter/reported info, reason, details, "Review Report" button
+- [x] `userController.ts` — after `userReport.create`, fires `sendUserReportEmail` to all admins (fire-and-forget)
+
+### Trade Message Email Notification
+- [x] Schema: added `emailOnTradeMessage Boolean @default(true)` to `User` — `prisma db push` applied
+- [x] `IEmailService` — added `sendTradeMessageEmail` method
+- [x] `EmailService` — `sendTradeMessageEmail` with indigo border, message preview, "Reply in Trade" button
+- [x] `messageController.ts` — after message create, fire-and-forget email to recipient if `emailOnTradeMessage` is enabled
+- [x] `authController.ts` — `GET /api/auth/me` now includes `emailOnTradeMessage` in select
+- [x] `UserRepository.ts` — exported `selectSafeUser`; added `emailOnTradeMessage` to select
+- [x] `types/index.ts` — added `emailOnTradeMessage: boolean` to `User` interface
+- [x] `settings/page.tsx` — added "New message in a trade" checkbox to email preferences section
+
+### Fix: Prisma `omit` inside `include` not supported (Prisma 5.10)
+- [x] Exported `selectSafeUser` from `UserRepository.ts` and replaced all `omit: { passwordHash: true }` usages with `select: selectSafeUser` across: `TradeRepository.ts`, `adminRoutes.ts`, `disputeController.ts`, `messageController.ts`, `reviewController.ts`, `userController.ts`
+
+### Dashboard Stat Card Links
+- [x] `dashboard/page.tsx` — Total Trades links to `/trades`, Active Trades to `/trades?filter=active`, Completed to `/trades?filter=completed`
+- [x] `trades/page.tsx` — reads `filter` param from URL on load via `useSearchParams`
+
+### Fix: Recent Trade 404
+- [x] `TradeCard.tsx` — corrected href from `/trade/${trade.id}` to `/trades/${trade.id}`
+
+### Counter Offer — Card Add/Remove
+- [x] `TradeService.counterOffer` — rewritten to support full card swaps: validates new cards belong to user and are AVAILABLE, unlocks removed items, locks/creates new items, recalculates market values, all in a transaction
+- [x] `tradesApi.counter` — corrected payload type to `proposerCollectionItemIds`/`receiverCollectionItemIds`/`proposerCashAdd`/`receiverCashAdd`/`message`
+- [x] `CounterOfferModal.tsx` — new full-screen modal: pre-populates current trade items, browse + add from collection, remove cards, cash input, trade balance display, optional message
+- [x] `trades/[tradeId]/page.tsx` — removed old inline counter form; integrated `CounterOfferModal` replacing all inline state + `handleCounter`
+
+---
+
 ## Phase 1 Completion — Remaining Features (2026-04-15)
 
 ### Schema Changes
@@ -225,7 +271,7 @@
 - TCGAPIs for card pricing
 - Supabase Storage for card photos
 - AfterShip for shipment tracking
-- Nodemailer for emails (console logging for now)
+- Resend SDK for transactional emails (live, API key configured)
 
 **Frontend:**
 - Next.js 14 (App Router)
@@ -326,6 +372,120 @@
 
 ---
 
+## Session Work — 2026-04-22
+
+### Backend — Email Notification Preferences
+
+- [x] **Schema** — Added 5 boolean fields to `User` model, all `@default(true)`:
+  `emailOnTradeProposed`, `emailOnTradeCountered`, `emailOnTradeAccepted`, `emailOnTradeDeclined`, `emailOnTradeCancelled`
+  → ran `prisma db push`
+- [x] **`IUserRepository`** — Added the 5 fields to `UpdateUserData` interface
+- [x] **`UserRepository`** — Added the 5 fields to `selectSafeUser` so they are returned by all user queries
+- [x] **`userController`** — Added the 5 optional boolean fields to `updateProfileSchema` so `PATCH /api/users/me` accepts them
+- [x] **`authController`** — Added the 5 fields to the hardcoded `select` in `GET /api/auth/me` so `loadUser()` on the frontend returns them
+- [x] **`IEmailService`** — Added `sendTradeCounterOfferEmail` signature
+- [x] **`EmailService`** — Implemented `sendTradeCounterOfferEmail` with orange-themed HTML template matching existing email style
+- [x] **`TradeService`** — Wired all email preference checks into the trade lifecycle:
+  - `proposeTrade`: checks `receiver.emailOnTradeProposed` before sending
+  - `counterOffer`: fetches counterparty, checks `emailOnTradeCountered`, sends counter email fire-and-forget
+  - `acceptTrade`: checks `proposer.emailOnTradeAccepted` before sending
+  - `declineTrade`: checks `proposer.emailOnTradeDeclined` before sending
+  - `cancelTrade`: checks `other.emailOnTradeCancelled` before sending
+
+### Frontend — Counter Offer UI
+
+- [x] **`/trades/[tradeId]/page.tsx`** — Added full counter offer flow:
+  - `canCounter` flag: `["PROPOSED", "COUNTERED"].includes(trade.status)` — both parties can counter
+  - "Counter Offer" button (orange) in trade actions section
+  - Inline form: cash amount input + message textarea + Send/Cancel buttons
+  - `handleCounter` calls `tradesApi.counter(tradeId, { cashAdjustment, message })`
+  - Fixed scroll-to-bottom bug using `messageCountRef` (only scrolls when new messages arrive, not on every render)
+
+### Frontend — Email Notification Settings
+
+- [x] **`/app/settings/page.tsx`** — Added "Email Notifications" section:
+  - `emailPrefs` state synced from `user` on load
+  - Checkboxes for: Trade Proposed, Counter Offer Received, Trade Accepted, Trade Declined, Trade Cancelled
+  - Save button with 3-second "Saved ✓" confirmation state
+  - Calls `PATCH /api/users/me` then `loadUser()` to refresh auth store
+
+### Frontend — `types/index.ts`
+
+- [x] Added 5 email notification boolean fields to `User` interface
+
+### Frontend — Browse Cards Page (`/cards`)
+
+- [x] **Full rewrite of `cards/page.tsx`** with:
+  - New compact card style matching marketplace aesthetic (dark gradient, rarity color badges, card image with shimmer hover)
+  - `getRarityColor()` helper for animated rarity gradients
+  - **4-per-row grid** (`grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`)
+  - **Available Traders sticky sidebar** — right panel shows traders for the selected card; hidden/replaced in select mode
+  - **+ button** on card hover (top-right) — opens `CardDetailModal` for single-card add to collection/wants
+  - **Mass selection mode** — toolbar "Select multiple" button, card checkbox overlay, "Select all" / "Clear" / "Exit" controls
+  - **Floating action bar** replaced by action buttons inside the sidebar (see below)
+  - **`CardItem`** component: `isSelectMode`, `isChecked`, `isSelected` props; checkbox overlay in select mode; blue dot when trader-panel selected
+
+- [x] **`BulkAddModal`** component:
+  - Accepts `mode: "collection" | "wants"` prop
+  - Collection mode: condition, foil, 1st edition, available-for-trade fields
+  - Wants mode: max acceptable condition + priority (High/Medium/Low) fields
+  - Sequential `for` loop (not `Promise.all`) for accurate per-card progress bar
+  - Auto-closes + exits select mode after 1.5s on full success
+
+- [x] **Sidebar action buttons** — when in select mode with cards checked, the bottom of the Available Traders sidebar shows:
+  - Count badge
+  - "Add to Collection" (blue) → opens `BulkAddModal` in collection mode
+  - "Add to Want List" (pink) → opens `BulkAddModal` in wants mode
+
+- [x] **`MultiCardTradersPanel`** component (shown when in select mode):
+  - Uses `useQueries` from React Query for parallel holder fetches across all selected cards
+  - **Card filter** dropdown — focus on one specific card from the selection
+  - **Condition filter** dropdown — filter holders by their copy's condition
+  - Each selected card gets a sticky section header (thumbnail, name, set code, trader count)
+  - Compact trader rows with condition badge, foil/1st edition tags, price, Trade button
+  - Placeholder shown if no cards are selected yet
+
+### Frontend — Trade Proposal Modal
+
+- [x] **`TradeProposalModal.tsx`** — Replaced confusing "Remaining difference" with directional **Trade Balance**:
+  - `netValue = theirTotal - (myTotal + cashAddNumber)` — signed, directional
+  - Even trade (within $0.50): `— Even trade` in green
+  - In your favor: `↑ +$X in your favor` in blue + hint "You're receiving more value — they may counter or decline"
+  - In their favor: `↓ +$X in their favor` in amber + hint "You're offering more value — a generous trade for them"
+  - Collapsed "You're offering / You're receiving" two-line summary (cash folded into offering line)
+
+### Following System — Full Fix
+
+- [x] **Backend** — Added `optionalAuthenticate` to `GET /api/users/:username` and `GET /api/users/:username/collection` routes so JWT is decoded when present without blocking unauthenticated visitors. This fixes `isFollowing` always being `false`.
+- [x] **Backend** — `getPublicProfile` now checks `isBlocked` via `prisma.userBlock.findUnique` in parallel with `isFollowing`, and includes it in the response
+- [x] **`types/index.ts`** — Added `isBlocked?: boolean` to `User` interface
+- [x] **`usersApi`** — Added `block()`, `unblock()`, `report()` methods and `ReportPayload` interface
+- [x] **Profile page** — Replaced single follow button with:
+  - Follow/Unfollow button (hidden when user is blocked)
+  - "⋮" dropdown with **Block/Unblock** (orange/green) and **Report** (red)
+  - "You've blocked this user" badge shown when blocked
+  - **Report modal** with reason dropdown (6 options) + optional details textarea + success state
+
+### Admin Reports Tab
+
+- [x] **Trade message email notification** — when a user sends a trade chat message, the other party receives an email with a preview of the message and a "Reply in Trade" button. Added `emailOnTradeMessage` boolean field to schema (`prisma db push`), `selectSafeUser`, `updateProfileSchema`, `authController` select, `IEmailService`, `EmailService`, `messageController` (fire-and-forget). Frontend: added field to `User` type, settings page state/init/checkbox. (2026-04-22)
+- [x] **Admin report email** — when a user is reported, all admins receive a red-header email with reporter username, reported username, reason, and optional details, plus a "Review Report" button linking to `/admin/reports`. Fire-and-forget: queries `user` table for `isAdmin: true`, sends to each. Added `sendUserReportEmail` to `IEmailService` and `EmailService`. Wired into `reportUser` controller.
+- [x] **`/admin/reports/page.tsx`** (new page) — Reports dashboard for admins:
+  - Fetches `GET /api/admin/reports` (backend already existed)
+  - Shows reported user, reporter (with avatars), reason badge, optional details, date
+  - "Resolve" button calls `PATCH /api/admin/reports/:id/resolve`; optimistically marks row resolved in UI
+  - "Show resolved" toggle to include/hide resolved reports
+  - Pending count shown in header subtitle
+  - Pagination
+- [x] **`lib/api/support.ts`** — Added `AdminReport` interface, `getAdminReports()`, and `resolveReport()` API methods
+- [x] **`Navbar.tsx`** — Added "Reports" link (flag icon) to admin nav, both desktop and mobile
+
+### Bug Fixes
+
+- [x] **Matches page 404 on "Propose Trade"** — `MatchCard` was linking to `/trade/propose?receiverId=...` (non-existent route). Fixed by replacing the `<Link>` with a `TradeProposalModal` trigger. Added `proposalTarget` state and rendered the modal at page level. Used `as unknown as User` cast since `TradeMatch` has all required fields (`id`, `username`, `avatarUrl`).
+
+---
+
 ## Bug Fixes & Issues Resolved
 
 ### CORS Error
@@ -339,6 +499,7 @@
 
 ### Prisma `omit` Error
 - ✅ Fixed: Replaced `omit` with `select` in `UserRepository.ts` (omit requires Client Extensions)
+- ✅ Fixed (2026-04-22): Exported `selectSafeUser` from `UserRepository.ts` and replaced all remaining `omit: { passwordHash: true }` usages across the codebase with `select: selectSafeUser`. Files fixed: `TradeRepository.ts`, `adminRoutes.ts`, `disputeController.ts`, `messageController.ts`, `reviewController.ts`, `userController.ts`. Root cause of trade proposal error.
 
 ### Frontend Dependencies Not Installed
 - ✅ Fixed: Ran `npm install` in `holo-swaps-ui` directory
