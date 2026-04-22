@@ -33,6 +33,11 @@ export interface User {
   tradeCount: number;
   stripeAccountVerified: boolean;
   isAdmin: boolean;
+  emailOnTradeProposed: boolean;
+  emailOnTradeCountered: boolean;
+  emailOnTradeAccepted: boolean;
+  emailOnTradeDeclined: boolean;
+  emailOnTradeCancelled: boolean;
   createdAt: string;
   followerCount?: number;
   followingCount?: number;

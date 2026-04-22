@@ -18,4 +18,9 @@ export interface IEmailService {
   sendAdminReply(to: string, ticketNumber: string, subject: string, replyBody: string): Promise<void>;
   sendTicketResolved(to: string, ticketNumber: string, subject: string): Promise<void>;
   sendGoodbyeEmail(to: string, username: string): Promise<void>;
+  sendTradeProposedEmail(to: string, receiverUsername: string, proposerUsername: string, tradeCode: string, tradeUrl: string): Promise<void>;
+  sendTradeAcceptedEmail(to: string, proposerUsername: string, receiverUsername: string, tradeCode: string, tradeUrl: string): Promise<void>;
+  sendTradeDeclinedEmail(to: string, proposerUsername: string, receiverUsername: string, tradeCode: string): Promise<void>;
+  sendTradeCancelledEmail(to: string, recipientUsername: string, actorUsername: string, tradeCode: string, tradeUrl: string): Promise<void>;
+  sendTradeCounterOfferEmail(to: string, recipientUsername: string, actorUsername: string, tradeCode: string, tradeUrl: string): Promise<void>;
 }

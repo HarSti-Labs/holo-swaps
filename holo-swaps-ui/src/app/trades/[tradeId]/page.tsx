@@ -16,6 +16,8 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
+  DollarSign,
+  RefreshCw,
 } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { CONDITION_LABELS } from "@/types";
@@ -62,7 +64,12 @@ export default function TradeDetailPage() {
   const [isAccepting, setIsAccepting] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showCounterForm, setShowCounterForm] = useState(false);
+  const [counterCash, setCounterCash] = useState("");
+  const [counterMessage, setCounterMessage] = useState("");
+  const [isCountering, setIsCountering] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageCountRef = useRef(0);
 
   useEffect(() => {
     if (user) {
@@ -75,7 +82,10 @@ export default function TradeDetailPage() {
   }, [user, tradeId]);
 
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > messageCountRef.current) {
+      scrollToBottom();
+    }
+    messageCountRef.current = messages.length;
   }, [messages]);
 
   const scrollToBottom = () => {
@@ -162,6 +172,26 @@ export default function TradeDetailPage() {
     }
   };
 
+  const handleCounter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCountering(true);
+    try {
+      const cashNum = parseFloat(counterCash) || 0;
+      await tradesApi.counter(tradeId, {
+        cashAdjustment: cashNum,
+        message: counterMessage.trim() || undefined,
+      });
+      setShowCounterForm(false);
+      setCounterCash("");
+      setCounterMessage("");
+      await loadTrade();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to send counter offer");
+    } finally {
+      setIsCountering(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
@@ -194,6 +224,7 @@ export default function TradeDetailPage() {
   const canAccept = trade.status === "PROPOSED" && !isProposer;
   const canDecline = trade.status === "PROPOSED" && !isProposer;
   const canCancel = ["PROPOSED", "COUNTERED"].includes(trade.status);
+  const canCounter = ["PROPOSED", "COUNTERED"].includes(trade.status);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
@@ -366,10 +397,10 @@ export default function TradeDetailPage() {
             </div>
 
             {/* Action Buttons */}
-            {(canAccept || canDecline || canCancel) && (
+            {(canAccept || canDecline || canCancel || canCounter) && (
               <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
                 <h3 className="text-lg font-semibold mb-4">Actions</h3>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-3 mb-4">
                   {canAccept && (
                     <button
                       onClick={handleAccept}
@@ -387,6 +418,15 @@ export default function TradeDetailPage() {
                           Accept Trade
                         </>
                       )}
+                    </button>
+                  )}
+                  {canCounter && (
+                    <button
+                      onClick={() => setShowCounterForm((v) => !v)}
+                      className="flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-medium transition-colors"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Counter Offer
                     </button>
                   )}
                   {canDecline && (
@@ -428,6 +468,81 @@ export default function TradeDetailPage() {
                     </button>
                   )}
                 </div>
+
+                {/* Counter Offer Form */}
+                {showCounterForm && (
+                  <form
+                    onSubmit={handleCounter}
+                    className="border-t border-slate-700 pt-4 space-y-4"
+                  >
+                    <h4 className="text-sm font-semibold text-orange-400">Send Counter Offer</h4>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">
+                        Cash to add (optional)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                          $
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={counterCash}
+                          onChange={(e) => setCounterCash(e.target.value)}
+                          placeholder="0.00"
+                          className="w-full pl-7 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Amount you'll add on top of your cards to sweeten the deal
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">
+                        Message (optional)
+                      </label>
+                      <textarea
+                        value={counterMessage}
+                        onChange={(e) => setCounterMessage(e.target.value)}
+                        rows={2}
+                        maxLength={500}
+                        placeholder="Explain your counter offer..."
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        type="submit"
+                        disabled={isCountering}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 disabled:bg-orange-800 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+                      >
+                        {isCountering ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4" />
+                            Send Counter
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCounterForm(false);
+                          setCounterCash("");
+                          setCounterMessage("");
+                        }}
+                        className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium text-sm transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             )}
           </div>

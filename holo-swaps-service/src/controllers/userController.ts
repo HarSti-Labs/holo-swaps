@@ -23,6 +23,11 @@ const updateProfileSchema = z.object({
   location: z.string().max(100).optional(),
   avatarUrl: z.string().url().optional(),
   collectionVisibility: z.enum(["PUBLIC", "PRIVATE", "FOLLOWERS_ONLY"]).optional(),
+  emailOnTradeProposed: z.boolean().optional(),
+  emailOnTradeCountered: z.boolean().optional(),
+  emailOnTradeAccepted: z.boolean().optional(),
+  emailOnTradeDeclined: z.boolean().optional(),
+  emailOnTradeCancelled: z.boolean().optional(),
 });
 
 const addressSchema = z.object({

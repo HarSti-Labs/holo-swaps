@@ -5,6 +5,8 @@ import { PricingService } from "./PricingService";
 import { StripeService } from "./StripeService";
 import { NotificationService } from "./NotificationService";
 import { TrackingService } from "./TrackingService";
+import { EmailService } from "./EmailService";
+import { config } from "@/config";
 import {
   ITradeService,
   ProposeTradeData,
@@ -23,11 +25,13 @@ export class TradeService implements ITradeService {
   private stripeService: StripeService;
   private notificationService: NotificationService;
   private trackingService: TrackingService;
+  private emailService: EmailService;
 
   constructor() {
     this.tradeRepository = new TradeRepository();
     this.pricingService = new PricingService();
     this.stripeService = new StripeService();
+    this.emailService = new EmailService();
     this.notificationService = new NotificationService();
     this.trackingService = new TrackingService();
   }
@@ -149,6 +153,7 @@ export class TradeService implements ITradeService {
 
     // Notify receiver
     const proposer = await prisma.user.findUnique({ where: { id: data.proposerId } });
+    const receiver = await prisma.user.findUnique({ where: { id: data.receiverId } });
     await this.notificationService.notify({
       userId: data.receiverId,
       type: NotificationType.TRADE_PROPOSED,
@@ -156,6 +161,11 @@ export class TradeService implements ITradeService {
       body: `${proposer?.username ?? "Someone"} wants to trade with you`,
       data: { tradeId: trade.id, tradeCode: trade.tradeCode },
     });
+
+    if (receiver?.email && receiver.emailOnTradeProposed) {
+      const tradeUrl = `${config.frontend.url}/trades/${trade.id}`;
+      this.emailService.sendTradeProposedEmail(receiver.email, receiver.username, proposer?.username ?? "Someone", trade.tradeCode, tradeUrl);
+    }
 
     return this.tradeRepository.findById(trade.id) as Promise<Trade>;
   }
@@ -205,6 +215,7 @@ export class TradeService implements ITradeService {
     // Notify the other party
     const otherId = userId === trade.proposerId ? trade.receiverId : trade.proposerId;
     const actor = await prisma.user.findUnique({ where: { id: userId } });
+    const other = await prisma.user.findUnique({ where: { id: otherId } });
     await this.notificationService.notify({
       userId: otherId,
       type: NotificationType.TRADE_COUNTERED,
@@ -212,6 +223,11 @@ export class TradeService implements ITradeService {
       body: `${actor?.username ?? "Your trade partner"} sent a counter offer`,
       data: { tradeId, tradeCode: trade.tradeCode },
     });
+
+    if (other?.email && other.emailOnTradeCountered) {
+      const tradeUrl = `${config.frontend.url}/trades/${tradeId}`;
+      this.emailService.sendTradeCounterOfferEmail(other.email, other.username, actor?.username ?? "Your trade partner", trade.tradeCode, tradeUrl);
+    }
 
     return updated;
   }
@@ -285,6 +301,7 @@ export class TradeService implements ITradeService {
 
     // Notify proposer
     const receiver = await prisma.user.findUnique({ where: { id: userId } });
+    const proposer = await prisma.user.findUnique({ where: { id: trade.proposerId } });
     await this.notificationService.notify({
       userId: trade.proposerId,
       type: NotificationType.TRADE_ACCEPTED,
@@ -292,6 +309,11 @@ export class TradeService implements ITradeService {
       body: `${receiver?.username ?? "Your trade partner"} accepted your trade`,
       data: { tradeId, tradeCode: trade.tradeCode },
     });
+
+    if (proposer?.email && proposer.emailOnTradeAccepted) {
+      const tradeUrl = `${config.frontend.url}/trades/${tradeId}`;
+      this.emailService.sendTradeAcceptedEmail(proposer.email, proposer.username, receiver?.username ?? "Your trade partner", trade.tradeCode, tradeUrl);
+    }
 
     return updated;
   }
@@ -311,6 +333,7 @@ export class TradeService implements ITradeService {
 
     // Notify proposer
     const receiver = await prisma.user.findUnique({ where: { id: userId } });
+    const proposer = await prisma.user.findUnique({ where: { id: trade.proposerId } });
     await this.notificationService.notify({
       userId: trade.proposerId,
       type: NotificationType.TRADE_CANCELLED,
@@ -318,6 +341,10 @@ export class TradeService implements ITradeService {
       body: `${receiver?.username ?? "Your trade partner"} declined your trade offer`,
       data: { tradeId, tradeCode: trade.tradeCode },
     });
+
+    if (proposer?.email && proposer.emailOnTradeDeclined) {
+      this.emailService.sendTradeDeclinedEmail(proposer.email, proposer.username, receiver?.username ?? "Your trade partner", trade.tradeCode);
+    }
 
     return updated;
   }
@@ -354,6 +381,7 @@ export class TradeService implements ITradeService {
     // Notify the other party
     const otherId = userId === trade.proposerId ? trade.receiverId : trade.proposerId;
     const actor = await prisma.user.findUnique({ where: { id: userId } });
+    const other = await prisma.user.findUnique({ where: { id: otherId } });
     await this.notificationService.notify({
       userId: otherId,
       type: NotificationType.TRADE_CANCELLED,
@@ -361,6 +389,11 @@ export class TradeService implements ITradeService {
       body: `${actor?.username ?? "Your trade partner"} cancelled the trade`,
       data: { tradeId, tradeCode: trade.tradeCode },
     });
+
+    if (other?.email && other.emailOnTradeCancelled) {
+      const tradeUrl = `${config.frontend.url}/trades/${tradeId}`;
+      this.emailService.sendTradeCancelledEmail(other.email, other.username, actor?.username ?? "Your trade partner", trade.tradeCode, tradeUrl);
+    }
 
     return updated;
   }

@@ -24,7 +24,13 @@ export interface UpdateUserData {
   avatarUrl?: string;
   bio?: string;
   location?: string;
+  collectionVisibility?: "PUBLIC" | "PRIVATE" | "FOLLOWERS_ONLY";
   stripeCustomerId?: string;
   stripeAccountId?: string;
   stripeAccountVerified?: boolean;
+  emailOnTradeProposed?: boolean;
+  emailOnTradeCountered?: boolean;
+  emailOnTradeAccepted?: boolean;
+  emailOnTradeDeclined?: boolean;
+  emailOnTradeCancelled?: boolean;
 }

@@ -62,6 +62,17 @@ export default function SettingsPage() {
     message: string;
   }>({ available: null, checking: false, message: "" });
 
+  // Email notification preferences
+  const [emailPrefs, setEmailPrefs] = useState({
+    emailOnTradeProposed: true,
+    emailOnTradeCountered: true,
+    emailOnTradeAccepted: true,
+    emailOnTradeDeclined: true,
+    emailOnTradeCancelled: true,
+  });
+  const [isSavingEmailPrefs, setIsSavingEmailPrefs] = useState(false);
+  const [emailPrefsSaved, setEmailPrefsSaved] = useState(false);
+
   // Address management
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -165,6 +176,13 @@ export default function SettingsPage() {
         bio: user.bio || "",
         location: user.location || "",
       });
+      setEmailPrefs({
+        emailOnTradeProposed: user.emailOnTradeProposed ?? true,
+        emailOnTradeCountered: user.emailOnTradeCountered ?? true,
+        emailOnTradeAccepted: user.emailOnTradeAccepted ?? true,
+        emailOnTradeDeclined: user.emailOnTradeDeclined ?? true,
+        emailOnTradeCancelled: user.emailOnTradeCancelled ?? true,
+      });
       fetchAddresses();
     }
   }, [user]);
@@ -258,6 +276,21 @@ export default function SettingsPage() {
       setError(err.response?.data?.message || "Failed to update profile");
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const handleSaveEmailPrefs = async () => {
+    setIsSavingEmailPrefs(true);
+    setEmailPrefsSaved(false);
+    try {
+      await api.patch("/users/me", emailPrefs);
+      await loadUser();
+      setEmailPrefsSaved(true);
+      setTimeout(() => setEmailPrefsSaved(false), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to save email preferences");
+    } finally {
+      setIsSavingEmailPrefs(false);
     }
   };
 
@@ -520,6 +553,44 @@ export default function SettingsPage() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Email Notifications Section */}
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-1">Email Notifications</h2>
+          <p className="text-sm text-slate-400 mb-4">Choose which trade events trigger an email notification.</p>
+          <div className="space-y-3">
+            {([
+              { key: "emailOnTradeProposed", label: "New trade offer received" },
+              { key: "emailOnTradeCountered", label: "Counter offer received" },
+              { key: "emailOnTradeAccepted", label: "Trade accepted" },
+              { key: "emailOnTradeDeclined", label: "Trade declined" },
+              { key: "emailOnTradeCancelled", label: "Trade cancelled" },
+            ] as const).map(({ key, label }) => (
+              <label key={key} className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={emailPrefs[key]}
+                  onChange={(e) => setEmailPrefs({ ...emailPrefs, [key]: e.target.checked })}
+                  className="rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="text-sm text-slate-300">{label}</span>
+              </label>
+            ))}
+          </div>
+          <button
+            onClick={handleSaveEmailPrefs}
+            disabled={isSavingEmailPrefs}
+            className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            {isSavingEmailPrefs ? (
+              <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>
+            ) : emailPrefsSaved ? (
+              <><Check className="h-4 w-4" /> Saved</>
+            ) : (
+              "Save Preferences"
+            )}
+          </button>
         </div>
 
         {/* Shipping Addresses Section */}

@@ -87,6 +87,11 @@ export const me = async (req: AuthenticatedRequest, res: Response): Promise<void
       stripeAccountVerified: true,
       isAdmin: true,
       isBanned: true,
+      emailOnTradeProposed: true,
+      emailOnTradeCountered: true,
+      emailOnTradeAccepted: true,
+      emailOnTradeDeclined: true,
+      emailOnTradeCancelled: true,
       createdAt: true,
     },
   });

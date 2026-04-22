@@ -216,6 +216,148 @@ export class EmailService implements IEmailService {
     }
   }
 
+  async sendTradeProposedEmail(to: string, receiverUsername: string, proposerUsername: string, tradeCode: string, tradeUrl: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `${proposerUsername} wants to trade with you — ${tradeCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <h1 style="color: #1a1a2e; font-size: 22px; margin-top: 0;">You have a new trade offer, ${receiverUsername}!</h1>
+              <p style="color: #444; font-size: 15px; line-height: 1.6;">
+                <strong>${proposerUsername}</strong> has proposed a trade with you on Holo Swaps.
+              </p>
+              <div style="background: #f3f4f6; border-radius: 6px; padding: 16px; margin: 24px 0;">
+                <p style="margin: 0; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Trade Code</p>
+                <p style="margin: 4px 0 0; font-size: 20px; font-weight: bold; font-family: monospace; color: #1a1a2e;">${tradeCode}</p>
+              </div>
+              <p style="color: #444; font-size: 14px; line-height: 1.6;">
+                Review the offer and accept or decline from your trades page. This offer expires in <strong>7 days</strong>.
+              </p>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${tradeUrl}" style="background: #4f46e5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                  View Trade Offer
+                </a>
+              </div>
+              <p style="color: #888; font-size: 12px; margin-top: 24px;">
+                If you have questions, contact us at <a href="mailto:admin@holoswaps.com" style="color: #4f46e5;">admin@holoswaps.com</a>.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send trade proposed email", { to, tradeCode, err });
+    }
+  }
+
+  async sendTradeAcceptedEmail(to: string, proposerUsername: string, receiverUsername: string, tradeCode: string, tradeUrl: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `${receiverUsername} accepted your trade — ${tradeCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: #dcfce7; border-radius: 50%;">
+                  <span style="font-size: 28px;">🤝</span>
+                </div>
+              </div>
+              <h1 style="color: #1a1a2e; font-size: 22px; margin-top: 0; text-align: center;">Trade Accepted!</h1>
+              <p style="color: #444; font-size: 15px; line-height: 1.6; text-align: center;">
+                <strong>${receiverUsername}</strong> accepted your trade offer. Time to ship your cards!
+              </p>
+              <div style="background: #f3f4f6; border-radius: 6px; padding: 16px; margin: 24px 0;">
+                <p style="margin: 0; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Trade Code</p>
+                <p style="margin: 4px 0 0; font-size: 20px; font-weight: bold; font-family: monospace; color: #1a1a2e;">${tradeCode}</p>
+              </div>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${tradeUrl}" style="background: #16a34a; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                  View Trade & Ship Cards
+                </a>
+              </div>
+              <p style="color: #888; font-size: 12px; margin-top: 24px; text-align: center;">
+                Submit your tracking number once you've shipped.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send trade accepted email", { to, tradeCode, err });
+    }
+  }
+
+  async sendTradeDeclinedEmail(to: string, proposerUsername: string, receiverUsername: string, tradeCode: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `${receiverUsername} declined your trade — ${tradeCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <h1 style="color: #1a1a2e; font-size: 22px; margin-top: 0;">Trade Declined</h1>
+              <p style="color: #444; font-size: 15px; line-height: 1.6;">
+                Hi ${proposerUsername}, <strong>${receiverUsername}</strong> has declined your trade offer <span style="font-family: monospace; font-weight: bold;">${tradeCode}</span>.
+              </p>
+              <p style="color: #444; font-size: 14px; line-height: 1.6;">
+                Your cards have been unlocked and are available for new trades. You can browse other traders on Holo Swaps and make a new offer.
+              </p>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${config.frontend.url}/matches" style="background: #4f46e5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                  Find New Matches
+                </a>
+              </div>
+              <p style="color: #888; font-size: 12px; margin-top: 24px;">
+                Questions? Contact us at <a href="mailto:admin@holoswaps.com" style="color: #4f46e5;">admin@holoswaps.com</a>.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send trade declined email", { to, tradeCode, err });
+    }
+  }
+
+  async sendTradeCancelledEmail(to: string, recipientUsername: string, actorUsername: string, tradeCode: string, tradeUrl: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `Trade cancelled — ${tradeCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <h1 style="color: #1a1a2e; font-size: 22px; margin-top: 0;">Trade Cancelled</h1>
+              <p style="color: #444; font-size: 15px; line-height: 1.6;">
+                Hi ${recipientUsername}, <strong>${actorUsername}</strong> has cancelled trade <span style="font-family: monospace; font-weight: bold;">${tradeCode}</span>.
+              </p>
+              <p style="color: #444; font-size: 14px; line-height: 1.6;">
+                All cards involved in this trade have been unlocked and are available again.
+              </p>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${config.frontend.url}/matches" style="background: #4f46e5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                  Find New Matches
+                </a>
+              </div>
+              <p style="color: #888; font-size: 12px; margin-top: 24px;">
+                Questions? Contact us at <a href="mailto:admin@holoswaps.com" style="color: #4f46e5;">admin@holoswaps.com</a>.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send trade cancelled email", { to, tradeCode, err });
+    }
+  }
+
   async sendGoodbyeEmail(to: string, username: string): Promise<void> {
     try {
       await this.resend.emails.send({
@@ -244,6 +386,39 @@ export class EmailService implements IEmailService {
       });
     } catch (err) {
       logger.error("Failed to send goodbye email", { to, err });
+    }
+  }
+
+  async sendTradeCounterOfferEmail(to: string, recipientUsername: string, actorUsername: string, tradeCode: string, tradeUrl: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `Counter offer received — ${tradeCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <h1 style="color: #1a1a2e; font-size: 22px; margin-top: 0;">Counter Offer Received</h1>
+              <p style="color: #444; font-size: 15px; line-height: 1.6;">
+                Hi ${recipientUsername}, <strong>${actorUsername}</strong> has sent a counter offer on trade <span style="font-family: monospace; font-weight: bold;">${tradeCode}</span>.
+              </p>
+              <p style="color: #444; font-size: 14px; line-height: 1.6;">
+                Review the updated terms and decide whether to accept, counter again, or cancel.
+              </p>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${tradeUrl}" style="background: #ea580c; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                  View Counter Offer
+                </a>
+              </div>
+              <p style="color: #888; font-size: 12px; margin-top: 24px;">
+                Questions? Contact us at <a href="mailto:admin@holoswaps.com" style="color: #4f46e5;">admin@holoswaps.com</a>.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send trade counter offer email", { to, tradeCode, err });
     }
   }
 
