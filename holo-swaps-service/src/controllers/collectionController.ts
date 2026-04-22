@@ -20,6 +20,7 @@ const addItemSchema = z.object({
   gradingScore: z.number().positive().optional(),
   gradingCertNumber: z.string().optional(),
   askingValueOverride: z.number().positive().optional(),
+  quantity: z.number().int().min(1).max(99).optional(),
 });
 
 const updateItemSchema = addItemSchema.partial().omit({ cardId: true });
@@ -87,7 +88,13 @@ export const updateCollectionItem = async (
   if (item.userId !== req.user!.id) throw ApiError.forbidden();
 
   if (item.status === CardStatus.IN_TRADE) {
-    throw ApiError.badRequest("Cannot edit a card that is currently in a trade");
+    // Only allow quantity updates when in trade
+    const allowedKeys = ["quantity"];
+    const requestedKeys = Object.keys(req.body);
+    const hasDisallowedKey = requestedKeys.some((k) => !allowedKeys.includes(k));
+    if (hasDisallowedKey) {
+      throw ApiError.badRequest("Cannot edit a card that is currently in a trade");
+    }
   }
 
   const parsed = updateItemSchema.safeParse(req.body);

@@ -22,6 +22,7 @@ export interface CreateCollectionItemData {
   notes?: string;
   availableForTrade?: boolean;
   askingValueOverride?: number;
+  quantity?: number;
 }
 
 export interface UpdateCollectionItemData {
@@ -33,4 +34,5 @@ export interface UpdateCollectionItemData {
   notes?: string;
   availableForTrade?: boolean;
   askingValueOverride?: number;
+  quantity?: number;
 }

@@ -20,6 +20,7 @@ import {
   Star,
   Headphones,
   Flag,
+  Tag,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -118,6 +119,20 @@ export function Navbar() {
               >
                 <Search size={16} />
                 Browse Cards
+              </Link>
+
+              {/* Listings — always visible */}
+              <Link
+                href="/listings"
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  pathname.startsWith("/listings")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <Tag size={16} />
+                Listings
               </Link>
 
               {/* Authenticated links */}
@@ -262,17 +277,30 @@ export function Navbar() {
               </Link>
             </>
           ) : (
-            <Link
-              href="/cards"
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                pathname.startsWith("/cards") ? "bg-primary/10 text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Search size={16} />
-              Browse Cards
-            </Link>
+            <>
+              <Link
+                href="/cards"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  pathname.startsWith("/cards") ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                )}
+              >
+                <Search size={16} />
+                Browse Cards
+              </Link>
+              <Link
+                href="/listings"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  pathname.startsWith("/listings") ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                )}
+              >
+                <Tag size={16} />
+                Listings
+              </Link>
+            </>
           )}
 
           {isAuthenticated && !user?.isAdmin ? (

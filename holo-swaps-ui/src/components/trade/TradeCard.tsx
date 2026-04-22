@@ -63,7 +63,9 @@ export function TradeCard({ trade, className }: TradeCardProps) {
             <div className="flex gap-1.5 flex-wrap">
               {myItems.slice(0, 3).map((item) => {
                 const card =
-                  item.proposerCollection?.card || item.receiverCollection?.card;
+                  item.collectionItem?.card ||
+                  item.proposerCollection?.card ||
+                  item.receiverCollection?.card;
                 return (
                   <span
                     key={item.id}
@@ -89,7 +91,9 @@ export function TradeCard({ trade, className }: TradeCardProps) {
             <div className="flex gap-1.5 flex-wrap">
               {theirItems.slice(0, 3).map((item) => {
                 const card =
-                  item.proposerCollection?.card || item.receiverCollection?.card;
+                  item.collectionItem?.card ||
+                  item.proposerCollection?.card ||
+                  item.receiverCollection?.card;
                 return (
                   <span
                     key={item.id}

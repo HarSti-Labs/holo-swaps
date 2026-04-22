@@ -59,6 +59,7 @@ export interface Card {
 
 export interface CollectionItem {
   id: string;
+  quantity: number;
   userId: string;
   cardId: string;
   card: Card;
@@ -71,6 +72,8 @@ export interface CollectionItem {
   status: "AVAILABLE" | "UNAVAILABLE" | "IN_TRADE" | "TRADED_AWAY";
   askingValueOverride: number | null;
   currentMarketValue: number | null;
+  isOpenListing: boolean;
+  listingDescription: string | null;
   createdAt: string;
 }
 
@@ -109,6 +112,7 @@ export interface TradeItem {
   tradeId: string;
   collectionItemId: string;
   ownedByProposer: boolean;
+  collectionItem?: CollectionItem;
   proposerCollection?: CollectionItem;
   receiverCollection?: CollectionItem;
 }

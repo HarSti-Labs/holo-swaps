@@ -106,7 +106,7 @@ export function TradeProposalModal({
   };
 
   const calculateTotalValue = (cards: CollectionItem[]) => {
-    return cards.reduce((sum, card) => sum + (card.currentMarketValue || 0), 0);
+    return cards.reduce((sum, card) => sum + (card.askingValueOverride ?? card.currentMarketValue ?? 0), 0);
   };
 
   const myTotal = calculateTotalValue(myCards);
@@ -190,9 +190,16 @@ export function TradeProposalModal({
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{card.card.name}</p>
-                          <p className="text-xs text-slate-400">
-                            ${card.currentMarketValue?.toFixed(2) || "N/A"}
-                          </p>
+                          {card.askingValueOverride != null ? (
+                            <div>
+                              <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                              <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400">
+                              ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                            </p>
+                          )}
                         </div>
                         <button
                           onClick={() => removeMyCard(card.id)}
@@ -241,9 +248,16 @@ export function TradeProposalModal({
                             <p className="text-xs text-slate-400">
                               {CONDITION_LABELS[card.condition]}
                             </p>
-                            <p className="text-xs text-green-400">
-                              ${card.currentMarketValue?.toFixed(2) || "N/A"}
-                            </p>
+                            {card.askingValueOverride != null ? (
+                              <div>
+                                <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                                <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-green-400">
+                                ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                              </p>
+                            )}
                           </div>
                           <Plus className="h-4 w-4 text-blue-400" />
                         </button>
@@ -285,9 +299,16 @@ export function TradeProposalModal({
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{card.card.name}</p>
-                          <p className="text-xs text-slate-400">
-                            ${card.currentMarketValue?.toFixed(2) || "N/A"}
-                          </p>
+                          {card.askingValueOverride != null ? (
+                            <div>
+                              <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                              <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400">
+                              ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                            </p>
+                          )}
                         </div>
                         <button
                           onClick={() => removeTheirCard(card.id)}
@@ -336,9 +357,16 @@ export function TradeProposalModal({
                             <p className="text-xs text-slate-400">
                               {CONDITION_LABELS[card.condition]}
                             </p>
-                            <p className="text-xs text-green-400">
-                              ${card.currentMarketValue?.toFixed(2) || "N/A"}
-                            </p>
+                            {card.askingValueOverride != null ? (
+                              <div>
+                                <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                                <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-green-400">
+                                ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                              </p>
+                            )}
                           </div>
                           <Plus className="h-4 w-4 text-blue-400" />
                         </button>
@@ -395,23 +423,23 @@ export function TradeProposalModal({
                       Even trade
                     </span>
                   ) : netValue > 0 ? (
-                    <span className="flex items-center gap-1.5 text-blue-400 font-semibold text-sm">
+                    <span className="flex items-center gap-1.5 text-amber-400 font-semibold text-sm">
                       <TrendingUp className="h-3.5 w-3.5" />
-                      +${netValue.toFixed(2)} in your favor
+                      You gain ${ netValue.toFixed(2)} in value
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1.5 text-amber-400 font-semibold text-sm">
+                    <span className="flex items-center gap-1.5 text-blue-400 font-semibold text-sm">
                       <TrendingDown className="h-3.5 w-3.5" />
-                      +${Math.abs(netValue).toFixed(2)} in their favor
+                      They gain ${Math.abs(netValue).toFixed(2)} in value
                     </span>
                   )}
                 </div>
                 <p className="text-xs text-slate-500">
                   {isEven
-                    ? "Values are roughly equal."
+                    ? "Values are roughly equal — a fair trade."
                     : netValue > 0
-                    ? "You're receiving more value — they may counter or decline."
-                    : "You're offering more value — a generous trade for them."}
+                    ? "You're receiving more than you're offering — add cards or cash to balance."
+                    : "You're offering more than you're receiving — a generous offer."}
                 </p>
               </div>
             )}

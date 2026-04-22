@@ -318,6 +318,7 @@ model PriceAlert {
 
 model UserCollection {
   id                    String         @id @default(uuid())
+  quantity              Int            @default(1)
   userId                String
   cardId                String
   condition             CardCondition  @default(NEAR_MINT)

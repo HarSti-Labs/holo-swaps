@@ -78,6 +78,7 @@ export class CollectionRepository implements ICollectionRepository {
         notes: data.notes,
         status,
         askingValueOverride: data.askingValueOverride,
+        quantity: data.quantity ?? 1,
       },
       include: collectionInclude,
     }) as unknown as UserCollection;

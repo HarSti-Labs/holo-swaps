@@ -18,6 +18,7 @@ export interface AddCollectionItemPayload {
   notes?: string;
   status?: "AVAILABLE" | "UNAVAILABLE" | "IN_TRADE" | "TRADED_AWAY";
   askingValueOverride?: number;
+  quantity?: number;
 }
 
 export interface AddWantPayload {
@@ -85,6 +86,11 @@ export const collectionApi = {
       `/collection/${itemId}`,
       data
     );
+    return res.data.data!;
+  },
+
+  toggleListing: async (itemId: string, list: boolean, description?: string, askingPrice?: number): Promise<CollectionItem> => {
+    const res = await api.patch<ApiResponse<CollectionItem>>(`/collection/${itemId}/listing`, { list, description, askingPrice });
     return res.data.data!;
   },
 

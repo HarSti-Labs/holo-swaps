@@ -4,7 +4,7 @@ import { sendSuccess, sendCreated } from "@/utils/response";
 import { ApiError } from "@/utils/ApiError";
 import { z } from "zod";
 import { prisma } from "@/config/prisma";
-import { CardStatus } from "@prisma/client";
+import { CardStatus, Prisma } from "@prisma/client";
 import { TradeService } from "@/services/implementations/TradeService";
 
 const tradeService = new TradeService();
@@ -12,6 +12,7 @@ const tradeService = new TradeService();
 const toggleListingSchema = z.object({
   list: z.boolean(),
   description: z.string().max(1000).optional(),
+  askingPrice: z.number().min(0).optional(),
 });
 
 const makeListingOfferSchema = z.object({
@@ -22,19 +23,55 @@ const makeListingOfferSchema = z.object({
 });
 
 // GET /api/listings
-export const getListings = async (req: Request, res: Response): Promise<void> => {
+export const getListings = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const page = parseInt(req.query.page as string) || 1;
-  const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+  const limit = Math.min(parseInt(req.query.limit as string) || 24, 100);
   const skip = (page - 1) * limit;
   const game = req.query.game as string | undefined;
   const q = req.query.q as string | undefined;
+  const rarity = req.query.rarity as string | undefined;
+  const condition = req.query.condition as string | undefined;
+  const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined;
+  const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined;
+  const foilOnly = req.query.foilOnly === "true";
+  const sortBy = (req.query.sortBy as string) || "newest";
 
-  const where = {
+  // Build card-level filter (game + rarity + search)
+  const cardWhere: Prisma.CardWhereInput = {};
+  if (game) cardWhere.game = game as never;
+  if (rarity) cardWhere.rarity = { equals: rarity, mode: "insensitive" };
+  if (q) cardWhere.name = { contains: q, mode: "insensitive" };
+
+  // Build price filter: effective price = askingValueOverride ?? currentMarketValue
+  const priceRange: Prisma.FloatNullableFilter = {};
+  if (minPrice !== undefined) priceRange.gte = minPrice;
+  if (maxPrice !== undefined) priceRange.lte = maxPrice;
+  const hasPriceFilter = minPrice !== undefined || maxPrice !== undefined;
+
+  const where: Prisma.UserCollectionWhereInput = {
     isOpenListing: true,
     status: CardStatus.AVAILABLE,
-    ...(game && { card: { game: game as never } }),
-    ...(q && { card: { name: { contains: q, mode: "insensitive" as const } } }),
+    ...(req.user && { userId: { not: req.user.id } }),
   };
+
+  if (foilOnly) where.isFoil = true;
+  if (condition) where.condition = condition as never;
+  if (Object.keys(cardWhere).length > 0) where.card = cardWhere;
+  if (hasPriceFilter) {
+    where.OR = [
+      { askingValueOverride: priceRange },
+      { askingValueOverride: null, currentMarketValue: priceRange },
+    ];
+  }
+
+  const orderBy =
+    sortBy === "price_asc"
+      ? [{ askingValueOverride: "asc" as const }, { currentMarketValue: "asc" as const }]
+      : sortBy === "price_desc"
+      ? [{ askingValueOverride: "desc" as const }, { currentMarketValue: "desc" as const }]
+      : sortBy === "condition_best"
+      ? [{ condition: "asc" as const }]
+      : [{ updatedAt: "desc" as const }];
 
   const [data, total] = await prisma.$transaction([
     prisma.userCollection.findMany({
@@ -46,7 +83,7 @@ export const getListings = async (req: Request, res: Response): Promise<void> =>
       },
       skip,
       take: limit,
-      orderBy: { updatedAt: "desc" },
+      orderBy,
     }),
     prisma.userCollection.count({ where }),
   ]);
@@ -58,6 +95,36 @@ export const getListings = async (req: Request, res: Response): Promise<void> =>
     limit,
     totalPages: Math.ceil(total / limit),
   });
+};
+
+// GET /api/listings/games
+export const getListingGames = async (req: Request, res: Response): Promise<void> => {
+  const items = await prisma.userCollection.findMany({
+    where: { isOpenListing: true, status: CardStatus.AVAILABLE },
+    select: { card: { select: { game: true } } },
+    distinct: ["cardId"],
+  });
+
+  const games = [...new Set(items.map((i) => i.card.game))];
+  sendSuccess(res, games);
+};
+
+// GET /api/listings/rarities
+export const getListingRarities = async (req: Request, res: Response): Promise<void> => {
+  const game = req.query.game as string | undefined;
+
+  const cards = await prisma.card.findMany({
+    where: {
+      ...(game && { game: game as never }),
+      rarity: { not: null },
+      collectionItems: { some: { isOpenListing: true, status: CardStatus.AVAILABLE } },
+    },
+    select: { rarity: true },
+    distinct: ["rarity"],
+    orderBy: { rarity: "asc" },
+  });
+
+  sendSuccess(res, cards.map((c) => c.rarity).filter(Boolean));
 };
 
 // PATCH /api/collection/:itemId/listing
@@ -82,10 +149,16 @@ export const toggleListing = async (
 
   const updated = await prisma.userCollection.update({
     where: { id: req.params.itemId },
-    data: {
-      isOpenListing: parsed.data.list,
-      listingDescription: parsed.data.description ?? item.listingDescription,
-    },
+    data: parsed.data.list
+      ? {
+          isOpenListing: true,
+          listingDescription: parsed.data.description ?? item.listingDescription,
+          askingValueOverride: parsed.data.askingPrice ?? item.askingValueOverride,
+        }
+      : {
+          isOpenListing: false,
+          askingValueOverride: null,
+        },
   });
 
   sendSuccess(

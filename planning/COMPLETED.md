@@ -19,7 +19,7 @@
 - [x] `Card` — card catalog supporting Pokemon, MTG, One Piece, Yu-Gi-Oh, Digimon
 - [x] `CardPriceHistory` — time-series market prices from TCGPlayer
 - [x] `PriceAlert` — user-defined price alerts (above/below target)
-- [x] `UserCollection` — per-user card inventory with condition, grading, status, media
+- [x] `UserCollection` — per-user card inventory with condition, grading, status, media, quantity
 - [x] `UserWant` — want list with priority, condition preference, grading preference
 - [x] `Trade` — full trade model with value snapshots, cash difference, Stripe payment intent
 - [x] `TradeItem` — cards on each side of a trade
@@ -76,7 +76,7 @@
 - [x] `GET    /api/collection` — own collection, paginated, filterable by `status`
 - [x] `POST   /api/collection` — add a card (condition, foil, first edition, grading, asking value override)
 - [x] `GET    /api/collection/:itemId` — single item (own or admin)
-- [x] `PATCH  /api/collection/:itemId` — update item; blocked while `IN_TRADE`
+- [x] `PATCH  /api/collection/:itemId` — update item; blocked while `IN_TRADE` except for `quantity` field
 - [x] `DELETE /api/collection/:itemId` — remove card; blocked while `IN_TRADE`
 
 ### Want List API (`/api/wants`)
@@ -167,6 +167,38 @@
 
 ---
 
+## Session — 2026-04-22 (continued)
+
+### Listing Price / Asking Price
+
+- [x] **`listingController.ts`** — Extended `toggleListingSchema` to accept `askingPrice: z.number().min(0).optional()`. Updated `prisma.userCollection.update` call: when `list: true`, saves `isOpenListing: true`, `listingDescription`, and `askingValueOverride` (from `askingPrice` param or falls back to existing value); when `list: false`, saves `isOpenListing: false` and `askingValueOverride: null` (clears it on unlist)
+- [x] **`collection.ts` (API client)** — Updated `toggleListing` signature to accept optional `askingPrice?: number` as 4th parameter; included in PATCH body
+- [x] **`ListingModal.tsx`** (new file at `src/components/listings/ListingModal.tsx`) — Full modal for listing/editing a card listing: card context row (image, name, set, condition badge), market value reference with tooltip, asking price number input (DollarSign icon, optional, defaults to market value), listing description textarea, footer with "Remove Listing" (red outline, only when listed), Cancel, and "Publish Listing"/"Update Listing" (green) buttons. State resets via `useEffect` when `isOpen` changes. Calls `onSave(parseFloat(askingPrice) || null, description)` and `onUnlist()` + `onClose()`.
+- [x] **`collection/page.tsx`** — Added `listingModalItem` state; replaced `toggleListingMutation` with direct API calls; `handleToggleListing` now opens `ListingModal` instead of immediately toggling; added `handleListingSave` and `handleListingUnlist` handlers that call `collectionApi.toggleListing` directly then invalidate query; rendered `<ListingModal>` in JSX near other dialogs; updated grid view "List" button text to show `$X.XX` when `askingValueOverride` is set; updated list view to show a small teal price indicator next to the Tag button when listed with a price
+- [x] **`TradeProposalModal.tsx`** — `calculateTotalValue` now uses `askingValueOverride ?? currentMarketValue`; all price display lines in selected-cards and available-cards sections updated to show teal "Owner price" label when `askingValueOverride` is set, falling back to green market value display otherwise
+- [x] **`CounterOfferModal.tsx`** — `myTotal` and `theirTotal` calculations updated to use `askingValueOverride ?? currentMarketValue`; price display lines in myCards (current + available to add) and theirCards sections updated with teal "Owner price" indicator when override is set
+
+### Collection Quantity + IN_TRADE Lock
+
+- [x] **Schema** — Added `quantity Int @default(1)` to `UserCollection` model; `prisma db push` applied
+- [x] **`ICollectionRepository.ts`** — Added `quantity?: number` to both `CreateCollectionItemData` and `UpdateCollectionItemData`
+- [x] **`CollectionRepository.ts`** — `create` method now passes `quantity: data.quantity ?? 1` to Prisma; `update` already spreads `...rest` so quantity flows through automatically
+- [x] **`collectionController.ts`** — Added `quantity: z.number().int().min(1).max(99).optional()` to `addItemSchema` (auto-included in `updateItemSchema` via `.partial()`); changed IN_TRADE guard to allow requests where only `quantity` is being updated (all other fields still blocked)
+- [x] **`types/index.ts`** — Added `quantity: number` to `CollectionItem` interface
+- [x] **`lib/api/collection.ts`** — Added `quantity?: number` to `AddCollectionItemPayload`
+- [x] **`collection/page.tsx`** — Updated `count` prop from `cardCounts[item.card.id]` to `item.quantity`; added `Lock` to lucide imports; grid card: added amber IN_TRADE overlay (Lock icon + "In Trade" label) with `z-30`, replaced action button bar with conditional rendering — IN_TRADE shows amber "In Active Trade" footer, otherwise shows normal Trade/List buttons; list card: replaced action buttons with conditional — IN_TRADE shows amber "In Trade" badge, otherwise shows normal buttons; `EditCardDialog`: added `quantity` state, IN_TRADE amber warning banner, quantity stepper field (−/number input/+), disabled condition/checkboxes/notes when IN_TRADE, save button sends only `{ quantity }` when IN_TRADE; `AddCardDialog`: added `quantity` state and stepper UI, included in `addMutation.mutate` call
+- [x] **`trades/[tradeId]/page.tsx`** — Card price lines in "You're Trading" and "You're Receiving" sections updated to show teal "Owner price" indicator when `askingValueOverride` is set
+- [x] **`listings/page.tsx`** — `ListingCard` price badge updated: teal color + "ASKING" label when `askingValueOverride` is set; green color (no label) when only `currentMarketValue`
+
+---
+
+### Listings Browse Page
+- [x] `src/lib/api/listings.ts` — `Listing` interface + `listingsApi.getListings` (game, q, page, limit)
+- [x] `src/app/listings/page.tsx` — full listings feed: game filter tabs, debounced name search, 6-col card grid, pagination; each card shows image, condition badge (color-coded), price, owner avatar + username + tier badge; "Make Offer" button opens `TradeProposalModal` pre-loaded with the listed card; "Your listing" label shown for own cards; "Sign in to offer" for unauthenticated users
+- [x] `Navbar.tsx` — "Listings" link (Tag icon) added for non-admin users, desktop + mobile
+
+---
+
 ## Session — 2026-04-22
 
 ### Admin Reports Dashboard + Detail
@@ -204,6 +236,12 @@
 
 ### Fix: Recent Trade 404
 - [x] `TradeCard.tsx` — corrected href from `/trade/${trade.id}` to `/trades/${trade.id}`
+
+### Fix: Trade Item Card Names Showing "Unknown"
+- [x] `types/index.ts` — Added `collectionItem?: CollectionItem` to `TradeItem` interface (the actual API response field, which was missing)
+- [x] `TradeCard.tsx` — Updated card name resolution in both "You give" and "You receive" sections to check `collectionItem?.card` first (real API field), then fall back to `proposerCollection`/`receiverCollection`
+- [x] `trades/page.tsx` — Same fix for card name display in trades list rows
+- [x] `CounterOfferModal.tsx` — Removed `as any` cast from `getCollectionItem` helper (now properly typed)
 
 ### Counter Offer — Card Add/Remove
 - [x] `TradeService.counterOffer` — rewritten to support full card swaps: validates new cards belong to user and are AVAILABLE, unlocks removed items, locks/creates new items, recalculates market values, all in a transaction

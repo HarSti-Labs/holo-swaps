@@ -23,7 +23,7 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
   const currentTheirItems = trade.items.filter((i) => i.ownedByProposer !== isProposer);
 
   const getCollectionItem = (item: typeof trade.items[0]): CollectionItem | null =>
-    (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection ?? null;
+    item.collectionItem ?? item.proposerCollection ?? item.receiverCollection ?? null;
 
   const [myCards, setMyCards] = useState<CollectionItem[]>(() =>
     currentMyItems.map(getCollectionItem).filter(Boolean) as CollectionItem[]
@@ -71,9 +71,9 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
   const cashAddNumber = parseFloat(cashAdd) || 0;
 
   // Trade balance from current user's perspective
-  const myTotal = myCards.reduce((s, c) => s + (c.currentMarketValue ?? 0), 0);
+  const myTotal = myCards.reduce((s, c) => s + (c.askingValueOverride ?? c.currentMarketValue ?? 0), 0);
   const theirCards = currentTheirItems.map(getCollectionItem).filter(Boolean) as CollectionItem[];
-  const theirTotal = theirCards.reduce((s, c) => s + (c.currentMarketValue ?? 0), 0);
+  const theirTotal = theirCards.reduce((s, c) => s + (c.askingValueOverride ?? c.currentMarketValue ?? 0), 0);
   const netValue = theirTotal - (myTotal + cashAddNumber);
   const isEven = Math.abs(netValue) < 0.5;
 
@@ -158,7 +158,14 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{card.card.name}</p>
                         <p className="text-xs text-slate-400">{CONDITION_LABELS[card.condition]}</p>
-                        <p className="text-xs text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</p>
+                        {card.askingValueOverride != null ? (
+                          <div>
+                            <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                            <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</p>
+                        )}
                       </div>
                       <button onClick={() => removeCard(card.id)} className="text-red-400 hover:text-red-300 flex-shrink-0">
                         <Minus className="h-4 w-4" />
@@ -194,7 +201,14 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">{card.card.name}</p>
                         <p className="text-xs text-slate-500">{CONDITION_LABELS[card.condition]}</p>
-                        <p className="text-xs text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</p>
+                        {card.askingValueOverride != null ? (
+                          <div>
+                            <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                            <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</p>
+                        )}
                       </div>
                       <Plus className="h-3 w-3 text-orange-400 flex-shrink-0" />
                     </button>
@@ -224,7 +238,14 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{card.card.name}</p>
                         <p className="text-xs text-slate-400">{CONDITION_LABELS[card.condition]}</p>
-                        <p className="text-xs text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</p>
+                        {card.askingValueOverride != null ? (
+                          <div>
+                            <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                            <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</p>
+                        )}
                       </div>
                     </div>
                   ))
@@ -270,12 +291,12 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
                     <MinusIcon className="h-3.5 w-3.5" /> Even trade
                   </span>
                 ) : netValue > 0 ? (
-                  <span className="flex items-center gap-1.5 text-blue-400 font-semibold text-sm">
-                    <TrendingUp className="h-3.5 w-3.5" /> +${netValue.toFixed(2)} in your favor
+                  <span className="flex items-center gap-1.5 text-amber-400 font-semibold text-sm">
+                    <TrendingUp className="h-3.5 w-3.5" /> You gain ${netValue.toFixed(2)} in value
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1.5 text-amber-400 font-semibold text-sm">
-                    <TrendingDown className="h-3.5 w-3.5" /> +${Math.abs(netValue).toFixed(2)} in their favor
+                  <span className="flex items-center gap-1.5 text-blue-400 font-semibold text-sm">
+                    <TrendingDown className="h-3.5 w-3.5" /> They gain ${Math.abs(netValue).toFixed(2)} in value
                   </span>
                 )}
               </div>

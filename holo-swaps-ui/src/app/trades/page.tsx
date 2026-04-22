@@ -202,7 +202,7 @@ export default function TradesPage() {
                             key={item.id}
                             className="bg-slate-800 rounded px-2 py-1 text-xs truncate max-w-[120px]"
                           >
-                            {item.proposerCollection?.card.name || item.receiverCollection?.card.name}
+                            {item.collectionItem?.card.name || item.proposerCollection?.card.name || item.receiverCollection?.card.name}
                           </div>
                         ))}
                         {myItems.length > 3 && (
@@ -230,7 +230,7 @@ export default function TradesPage() {
                             key={item.id}
                             className="bg-slate-800 rounded px-2 py-1 text-xs truncate max-w-[120px]"
                           >
-                            {item.proposerCollection?.card.name || item.receiverCollection?.card.name}
+                            {item.collectionItem?.card.name || item.proposerCollection?.card.name || item.receiverCollection?.card.name}
                           </div>
                         ))}
                         {theirItems.length > 3 && (

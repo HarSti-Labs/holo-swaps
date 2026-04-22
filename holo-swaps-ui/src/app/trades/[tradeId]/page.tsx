@@ -67,7 +67,7 @@ export default function TradeDetailPage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCounterModal, setShowCounterModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messageCountRef = useRef(0);
+  const messageCountRef = useRef(-1);
   const messagesInitializedRef = useRef(false);
 
   useEffect(() => {
@@ -81,7 +81,15 @@ export default function TradeDetailPage() {
   }, [user, tradeId]);
 
   useEffect(() => {
+    // messageCountRef starts at -1; first two fires (empty [] then first API response)
+    // are treated as baseline — only scroll when count grows after that
+    if (messageCountRef.current === -1) {
+      // Initial render with empty array — set to 0 as sentinel
+      messageCountRef.current = 0;
+      return;
+    }
     if (!messagesInitializedRef.current) {
+      // First real API response — record baseline, don't scroll
       messagesInitializedRef.current = true;
       messageCountRef.current = messages.length;
       return;
@@ -286,9 +294,16 @@ if (!user) {
                               {CONDITION_LABELS[card.condition]}
                               {card.isFoil && " • Foil"}
                             </p>
-                            <p className="text-xs text-green-400 mt-1">
-                              ${card.currentMarketValue?.toFixed(2) || "N/A"}
-                            </p>
+                            {card.askingValueOverride != null ? (
+                              <div className="mt-1">
+                                <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                                <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-green-400 mt-1">
+                                ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                              </p>
+                            )}
                           </div>
                         </div>
                       );
@@ -334,9 +349,16 @@ if (!user) {
                               {CONDITION_LABELS[card.condition]}
                               {card.isFoil && " • Foil"}
                             </p>
-                            <p className="text-xs text-green-400 mt-1">
-                              ${card.currentMarketValue?.toFixed(2) || "N/A"}
-                            </p>
+                            {card.askingValueOverride != null ? (
+                              <div className="mt-1">
+                                <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                                <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-green-400 mt-1">
+                                ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                              </p>
+                            )}
                           </div>
                         </div>
                       );

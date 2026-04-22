@@ -18,11 +18,6 @@ _(move items here when actively working on them)_
 - The backend `GET /:username/collection` already enforces it but the FOLLOWERS_ONLY branch has a TODO (needs follower check wired in)
 - Files: `holo-swaps-ui/src/app/settings/page.tsx`, `holo-swaps-service/src/controllers/userController.ts`
 
-### 3. Open Listings Frontend
-- Backend is fully built: `GET /api/listings`, `PATCH /api/collection/:id/listing`, `POST /api/listings/:id/offer`
-- Need a `/listings` page — browseable feed of cards marked as open listings
-- Need a toggle in the collection page per card to mark it as an open listing
-- Files: new `holo-swaps-ui/src/app/listings/page.tsx`, `holo-swaps-ui/src/app/collection/page.tsx`
 
 ### 4. Post-Trade Review Prompt
 - Backend: `POST /api/trades/:tradeId/reviews` exists

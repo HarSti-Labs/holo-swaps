@@ -8,10 +8,11 @@ import { searchCards } from "@/lib/api/cards";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import {
   Plus, Search, Filter, Grid3x3, List, Trash2, Edit2,
-  ArrowLeftRight, X, Star, BookMarked, Heart, CheckSquare, Square,
+  ArrowLeftRight, X, Star, BookMarked, Heart, CheckSquare, Square, Tag, Lock,
 } from "lucide-react";
 import { Card as CardType, CollectionItem, CardCondition, WantItem, WantPriority } from "@/types";
 import { CONDITION_LABELS } from "@/types";
+import { ListingModal } from "@/components/listings/ListingModal";
 
 const PRIORITY_LABELS: Record<WantPriority, string> = {
   HIGH: "High Priority",
@@ -82,6 +83,9 @@ export default function MyCardsPage() {
   const collection = collectionData?.data ?? [];
   const wants = wantsData ?? [];
 
+  // ── Listing modal state ───────────────────────────────────────────
+  const [listingModalItem, setListingModalItem] = useState<CollectionItem | null>(null);
+
   // ── Mutations ─────────────────────────────────────────────────────
   const toggleTradeMutation = useMutation({
     mutationFn: ({ itemId, availableForTrade }: { itemId: string; availableForTrade: boolean }) =>
@@ -90,6 +94,24 @@ export default function MyCardsPage() {
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["myCollection"] }),
   });
+
+  const handleToggleListing = (item: CollectionItem) => {
+    setListingModalItem(item);
+  };
+
+  const handleListingSave = async (askingPrice: number | null, description: string) => {
+    if (!listingModalItem) return;
+    await collectionApi.toggleListing(listingModalItem.id, true, description, askingPrice ?? undefined);
+    queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+    setListingModalItem(null);
+  };
+
+  const handleListingUnlist = async () => {
+    if (!listingModalItem) return;
+    await collectionApi.toggleListing(listingModalItem.id, false);
+    queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+    setListingModalItem(null);
+  };
 
   const removeWantMutation = useMutation({
     mutationFn: (wantId: string) => collectionApi.removeFromWants(wantId),
@@ -560,9 +582,10 @@ export default function MyCardsPage() {
                     key={item.id}
                     item={item}
                     viewMode={viewMode}
-                    count={cardCounts[item.card.id] ?? 1}
+                    count={item.quantity ?? 1}
                     onEdit={() => !collectionSelectMode && setEditingItem(item)}
                     onToggleTrade={() => handleToggleTrade(item)}
+                    onToggleListing={() => handleToggleListing(item)}
                     selectMode={collectionSelectMode}
                     selected={selectedCollectionIds.has(item.id)}
                     onToggleSelect={() => toggleCollectionSelect(item.id)}
@@ -833,6 +856,15 @@ export default function MyCardsPage() {
           isSaving={updateWantMutation.isPending}
         />
       )}
+      {listingModalItem && (
+        <ListingModal
+          isOpen={true}
+          onClose={() => setListingModalItem(null)}
+          item={listingModalItem}
+          onSave={handleListingSave}
+          onUnlist={handleListingUnlist}
+        />
+      )}
     </div>
   );
 }
@@ -847,6 +879,7 @@ function CollectionCard({
   count,
   onEdit,
   onToggleTrade,
+  onToggleListing,
   selectMode,
   selected,
   onToggleSelect,
@@ -856,6 +889,7 @@ function CollectionCard({
   count: number;
   onEdit: () => void;
   onToggleTrade: () => void;
+  onToggleListing: () => void;
   selectMode: boolean;
   selected: boolean;
   onToggleSelect: () => void;
@@ -905,22 +939,45 @@ function CollectionCard({
             </div>
           </div>
           {!selectMode && (
-            <div className="ml-4 flex items-center gap-2">
-              <button
-                onClick={onToggleTrade}
-                title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
-                className={`p-3 rounded-lg border-2 transition-colors ${
-                  item.status === "AVAILABLE"
-                    ? "bg-green-500/20 border-green-500 text-green-400 hover:bg-green-500/30"
-                    : "bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300"
-                }`}
-              >
-                <ArrowLeftRight size={18} />
-              </button>
-              <button onClick={onEdit} className="p-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors">
-                <Edit2 size={18} />
-              </button>
-            </div>
+            item.status === "IN_TRADE" ? (
+              <div className="ml-4 flex items-center gap-2">
+                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold">
+                  <Lock size={12} />
+                  In Trade
+                </span>
+              </div>
+            ) : (
+              <div className="ml-4 flex items-center gap-2">
+                <button
+                  onClick={onToggleTrade}
+                  title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
+                  className={`p-3 rounded-lg border-2 transition-colors ${
+                    item.status === "AVAILABLE"
+                      ? "bg-green-500/20 border-green-500 text-green-400 hover:bg-green-500/30"
+                      : "bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300"
+                  }`}
+                >
+                  <ArrowLeftRight size={18} />
+                </button>
+                <button
+                  onClick={onToggleListing}
+                  title={item.isOpenListing ? "Remove from listings" : "List publicly for offers"}
+                  className={`p-3 rounded-lg border-2 transition-colors ${
+                    item.isOpenListing
+                      ? "bg-teal-500/20 border-teal-500 text-teal-400 hover:bg-teal-500/30"
+                      : "bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300"
+                  }`}
+                >
+                  <Tag size={18} />
+                </button>
+                {item.isOpenListing && item.askingValueOverride != null && (
+                  <span className="text-xs font-semibold text-teal-400">${item.askingValueOverride.toFixed(2)}</span>
+                )}
+                <button onClick={onEdit} className="p-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors">
+                  <Edit2 size={18} />
+                </button>
+              </div>
+            )
           )}
         </div>
       </div>
@@ -934,6 +991,14 @@ function CollectionCard({
         selectMode ? "cursor-pointer" : "hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 hover:-translate-y-2 duration-500"
       } ${selected ? "border-blue-500 shadow-lg shadow-blue-500/30" : "border-slate-700/50 hover:border-blue-500/70"}`}
     >
+      {/* IN_TRADE lock overlay */}
+      {item.status === "IN_TRADE" && (
+        <div className="absolute inset-0 z-30 bg-black/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-3xl">
+          <Lock className="h-8 w-8 text-amber-400 mb-2" />
+          <span className="text-amber-400 text-xs font-bold">In Trade</span>
+        </div>
+      )}
+
       {/* Selection checkbox */}
       {selectMode && (
         <div className="absolute top-2 left-2 z-20">
@@ -971,18 +1036,43 @@ function CollectionCard({
         </div>
       </div>
       {!selectMode && (
-        <button
-          onClick={onToggleTrade}
-          title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
-          className={`w-full py-2 flex items-center justify-center gap-2 text-xs font-bold border-t-2 transition-colors ${
-            item.status === "AVAILABLE"
-              ? "bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30"
-              : "bg-slate-900/90 border-slate-700/50 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
-          }`}
-        >
-          <ArrowLeftRight size={12} />
-          {item.status === "AVAILABLE" ? "Available for Trade" : "Mark for Trade"}
-        </button>
+        item.status === "IN_TRADE" ? (
+          <div className="border-t-2 border-amber-500/30 bg-amber-500/10 py-2 text-center text-xs font-bold text-amber-400 flex items-center justify-center gap-1.5">
+            <Lock size={11} />
+            In Active Trade
+          </div>
+        ) : (
+          <div className="flex border-t-2 border-slate-700/50">
+            <button
+              onClick={onToggleTrade}
+              title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
+              className={`flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold transition-colors ${
+                item.status === "AVAILABLE"
+                  ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                  : "bg-slate-900/90 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+              }`}
+            >
+              <ArrowLeftRight size={12} />
+              {item.status === "AVAILABLE" ? "Trading" : "Trade"}
+            </button>
+            <button
+              onClick={onToggleListing}
+              title={item.isOpenListing ? "Remove from listings" : "List publicly for offers"}
+              className={`flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold border-l-2 border-slate-700/50 transition-colors ${
+                item.isOpenListing
+                  ? "bg-teal-500/20 text-teal-400 hover:bg-teal-500/30"
+                  : "bg-slate-900/90 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+              }`}
+            >
+              <Tag size={12} />
+              {item.isOpenListing
+                ? item.askingValueOverride != null
+                  ? `$${item.askingValueOverride.toFixed(2)}`
+                  : "Listed"
+                : "List"}
+            </button>
+          </div>
+        )
       )}
     </div>
   );
@@ -1218,6 +1308,7 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
   const [condition, setCondition] = useState<CardCondition>("NEAR_MINT");
   const [isFoil, setIsFoil] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   const { data: searchResults } = useQuery({
     queryKey: ["card-search", searchQuery],
@@ -1226,7 +1317,7 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
   });
 
   const addMutation = useMutation({
-    mutationFn: (data: { cardId: string; condition: CardCondition; isFoil: boolean }) =>
+    mutationFn: (data: { cardId: string; condition: CardCondition; isFoil: boolean; quantity: number }) =>
       collectionApi.addToCollection(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["myCollection"] });
@@ -1290,11 +1381,26 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
                 <input type="checkbox" id="foil" checked={isFoil} onChange={(e) => setIsFoil(e.target.checked)} className="w-5 h-5 rounded border-2 border-slate-700" />
                 <label htmlFor="foil" className="text-white font-bold">Foil / Holo</label>
               </div>
+              <div className="flex items-center gap-3">
+                <label className="text-white font-bold w-20">Quantity</label>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 text-white font-bold hover:border-slate-500 transition-colors">−</button>
+                  <input
+                    type="number"
+                    min={1}
+                    max={99}
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, Math.min(99, parseInt(e.target.value) || 1)))}
+                    className="w-16 text-center px-2 py-1.5 rounded-lg border border-slate-700 bg-slate-950/50 text-white font-bold focus:border-blue-500 focus:outline-none"
+                  />
+                  <button type="button" onClick={() => setQuantity((q) => Math.min(99, q + 1))} className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 text-white font-bold hover:border-slate-500 transition-colors">+</button>
+                </div>
+              </div>
             </div>
             <div className="flex gap-3 mt-8">
               <button onClick={onClose} className="flex-1 px-6 py-4 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">Cancel</button>
               <button
-                onClick={() => addMutation.mutate({ cardId: selectedCard.id, condition, isFoil })}
+                onClick={() => addMutation.mutate({ cardId: selectedCard.id, condition, isFoil, quantity })}
                 disabled={addMutation.isPending}
                 className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-500/30 disabled:opacity-50"
               >
@@ -1463,6 +1569,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
   const [isFirstEdition, setIsFirstEdition] = useState(item.isFirstEdition || false);
   const [availableForTrade, setAvailableForTrade] = useState(item.status === "AVAILABLE");
   const [notes, setNotes] = useState(item.notes || "");
+  const [quantity, setQuantity] = useState(item.quantity ?? 1);
 
   const updateMutation = useMutation({
     mutationFn: (data: Parameters<typeof collectionApi.updateCollectionItem>[1]) =>
@@ -1496,13 +1603,21 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
           <p className="text-slate-400">{item.card.setName}</p>
         </div>
 
+        {item.status === "IN_TRADE" && (
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm mb-4">
+            <Lock size={16} />
+            <span>This card is currently in an active trade. Only quantity can be updated.</span>
+          </div>
+        )}
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-bold text-white mb-2">Condition</label>
             <select
               value={condition}
               onChange={(e) => setCondition(e.target.value as CardCondition)}
-              className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white focus:border-blue-500 focus:outline-none"
+              disabled={item.status === "IN_TRADE"}
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white focus:border-blue-500 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {Object.entries(CONDITION_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
@@ -1510,16 +1625,45 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
 
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <input type="checkbox" id="edit-foil" checked={isFoil} onChange={(e) => setIsFoil(e.target.checked)} className="w-5 h-5 rounded border-2 border-slate-700" />
+              <input type="checkbox" id="edit-foil" checked={isFoil} onChange={(e) => setIsFoil(e.target.checked)} disabled={item.status === "IN_TRADE"} className="w-5 h-5 rounded border-2 border-slate-700" />
               <label htmlFor="edit-foil" className="text-white font-bold">Foil / Holo</label>
             </div>
             <div className="flex items-center gap-3">
-              <input type="checkbox" id="edit-first-edition" checked={isFirstEdition} onChange={(e) => setIsFirstEdition(e.target.checked)} className="w-5 h-5 rounded border-2 border-slate-700" />
+              <input type="checkbox" id="edit-first-edition" checked={isFirstEdition} onChange={(e) => setIsFirstEdition(e.target.checked)} disabled={item.status === "IN_TRADE"} className="w-5 h-5 rounded border-2 border-slate-700" />
               <label htmlFor="edit-first-edition" className="text-white font-bold">1st Edition</label>
             </div>
             <div className="flex items-center gap-3">
-              <input type="checkbox" id="edit-trade" checked={availableForTrade} onChange={(e) => setAvailableForTrade(e.target.checked)} className="w-5 h-5 rounded border-2 border-slate-700" />
+              <input type="checkbox" id="edit-trade" checked={availableForTrade} onChange={(e) => setAvailableForTrade(e.target.checked)} disabled={item.status === "IN_TRADE"} className="w-5 h-5 rounded border-2 border-slate-700" />
               <label htmlFor="edit-trade" className="text-white font-bold">Available for Trade</label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-white mb-2">Quantity</label>
+            <p className="text-xs text-slate-500 mb-2">How many identical copies of this card you own</p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="w-10 h-10 rounded-xl bg-slate-800 border-2 border-slate-700 text-white font-bold hover:border-slate-500 transition-colors flex items-center justify-center text-lg"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, Math.min(99, parseInt(e.target.value) || 1)))}
+                className="w-20 text-center px-3 py-2 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white font-bold focus:border-blue-500 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.min(99, q + 1))}
+                className="w-10 h-10 rounded-xl bg-slate-800 border-2 border-slate-700 text-white font-bold hover:border-slate-500 transition-colors flex items-center justify-center text-lg"
+              >
+                +
+              </button>
             </div>
           </div>
 
@@ -1529,7 +1673,8 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any notes about this card..."
-              className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none resize-none"
+              disabled={item.status === "IN_TRADE"}
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none resize-none disabled:opacity-40 disabled:cursor-not-allowed"
               rows={3}
               maxLength={500}
             />
@@ -1548,7 +1693,13 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
           <div className="flex-1 flex gap-3">
             <button onClick={onClose} className="flex-1 px-6 py-4 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">Cancel</button>
             <button
-              onClick={() => updateMutation.mutate({ condition, isFoil, isFirstEdition, status: availableForTrade ? "AVAILABLE" : "UNAVAILABLE", notes: notes || undefined })}
+              onClick={() => {
+                if (item.status === "IN_TRADE") {
+                  updateMutation.mutate({ quantity });
+                } else {
+                  updateMutation.mutate({ condition, isFoil, isFirstEdition, status: availableForTrade ? "AVAILABLE" : "UNAVAILABLE", notes: notes || undefined, quantity });
+                }
+              }}
               disabled={updateMutation.isPending}
               className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-500/30 disabled:opacity-50"
             >
