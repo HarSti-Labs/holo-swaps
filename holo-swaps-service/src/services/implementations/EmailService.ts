@@ -216,6 +216,37 @@ export class EmailService implements IEmailService {
     }
   }
 
+  async sendGoodbyeEmail(to: string, username: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: "Your Holo Swaps account has been deleted",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <h1 style="color: #1a1a2e; font-size: 24px; margin-top: 0;">Goodbye, ${username}</h1>
+              <p style="color: #444; font-size: 16px; line-height: 1.5;">
+                Your Holo Swaps account has been permanently deleted as requested. All your data, collection, and trade history have been removed from our platform.
+              </p>
+              <p style="color: #444; font-size: 16px; line-height: 1.5;">
+                We're sorry to see you go. If you ever want to come back, you're always welcome to create a new account.
+              </p>
+              <p style="color: #444; font-size: 16px; line-height: 1.5;">
+                If you did not request this deletion or believe this was a mistake, please contact us immediately at <a href="mailto:admin@holoswaps.com" style="color: #4f46e5;">admin@holoswaps.com</a>.
+              </p>
+              <p style="color: #888; font-size: 13px; margin-top: 32px;">
+                Thank you for being part of Holo Swaps. We hope to see you again someday. 👋
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send goodbye email", { to, err });
+    }
+  }
+
   async sendTicketResolved(to: string, ticketNumber: string, subject: string): Promise<void> {
     const ticketUrl = `${config.frontend.url}/support/tickets/${ticketNumber}`;
     try {

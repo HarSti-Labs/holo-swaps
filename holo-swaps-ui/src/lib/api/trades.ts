@@ -11,6 +11,7 @@ export interface ProposeTradePayload {
   receiverId: string;
   proposerCollectionItemIds: string[];
   receiverCollectionItemIds: string[];
+  proposerCashAdd?: number;
   message?: string;
 }
 

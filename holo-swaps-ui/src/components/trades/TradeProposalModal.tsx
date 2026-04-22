@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Plus, Minus, Package, Send, Loader2, AlertTriangle } from "lucide-react";
+import { X, Plus, Minus, Package, Send, Loader2, AlertTriangle, DollarSign } from "lucide-react";
 import { CollectionItem, User } from "@/types";
 import { collectionApi } from "@/lib/api/collection";
 import { tradesApi } from "@/lib/api/trades";
@@ -35,6 +35,7 @@ export function TradeProposalModal({
   const [isLoadingTheir, setIsLoadingTheir] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [cashAdd, setCashAdd] = useState<string>("");
   const [hasAddress, setHasAddress] = useState(false);
   const [isCheckingAddress, setIsCheckingAddress] = useState(true);
 
@@ -110,7 +111,8 @@ export function TradeProposalModal({
 
   const myTotal = calculateTotalValue(myCards);
   const theirTotal = calculateTotalValue(theirCards);
-  const difference = Math.abs(myTotal - theirTotal);
+  const cashAddNumber = parseFloat(cashAdd) || 0;
+  const difference = Math.abs((myTotal + cashAddNumber) - theirTotal);
 
   const handleSubmit = async () => {
     if (myCards.length === 0 || theirCards.length === 0) return;
@@ -121,6 +123,7 @@ export function TradeProposalModal({
         receiverId: targetUser.id,
         proposerCollectionItemIds: myCards.map((c) => c.id),
         receiverCollectionItemIds: theirCards.map((c) => c.id),
+        proposerCashAdd: cashAddNumber > 0 ? cashAddNumber : undefined,
         message: message || undefined,
       });
 
@@ -344,22 +347,61 @@ export function TradeProposalModal({
             </div>
           </div>
 
-          {/* Value Difference */}
-          {(myCards.length > 0 || theirCards.length > 0) && (
-            <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-400">Value Difference:</span>
-                <span className={`text-lg font-bold ${difference > 10 ? "text-yellow-400" : "text-green-400"}`}>
-                  ${difference.toFixed(2)}
-                </span>
+          {/* Cash Add + Value Difference */}
+          <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700 space-y-4">
+            {/* Add Cash */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Add Cash to Your Offer (optional)
+              </label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={cashAdd}
+                  onChange={(e) => setCashAdd(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
-              {difference > 10 && (
-                <p className="text-xs text-slate-500 mt-1">
-                  Consider adding cash or more cards to balance the trade
-                </p>
-              )}
+              <p className="text-xs text-slate-500 mt-1">
+                This cash will be added on top of your cards to sweeten the deal.
+              </p>
             </div>
-          )}
+
+            {/* Value breakdown */}
+            {(myCards.length > 0 || theirCards.length > 0) && (
+              <div className="space-y-1 pt-2 border-t border-slate-700">
+                <div className="flex items-center justify-between text-sm text-slate-400">
+                  <span>Your cards value:</span>
+                  <span>${myTotal.toFixed(2)}</span>
+                </div>
+                {cashAddNumber > 0 && (
+                  <div className="flex items-center justify-between text-sm text-green-400">
+                    <span>+ Cash you add:</span>
+                    <span>+${cashAddNumber.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-sm text-slate-400">
+                  <span>Their cards value:</span>
+                  <span>${theirTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t border-slate-700">
+                  <span className="text-sm text-slate-400">Remaining difference:</span>
+                  <span className={`text-lg font-bold ${difference > 10 ? "text-yellow-400" : "text-green-400"}`}>
+                    ${difference.toFixed(2)}
+                  </span>
+                </div>
+                {difference > 10 && cashAddNumber === 0 && (
+                  <p className="text-xs text-slate-500">
+                    Consider adding cash or more cards to balance the trade
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Message */}
           <div className="mt-6">

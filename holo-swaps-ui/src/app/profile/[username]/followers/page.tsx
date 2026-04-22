@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { User } from "@/types";
-import api from "@/lib/api/client";
+import { api } from "@/lib/api/client";
 import { Loader2, Users, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 

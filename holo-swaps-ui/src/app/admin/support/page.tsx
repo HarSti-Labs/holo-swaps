@@ -8,12 +8,6 @@ import { Loader2, Headphones, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const STATUS_STYLES = {
-  OPEN: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-  IN_PROGRESS: "bg-orange-500/10 text-orange-400 border-orange-500/30",
-  RESOLVED: "bg-green-500/10 text-green-400 border-green-500/30",
-};
-
 const URGENCY_DOT = {
   NORMAL: "bg-slate-400",
   HIGH: "bg-orange-400",
@@ -26,17 +20,41 @@ const CATEGORIES = [
   "ABUSE_FRAUD", "GENERAL_QUESTION", "OTHER",
 ];
 
+type StatusTab = "OPEN" | "IN_PROGRESS" | "RESOLVED";
+
+const TABS: { key: StatusTab; label: string; color: string; activeClass: string }[] = [
+  {
+    key: "OPEN",
+    label: "Open",
+    color: "text-blue-400",
+    activeClass: "border-b-2 border-blue-400 text-blue-400",
+  },
+  {
+    key: "IN_PROGRESS",
+    label: "In Progress",
+    color: "text-orange-400",
+    activeClass: "border-b-2 border-orange-400 text-orange-400",
+  },
+  {
+    key: "RESOLVED",
+    label: "Resolved",
+    color: "text-green-400",
+    activeClass: "border-b-2 border-green-400 text-green-400",
+  },
+];
+
 export default function AdminSupportPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuthStore();
 
+  const [activeTab, setActiveTab] = useState<StatusTab>("OPEN");
   const [tickets, setTickets] = useState<AdminTicketRow[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [tabCounts, setTabCounts] = useState<Record<StatusTab, number>>({ OPEN: 0, IN_PROGRESS: 0, RESOLVED: 0 });
 
-  const [filterStatus, setFilterStatus] = useState("");
   const [filterUrgency, setFilterUrgency] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
 
@@ -46,13 +64,28 @@ export default function AdminSupportPage() {
     if (!user.isAdmin) { router.push("/dashboard"); return; }
   }, [user, authLoading]);
 
+  // Fetch counts for all tabs on mount and after filter changes
+  useEffect(() => {
+    if (!user?.isAdmin) return;
+    const fetchCounts = async () => {
+      const [open, inProgress, resolved] = await Promise.all([
+        supportApi.getAdminTickets({ status: "OPEN", urgency: filterUrgency || undefined, category: filterCategory || undefined, page: 1, limit: 1 }),
+        supportApi.getAdminTickets({ status: "IN_PROGRESS", urgency: filterUrgency || undefined, category: filterCategory || undefined, page: 1, limit: 1 }),
+        supportApi.getAdminTickets({ status: "RESOLVED", urgency: filterUrgency || undefined, category: filterCategory || undefined, page: 1, limit: 1 }),
+      ]);
+      setTabCounts({ OPEN: open.total, IN_PROGRESS: inProgress.total, RESOLVED: resolved.total });
+    };
+    fetchCounts().catch(() => {});
+  }, [user, filterUrgency, filterCategory]);
+
+  // Fetch tickets for the active tab
   useEffect(() => {
     if (!user?.isAdmin) return;
     const load = async () => {
       setIsLoading(true);
       try {
         const data = await supportApi.getAdminTickets({
-          status: filterStatus || undefined,
+          status: activeTab,
           urgency: filterUrgency || undefined,
           category: filterCategory || undefined,
           page,
@@ -65,7 +98,12 @@ export default function AdminSupportPage() {
       }
     };
     load();
-  }, [user, filterStatus, filterUrgency, filterCategory, page]);
+  }, [user, activeTab, filterUrgency, filterCategory, page]);
+
+  const handleTabChange = (tab: StatusTab) => {
+    setActiveTab(tab);
+    setPage(1);
+  };
 
   if (authLoading || !user?.isAdmin) {
     return (
@@ -87,24 +125,15 @@ export default function AdminSupportPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Support Board</h1>
-              <p className="text-sm text-slate-400">{total} total tickets</p>
+              <p className="text-sm text-slate-400">
+                {tabCounts.OPEN + tabCounts.IN_PROGRESS + tabCounts.RESOLVED} total tickets
+              </p>
             </div>
           </div>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-6">
-          <select
-            value={filterStatus}
-            onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
-            className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-900/50 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All statuses</option>
-            <option value="OPEN">Open</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="RESOLVED">Resolved</option>
-          </select>
-
           <select
             value={filterUrgency}
             onChange={(e) => { setFilterUrgency(e.target.value); setPage(1); }}
@@ -127,9 +156,9 @@ export default function AdminSupportPage() {
             ))}
           </select>
 
-          {(filterStatus || filterUrgency || filterCategory) && (
+          {(filterUrgency || filterCategory) && (
             <button
-              onClick={() => { setFilterStatus(""); setFilterUrgency(""); setFilterCategory(""); setPage(1); }}
+              onClick={() => { setFilterUrgency(""); setFilterCategory(""); setPage(1); }}
               className="px-3 py-2 rounded-lg border border-slate-700 text-sm text-slate-400 hover:text-white transition-colors"
             >
               Clear filters
@@ -137,8 +166,36 @@ export default function AdminSupportPage() {
           )}
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-0 border-b border-slate-800 mb-0">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => handleTabChange(tab.key)}
+              className={cn(
+                "flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors",
+                activeTab === tab.key
+                  ? tab.activeClass
+                  : "text-slate-400 hover:text-slate-300"
+              )}
+            >
+              {tab.label}
+              <span className={cn(
+                "text-xs font-bold px-2 py-0.5 rounded-full",
+                activeTab === tab.key
+                  ? tab.key === "OPEN" ? "bg-blue-500/20 text-blue-300"
+                    : tab.key === "IN_PROGRESS" ? "bg-orange-500/20 text-orange-300"
+                    : "bg-green-500/20 text-green-300"
+                  : "bg-slate-700 text-slate-400"
+              )}>
+                {tabCounts[tab.key]}
+              </span>
+            </button>
+          ))}
+        </div>
+
         {/* Ticket table */}
-        <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="bg-slate-900/50 border border-slate-800 border-t-0 rounded-b-xl overflow-hidden">
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
@@ -146,16 +203,15 @@ export default function AdminSupportPage() {
           ) : tickets.length === 0 ? (
             <div className="text-center py-16">
               <Headphones className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400">No tickets found</p>
+              <p className="text-slate-400">No {activeTab.replace("_", " ").toLowerCase()} tickets</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-800">
               {/* Table header */}
-              <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 <span>Ticket</span>
                 <span>Category</span>
                 <span>Urgency</span>
-                <span>Status</span>
                 <span>Date</span>
               </div>
 
@@ -174,9 +230,6 @@ export default function AdminSupportPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="font-mono text-xs text-slate-500">{ticket.ticketNumber}</span>
-                        <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full border", STATUS_STYLES[ticket.status])}>
-                          {ticket.status.replace("_", " ")}
-                        </span>
                         {ticket.messages.length > 0 && (
                           <span className="flex items-center gap-1 text-xs text-slate-500">
                             <MessageSquare className="h-3 w-3" />
@@ -193,6 +246,16 @@ export default function AdminSupportPage() {
                         <span>{new Date(ticket.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                       </div>
                     </div>
+
+                    {/* Urgency badge */}
+                    <span className={cn(
+                      "hidden md:inline-block text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0",
+                      ticket.urgency === "URGENT" ? "bg-red-500/10 text-red-400" :
+                      ticket.urgency === "HIGH" ? "bg-orange-500/10 text-orange-400" :
+                      "bg-slate-700/50 text-slate-400"
+                    )}>
+                      {ticket.urgency}
+                    </span>
                   </div>
                 </Link>
               ))}

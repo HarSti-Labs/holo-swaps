@@ -382,6 +382,9 @@ export class AuthService implements IAuthService {
       throw ApiError.badRequest("Cannot delete account with active trades. Please cancel or complete all trades first.");
     }
 
+    // Send goodbye email before deletion (email is gone after)
+    this.emailService.sendGoodbyeEmail(user.email, user.username);
+
     // Delete user (cascade will handle related records due to Prisma schema onDelete: Cascade)
     await prisma.user.delete({ where: { id: userId } });
   }

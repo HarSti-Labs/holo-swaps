@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { authApi } from "@/lib/api/auth";
@@ -79,6 +79,84 @@ export default function SettingsPage() {
   });
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [addressErrors, setAddressErrors] = useState<Partial<Record<keyof typeof addressForm, string>>>({});
+  const line1Ref = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<any>(null);
+
+  // Load Google Places script and init autocomplete on line1 when form opens
+  useEffect(() => {
+    if (!showAddressForm) return;
+
+    const initAutocomplete = () => {
+      if (!line1Ref.current || !(window as any).google?.maps?.places) return;
+      if (autocompleteRef.current) return; // already initialized
+
+      const ac = new (window as any).google.maps.places.Autocomplete(line1Ref.current, {
+        componentRestrictions: { country: "us" },
+        fields: ["address_components"],
+        types: ["address"],
+      });
+
+      ac.addListener("place_changed", () => {
+        const place = ac.getPlace();
+        if (!place.address_components) return;
+
+        let streetNumber = "";
+        let route = "";
+        let city = "";
+        let state = "";
+        let zip = "";
+
+        for (const component of place.address_components) {
+          const type = component.types[0];
+          if (type === "street_number") streetNumber = component.long_name;
+          if (type === "route") route = component.short_name;
+          if (type === "locality") city = component.long_name;
+          if (type === "administrative_area_level_1") state = component.short_name;
+          if (type === "postal_code") zip = component.long_name;
+        }
+
+        setAddressForm((prev) => ({
+          ...prev,
+          line1: `${streetNumber} ${route}`.trim(),
+          city,
+          state,
+          postalCode: zip,
+        }));
+        setAddressErrors((prev) => ({
+          ...prev,
+          line1: undefined,
+          city: undefined,
+          state: undefined,
+          postalCode: undefined,
+        }));
+      });
+
+      autocompleteRef.current = ac;
+    };
+
+    if ((window as any).google?.maps?.places) {
+      initAutocomplete();
+    } else {
+      const existingScript = document.getElementById("google-maps-places");
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.id = "google-maps-places";
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}&libraries=places`;
+        script.async = true;
+        script.onload = initAutocomplete;
+        document.head.appendChild(script);
+      } else {
+        existingScript.addEventListener("load", initAutocomplete);
+      }
+    }
+
+    return () => {
+      if (autocompleteRef.current) {
+        (window as any).google?.maps?.event?.clearInstanceListeners(autocompleteRef.current);
+        autocompleteRef.current = null;
+      }
+    };
+  }, [showAddressForm]);
 
   useEffect(() => {
     if (user) {
@@ -497,12 +575,15 @@ export default function SettingsPage() {
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Address Line 1 *</label>
                 <input
+                  ref={line1Ref}
                   type="text"
                   value={addressForm.line1}
                   onChange={(e) => {
                     setAddressForm({ ...addressForm, line1: e.target.value });
                     setAddressErrors({ ...addressErrors, line1: undefined });
                   }}
+                  placeholder="Start typing your address…"
+                  autoComplete="off"
                   className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.line1 ? "border-red-500" : "border-slate-700"}`}
                 />
                 {addressErrors.line1 && <p className="text-red-400 text-xs mt-1">{addressErrors.line1}</p>}
@@ -532,19 +613,24 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">State *</label>
-                  <select
-                    value={addressForm.state}
-                    onChange={(e) => {
-                      setAddressForm({ ...addressForm, state: e.target.value });
-                      setAddressErrors({ ...addressErrors, state: undefined });
-                    }}
-                    className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.state ? "border-red-500" : "border-slate-700"}`}
-                  >
-                    <option value="">Select state</option>
-                    {US_STATES.map(({ abbr, name }) => (
-                      <option key={abbr} value={abbr}>{abbr} — {name}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={addressForm.state}
+                      onChange={(e) => {
+                        setAddressForm({ ...addressForm, state: e.target.value });
+                        setAddressErrors({ ...addressErrors, state: undefined });
+                      }}
+                      className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8 ${addressErrors.state ? "border-red-500" : "border-slate-700"}`}
+                    >
+                      <option value="">Select state</option>
+                      {US_STATES.map(({ abbr, name }) => (
+                        <option key={abbr} value={abbr}>{abbr} — {name}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                      <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
                   {addressErrors.state && <p className="text-red-400 text-xs mt-1">{addressErrors.state}</p>}
                 </div>
                 <div>

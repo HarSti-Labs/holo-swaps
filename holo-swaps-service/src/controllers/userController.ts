@@ -145,7 +145,11 @@ export const addAddress = async (
     );
   }
 
-  if (parsed.data.isDefault) {
+  // Auto-default if this is the user's first address, or if explicitly requested
+  const existingCount = await prisma.userAddress.count({ where: { userId: req.user!.id } });
+  const shouldDefault = parsed.data.isDefault || existingCount === 0;
+
+  if (shouldDefault) {
     await prisma.userAddress.updateMany({
       where: { userId: req.user!.id },
       data: { isDefault: false },
@@ -153,7 +157,7 @@ export const addAddress = async (
   }
 
   const address = await prisma.userAddress.create({
-    data: { userId: req.user!.id, ...parsed.data },
+    data: { userId: req.user!.id, ...parsed.data, isDefault: shouldDefault },
   });
 
   sendSuccess(res, address, "Address added");
@@ -204,6 +208,21 @@ export const deleteAddress = async (
   if (addr.userId !== req.user!.id) throw ApiError.forbidden();
 
   await prisma.userAddress.delete({ where: { id: req.params.addressId } });
+
+  // If we just deleted the default, promote the next address
+  if (addr.isDefault) {
+    const next = await prisma.userAddress.findFirst({
+      where: { userId: req.user!.id },
+      orderBy: { createdAt: "asc" },
+    });
+    if (next) {
+      await prisma.userAddress.update({
+        where: { id: next.id },
+        data: { isDefault: true },
+      });
+    }
+  }
+
   sendSuccess(res, null, "Address deleted");
 };
 

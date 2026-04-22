@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
@@ -12,11 +12,15 @@ export default function VerifyEmailPage() {
   const router = useRouter();
   const token = searchParams.get("token");
   const { loadUser, isAuthenticated } = useAuthStore();
+  const hasVerified = useRef(false);
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    if (hasVerified.current) return;
+    hasVerified.current = true;
+
     const verifyEmail = async () => {
       if (!token) {
         setStatus("error");
@@ -43,7 +47,8 @@ export default function VerifyEmailPage() {
     };
 
     verifyEmail();
-  }, [token, isAuthenticated, loadUser]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center px-4">

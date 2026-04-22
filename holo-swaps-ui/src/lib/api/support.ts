@@ -72,7 +72,7 @@ export const supportApi = {
   },
 
   getAdminTickets: async (params?: {
-    status?: string; urgency?: string; category?: string; page?: number;
+    status?: string; urgency?: string; category?: string; page?: number; limit?: number;
   }): Promise<{ tickets: AdminTicketRow[]; total: number; totalPages: number; page: number }> => {
     const res = await api.get<ApiResponse<{ tickets: AdminTicketRow[]; total: number; totalPages: number; page: number }>>(
       "/admin/support",

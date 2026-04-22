@@ -38,12 +38,14 @@ export default function TicketDetailPage() {
   const [isSending, setIsSending] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const messageCountRef = useRef(0);
 
   useEffect(() => {
     const load = async () => {
       try {
         const data = await supportApi.getTicket(ticketNumber);
         setTicket(data);
+        messageCountRef.current = data.messages.length;
       } catch (err: any) {
         if (err.response?.status === 401) {
           router.push("/auth/login");
@@ -58,7 +60,12 @@ export default function TicketDetailPage() {
   }, [ticketNumber]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!ticket) return;
+    // Only scroll when a new message is added, not on initial load
+    if (ticket.messages.length > messageCountRef.current) {
+      messageCountRef.current = ticket.messages.length;
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [ticket?.messages]);
 
   const handleSend = async () => {
