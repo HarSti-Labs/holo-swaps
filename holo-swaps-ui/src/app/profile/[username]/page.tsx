@@ -551,9 +551,9 @@ export default function ProfilePage() {
 
       {/* Report Modal */}
       {showReportModal && user && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between p-5 border-b border-slate-800">
+            <div className="flex items-center justify-between p-5 border-b border-slate-700">
               <div>
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
                   <Flag className="h-4 w-4 text-red-400" /> Report @{user.username}

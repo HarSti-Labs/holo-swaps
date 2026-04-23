@@ -36,6 +36,46 @@ export class TradeService implements ITradeService {
     this.trackingService = new TrackingService();
   }
 
+  // ─── Helper: snapshot the current trade state ────────────────────────────
+  private async createTradeSnapshot(tradeId: string, actionById: string, label: string): Promise<void> {
+    const trade = await prisma.trade.findUnique({
+      where: { id: tradeId },
+      include: {
+        items: {
+          include: { collectionItem: { include: { card: true } } },
+        },
+      },
+    });
+    if (!trade) return;
+
+    const round = (await prisma.tradeSnapshot.count({ where: { tradeId } })) + 1;
+
+    await prisma.tradeSnapshot.create({
+      data: {
+        tradeId,
+        round,
+        actionById,
+        cashDifference: trade.cashDifference,
+        cashPayerId: trade.cashPayerId ?? null,
+        label,
+        items: {
+          create: trade.items.map((item) => {
+            const col = item.collectionItem as any;
+            return {
+              ownedByProposer: item.ownedByProposer,
+              cardName: col?.card?.name ?? "Unknown",
+              cardSetName: col?.card?.setName ?? null,
+              cardImageUrl: col?.card?.imageUrl ?? null,
+              condition: col?.condition ?? "NEAR_MINT",
+              isFoil: col?.isFoil ?? false,
+              valueAtTime: item.valueAtTimeOfTrade ?? col?.currentMarketValue ?? null,
+            };
+          }),
+        },
+      },
+    });
+  }
+
   // ─── Helper: unlock a set of collection items ────────────────────────────
   private async unlockCards(collectionItemIds: string[]): Promise<void> {
     await prisma.userCollection.updateMany({
@@ -113,6 +153,7 @@ export class TradeService implements ITradeService {
           tradeCode,
           proposerId: data.proposerId,
           receiverId: data.receiverId,
+          lastActionById: data.proposerId,
           proposerMarketValue: priceBreakdown.proposerTotalValue,
           receiverMarketValue: priceBreakdown.receiverTotalValue,
           cashDifference: Math.abs(netCash),
@@ -143,6 +184,9 @@ export class TradeService implements ITradeService {
 
       return created;
     });
+
+    // Snapshot the initial offer
+    await this.createTradeSnapshot(trade.id, data.proposerId, "Initial Offer");
 
     logger.info("Trade proposed", {
       tradeId: trade.id,
@@ -247,6 +291,7 @@ export class TradeService implements ITradeService {
           cashDifference: Math.abs(netCash),
           cashPayerId: cashPayerId ?? null,
           status: TradeStatus.COUNTERED,
+          lastActionById: userId,
           proposerMarketValue: isProposer ? newMarketValue : trade.proposerMarketValue,
           receiverMarketValue: isProposer ? trade.receiverMarketValue : newMarketValue,
         },
@@ -288,6 +333,10 @@ export class TradeService implements ITradeService {
 
     const updated = await this.tradeRepository.findById(tradeId) as Trade;
 
+    // Snapshot this counter offer
+    const counterRound = await prisma.tradeSnapshot.count({ where: { tradeId } });
+    await this.createTradeSnapshot(tradeId, userId, `Counter #${counterRound}`);
+
     // Notify the other party
     const otherId = userId === trade.proposerId ? trade.receiverId : trade.proposerId;
     const actor = await prisma.user.findUnique({ where: { id: userId } });
@@ -313,8 +362,12 @@ export class TradeService implements ITradeService {
     const trade = await this.tradeRepository.findById(tradeId);
     if (!trade) throw ApiError.notFound("Trade not found");
 
-    if (trade.receiverId !== userId) {
-      throw ApiError.forbidden("Only the receiver can accept a trade");
+    if (trade.proposerId !== userId && trade.receiverId !== userId) {
+      throw ApiError.forbidden("You are not part of this trade");
+    }
+    // The person who made the last offer cannot accept it — only the other party can
+    if ((trade as any).lastActionById === userId) {
+      throw ApiError.forbidden("You cannot accept your own offer — wait for the other party to respond");
     }
 
     if (trade.status !== TradeStatus.PROPOSED && trade.status !== TradeStatus.COUNTERED) {
@@ -336,59 +389,117 @@ export class TradeService implements ITradeService {
       }
     }
 
-    // Platform fee: 2.5% of the average card value across both sides
     const PLATFORM_FEE_PERCENT = 0.025;
-    const avgTradeValue = (trade.proposerMarketValue + trade.receiverMarketValue) / 2;
-    const platformFeeAmount = Math.round(avgTradeValue * PLATFORM_FEE_PERCENT * 100); // cents
+    const cashAmountCents = Math.round(trade.cashDifference * 100);
+    const frontendUrl = config.frontend.url;
 
-    // Create Stripe PaymentIntent if there is a cash difference OR a platform fee to collect
-    if (trade.cashDifference > 0 && trade.cashPayerId) {
-      const payerId = trade.cashPayerId;
-      const payeeId = payerId === trade.proposerId ? trade.receiverId : trade.proposerId;
+    const proposerIsCashPayer = cashAmountCents > 0 && trade.cashPayerId === trade.proposerId;
+    const receiverIsCashPayer = cashAmountCents > 0 && trade.cashPayerId === trade.receiverId;
 
-      const [payer, payee] = await Promise.all([
-        prisma.user.findUnique({ where: { id: payerId } }),
-        prisma.user.findUnique({ where: { id: payeeId } }),
-      ]);
+    // Each party's fee = 2.5% of everything they receive:
+    // cards received + any cash received from the other party.
+    // Proposer receives: receiver's cards + cash from receiver (if receiver is cash payer)
+    const proposerReceiveValue =
+      trade.receiverMarketValue + (receiverIsCashPayer ? trade.cashDifference : 0);
+    // Receiver receives: proposer's cards + cash from proposer (if proposer is cash payer)
+    const receiverReceiveValue =
+      trade.proposerMarketValue + (proposerIsCashPayer ? trade.cashDifference : 0);
 
-      if (!payer?.stripeCustomerId || !payee?.stripeAccountId) {
-        throw ApiError.badRequest(
-          "Both parties must have payment accounts set up to complete this trade"
-        );
-      }
+    const proposerFeeCents = Math.round(proposerReceiveValue * PLATFORM_FEE_PERCENT * 100);
+    const receiverFeeCents = Math.round(receiverReceiveValue * PLATFORM_FEE_PERCENT * 100);
 
-      const cashAmountCents = Math.round(trade.cashDifference * 100);
+    // Load both parties
+    const [proposer, receiver] = await Promise.all([
+      prisma.user.findUnique({ where: { id: trade.proposerId } }),
+      prisma.user.findUnique({ where: { id: trade.receiverId } }),
+    ]);
 
-      const paymentIntent = await this.stripeService.createPaymentIntent({
-        // Total amount = cash difference + platform fee (payer covers both)
-        amount: cashAmountCents + platformFeeAmount,
-        platformFeeAmount,
-        currency: "usd",
-        customerId: payer.stripeCustomerId,
-        destinationAccountId: payee.stripeAccountId,
-        tradeId: trade.id,
-        description: `Trade ${trade.tradeCode} — $${trade.cashDifference.toFixed(2)} cash + $${(platformFeeAmount / 100).toFixed(2)} platform fee`,
-      });
-
-      await this.tradeRepository.updatePaymentIntent(trade.id, paymentIntent.id);
+    if (!proposer?.stripeCustomerId || !receiver?.stripeCustomerId) {
+      throw ApiError.badRequest(
+        "Both parties must have a payment method set up. Please add one in Settings → Payments."
+      );
     }
+    // The cash recipient needs a connected payout account to receive the transfer
+    if (proposerIsCashPayer && !receiver?.stripeAccountId) {
+      throw ApiError.badRequest(
+        `${receiver?.username ?? "The other party"} hasn't connected their payout account yet. Ask them to set it up in Settings → Payments.`
+      );
+    }
+    if (receiverIsCashPayer && !proposer?.stripeAccountId) {
+      throw ApiError.badRequest(
+        `${proposer?.username ?? "The other party"} hasn't connected their payout account yet. Ask them to set it up in Settings → Payments.`
+      );
+    }
+
+    // Proposer's session:
+    //   - Always includes their platform fee
+    //   - If proposer is the cash payer, also includes the cash amount
+    //   - application_fee_amount = proposerFee (platform keeps this)
+    //   - transfer_data = cashAmount goes to receiver (Stripe sends amount - fee to destination)
+    const proposerSessionAmount = proposerFeeCents + (proposerIsCashPayer ? cashAmountCents : 0);
+    const proposerSession = await this.stripeService.createCheckoutSession({
+      amount: proposerSessionAmount,
+      platformFeeAmount: proposerFeeCents,
+      currency: "usd",
+      customerId: proposer.stripeCustomerId!,
+      destinationAccountId: proposerIsCashPayer ? (receiver.stripeAccountId ?? null) : null,
+      tradeId: trade.id,
+      tradeCode: trade.tradeCode,
+      successUrl: `${frontendUrl}/trades/${trade.id}?payment=success&party=proposer`,
+      cancelUrl: `${frontendUrl}/trades/${trade.id}?payment=cancelled`,
+      description: [
+        `$${(proposerFeeCents / 100).toFixed(2)} platform fee`,
+        proposerIsCashPayer && `$${trade.cashDifference.toFixed(2)} cash to ${receiver.username}`,
+      ].filter(Boolean).join(" + "),
+    });
+
+    // Receiver's session:
+    //   - Always includes their platform fee
+    //   - If receiver is the cash payer, also includes the cash amount
+    const receiverSessionAmount = receiverFeeCents + (receiverIsCashPayer ? cashAmountCents : 0);
+    const receiverSession = await this.stripeService.createCheckoutSession({
+      amount: receiverSessionAmount,
+      platformFeeAmount: receiverFeeCents,
+      currency: "usd",
+      customerId: receiver.stripeCustomerId!,
+      destinationAccountId: receiverIsCashPayer ? (proposer.stripeAccountId ?? null) : null,
+      tradeId: trade.id,
+      tradeCode: trade.tradeCode,
+      successUrl: `${frontendUrl}/trades/${trade.id}?payment=success&party=receiver`,
+      cancelUrl: `${frontendUrl}/trades/${trade.id}?payment=cancelled`,
+      description: [
+        `$${(receiverFeeCents / 100).toFixed(2)} platform fee`,
+        receiverIsCashPayer && `$${trade.cashDifference.toFixed(2)} cash to ${proposer.username}`,
+      ].filter(Boolean).join(" + "),
+    });
+
+    await prisma.trade.update({
+      where: { id: trade.id },
+      data: {
+        stripeProposerSessionId: proposerSession.id,
+        stripeReceiverSessionId: receiverSession.id,
+      },
+    });
 
     const updated = await this.tradeRepository.updateStatus(tradeId, TradeStatus.ACCEPTED);
 
-    // Notify proposer
-    const receiver = await prisma.user.findUnique({ where: { id: userId } });
-    const proposer = await prisma.user.findUnique({ where: { id: trade.proposerId } });
-    await this.notificationService.notify({
-      userId: trade.proposerId,
-      type: NotificationType.TRADE_ACCEPTED,
-      title: "Trade accepted!",
-      body: `${receiver?.username ?? "Your trade partner"} accepted your trade`,
-      data: { tradeId, tradeCode: trade.tradeCode },
-    });
+    // Notify the OTHER party (whoever didn't accept)
+    const acceptor = userId === trade.proposerId ? proposer : receiver;
+    const otherParty = userId === trade.proposerId ? receiver : proposer;
 
-    if (proposer?.email && proposer.emailOnTradeAccepted) {
-      const tradeUrl = `${config.frontend.url}/trades/${tradeId}`;
-      this.emailService.sendTradeAcceptedEmail(proposer.email, proposer.username, receiver?.username ?? "Your trade partner", trade.tradeCode, tradeUrl);
+    if (otherParty) {
+      await this.notificationService.notify({
+        userId: otherParty.id,
+        type: NotificationType.TRADE_ACCEPTED,
+        title: "Trade accepted!",
+        body: `${acceptor?.username ?? "Your trade partner"} accepted your trade`,
+        data: { tradeId, tradeCode: trade.tradeCode },
+      });
+
+      if (otherParty.email && otherParty.emailOnTradeAccepted) {
+        const tradeUrl = `${config.frontend.url}/trades/${tradeId}`;
+        this.emailService.sendTradeAcceptedEmail(otherParty.email, otherParty.username, acceptor?.username ?? "Your trade partner", trade.tradeCode, tradeUrl);
+      }
     }
 
     return updated;
@@ -399,8 +510,11 @@ export class TradeService implements ITradeService {
     const trade = await this.tradeRepository.findById(tradeId);
     if (!trade) throw ApiError.notFound("Trade not found");
 
-    if (trade.receiverId !== userId) {
-      throw ApiError.forbidden("Only the receiver can decline a trade");
+    if (trade.proposerId !== userId && trade.receiverId !== userId) {
+      throw ApiError.forbidden("You are not part of this trade");
+    }
+    if ((trade as any).lastActionById === userId) {
+      throw ApiError.forbidden("You cannot decline your own offer");
     }
 
     const itemIds = await this.getTradeItemIds(tradeId);
@@ -489,6 +603,11 @@ export class TradeService implements ITradeService {
 
     if (trade.status !== TradeStatus.ACCEPTED) {
       throw ApiError.badRequest("Trade must be accepted before submitting tracking");
+    }
+
+    // Both parties must complete their payment before shipping is allowed
+    if (!(trade as any).stripeProposerIntentId || !(trade as any).stripeReceiverIntentId) {
+      throw ApiError.badRequest("Both parties must complete their payment before submitting tracking");
     }
 
     // The receiver of the shipment is the admin warehouse (represented by the other user here)
@@ -606,6 +725,24 @@ export class TradeService implements ITradeService {
     }
 
     return trade;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  async getTradeSnapshots(tradeId: string, userId: string): Promise<any[]> {
+    const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
+    if (!trade) throw ApiError.notFound("Trade not found");
+    if (trade.proposerId !== userId && trade.receiverId !== userId) {
+      throw ApiError.forbidden("You are not part of this trade");
+    }
+
+    return prisma.tradeSnapshot.findMany({
+      where: { tradeId },
+      orderBy: { round: "asc" },
+      include: {
+        actionBy: { select: { id: true, username: true } },
+        items: true,
+      },
+    });
   }
 
   // ─────────────────────────────────────────────────────────────────────────

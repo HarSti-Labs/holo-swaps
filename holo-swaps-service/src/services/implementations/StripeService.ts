@@ -130,6 +130,53 @@ export class StripeService implements IStripeService {
     return { sessionId: session.id, url: session.url ?? "" };
   }
 
+  async createCheckoutSession(data: {
+    amount: number;
+    platformFeeAmount: number;
+    currency: string;
+    customerId: string;
+    destinationAccountId: string | null; // null = fee-only trade, no peer-to-peer transfer
+    tradeId: string;
+    tradeCode: string;
+    successUrl: string;
+    cancelUrl: string;
+    description: string;
+  }): Promise<Stripe.Checkout.Session> {
+    return this.stripe.checkout.sessions.create({
+      mode: "payment",
+      customer: data.customerId,
+      line_items: [
+        {
+          price_data: {
+            currency: data.currency,
+            product_data: {
+              name: `Trade ${data.tradeCode}`,
+              description: data.description,
+            },
+            unit_amount: Math.round(data.amount),
+          },
+          quantity: 1,
+        },
+      ],
+      payment_intent_data: {
+        capture_method: "manual",
+        // Only set transfer when there is a cash component going to the other party
+        ...(data.destinationAccountId && {
+          application_fee_amount: Math.round(data.platformFeeAmount),
+          transfer_data: { destination: data.destinationAccountId },
+        }),
+        metadata: { tradeId: data.tradeId, platformFeeAmount: data.platformFeeAmount },
+      },
+      success_url: data.successUrl,
+      cancel_url: data.cancelUrl,
+      metadata: { tradeId: data.tradeId },
+    });
+  }
+
+  async retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+    return this.stripe.checkout.sessions.retrieve(sessionId);
+  }
+
   constructWebhookEvent(payload: Buffer, signature: string): Stripe.Event {
     return this.stripe.webhooks.constructEvent(
       payload,

@@ -1,11 +1,13 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "@/types";
 import { TradeService } from "@/services/implementations/TradeService";
+import { StripeService } from "@/services/implementations/StripeService";
 import { sendSuccess, sendCreated } from "@/utils/response";
 import { ApiError } from "@/utils/ApiError";
 import { z } from "zod";
 
 const tradeService = new TradeService();
+const stripeService = new StripeService();
 
 const proposeTradeSchema = z.object({
   receiverId: z.string().uuid(),
@@ -225,4 +227,32 @@ export const adminDisputeTrade = async (
     notes
   );
   sendSuccess(res, trade, "Trade disputed");
+};
+
+export const getTradeSnapshots = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const snapshots = await tradeService.getTradeSnapshots(req.params.tradeId, req.user!.id);
+  sendSuccess(res, snapshots);
+};
+
+export const getCheckoutUrl = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const trade = await tradeService.getTradeById(req.params.tradeId, req.user!.id);
+  const isProposer = (trade as any).proposerId === req.user!.id;
+  const sessionId = isProposer
+    ? (trade as any).stripeProposerSessionId
+    : (trade as any).stripeReceiverSessionId;
+
+  if (!sessionId) {
+    throw ApiError.notFound("No checkout session found for this trade");
+  }
+  const session = await stripeService.retrieveCheckoutSession(sessionId);
+  if (!session.url) {
+    throw ApiError.badRequest("Your payment session has already been completed or expired");
+  }
+  sendSuccess(res, { checkoutUrl: session.url });
 };

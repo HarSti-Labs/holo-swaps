@@ -47,10 +47,10 @@ export function ListingModal({ isOpen, onClose, item, onSave, onUnlist }: Listin
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-lg flex flex-col">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-800">
+        <div className="flex items-center justify-between p-5 border-b border-slate-700">
           <h2 className="text-xl font-bold text-white">
             {item.isOpenListing ? "Edit Listing" : "List Card for Offers"}
           </h2>
@@ -135,7 +135,7 @@ export function ListingModal({ isOpen, onClose, item, onSave, onUnlist }: Listin
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-5 border-t border-slate-800">
+        <div className="flex items-center justify-between p-5 border-t border-slate-700">
           <div>
             {item.isOpenListing && (
               <button

@@ -10,6 +10,7 @@ export interface ITradeService {
   submitTrackingNumber(tradeId: string, userId: string, data: TrackingData): Promise<Trade>;
   getUserTrades(userId: string, params: PaginationParams & { status?: TradeStatus }): Promise<PaginatedResult<Trade>>;
   getTradeById(tradeId: string, userId: string): Promise<Trade>;
+  getTradeSnapshots(tradeId: string, userId: string): Promise<any[]>;
   findMatches(userId: string): Promise<TradeMatch[]>;
   confirmReceipt(tradeId: string, userId: string): Promise<Trade>;
   refreshTradePrices(tradeId: string, userId: string): Promise<Trade>;

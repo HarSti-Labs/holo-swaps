@@ -17,6 +17,8 @@ import {
   TwoFactorTokenPayload,
 } from "@/services/interfaces/IAuthService";
 import { EmailService } from "@/services/implementations/EmailService";
+import { StripeService } from "@/services/implementations/StripeService";
+import { logger } from "@/utils/logger";
 import { SafeUser } from "@/types";
 
 const TWO_FACTOR_TOKEN_TTL = "5m";
@@ -28,10 +30,12 @@ const REFRESH_TOKEN_TTL_DAYS = 30;
 export class AuthService implements IAuthService {
   private userRepository: UserRepository;
   private emailService: EmailService;
+  private stripeService: StripeService;
 
   constructor() {
     this.userRepository = new UserRepository();
     this.emailService = new EmailService();
+    this.stripeService = new StripeService();
   }
 
   async register(data: RegisterData): Promise<AuthResult> {
@@ -48,6 +52,13 @@ export class AuthService implements IAuthService {
       username: data.username,
       passwordHash,
     });
+
+    // Create Stripe Customer on registration (fire-and-forget)
+    this.stripeService.createCustomer(user.id, user.email)
+      .then((customerId) =>
+        prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } })
+      )
+      .catch((err) => logger.error("Failed to create Stripe customer on register", { userId: user.id, err }));
 
     // Generate email verification token (fire-and-forget)
     const verificationToken = crypto.randomBytes(32).toString("hex");

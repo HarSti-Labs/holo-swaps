@@ -164,6 +164,13 @@ export default function TradesPage() {
               const myItems = trade.items.filter((i) => i.ownedByProposer === (direction === "sent"));
               const theirItems = trade.items.filter((i) => i.ownedByProposer !== (direction === "sent"));
 
+              const getItemValue = (item: typeof trade.items[0]) => {
+                const c = item.collectionItem ?? item.proposerCollection ?? item.receiverCollection;
+                return (c?.askingValueOverride ?? c?.currentMarketValue ?? 0) as number;
+              };
+              const myValue = myItems.reduce((sum, item) => sum + getItemValue(item), 0);
+              const theirValue = theirItems.reduce((sum, item) => sum + getItemValue(item), 0);
+
               return (
                 <div
                   key={trade.id}
@@ -212,7 +219,7 @@ export default function TradesPage() {
                         )}
                       </div>
                       <p className="text-xs text-slate-400 mt-1">
-                        ${direction === "sent" ? trade.proposerMarketValue.toFixed(2) : trade.receiverMarketValue.toFixed(2)}
+                        ${myValue.toFixed(2)}
                       </p>
                     </div>
 
@@ -240,16 +247,16 @@ export default function TradesPage() {
                         )}
                       </div>
                       <p className="text-xs text-slate-400 mt-1">
-                        ${direction === "sent" ? trade.receiverMarketValue.toFixed(2) : trade.proposerMarketValue.toFixed(2)}
+                        ${theirValue.toFixed(2)}
                       </p>
                     </div>
                   </div>
 
                   {/* Actions needed indicator */}
-                  {trade.status === "PROPOSED" && direction === "received" && (
+                  {["PROPOSED", "COUNTERED"].includes(trade.status) && trade.lastActionById !== user?.id && (
                     <div className="mt-4 flex items-center gap-2 text-sm text-yellow-400">
                       <Clock className="h-4 w-4" />
-                      Action needed: Review and respond
+                      {trade.status === "COUNTERED" ? "Action needed: Review counter offer" : "Action needed: Review and respond"}
                     </div>
                   )}
                 </div>

@@ -21,6 +21,7 @@ import {
   Headphones,
   Flag,
   Tag,
+  Truck,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -34,7 +35,8 @@ const navLinks = [
 const helpLinks = [
   { href: "/how-it-works",         label: "How It Works",    icon: BookOpen,    description: "Learn how trading works"       },
   { href: "/card-condition-guide", label: "Condition Guide", icon: Star,        description: "What Mint, NM, LP etc. means" },
-  { href: "/how-it-works#faq",     label: "FAQ",             icon: HelpCircle,  description: "Common questions answered"     },
+  { href: "/shipping-guide",       label: "Shipping Guide",  icon: Truck,       description: "How to pack and ship cards"    },
+  { href: "/faq",                  label: "FAQ",             icon: HelpCircle,  description: "Common questions answered"     },
   { href: "/support",              label: "Contact Support", icon: Headphones,  description: "Submit a support ticket"       },
 ];
 

@@ -31,6 +31,8 @@ export interface User {
   location: string | null;
   reputationScore: number;
   tradeCount: number;
+  stripeCustomerId: string | null;
+  stripeAccountId: string | null;
   stripeAccountVerified: boolean;
   isAdmin: boolean;
   emailOnTradeProposed: boolean;
@@ -98,6 +100,11 @@ export interface Trade {
   receiverMarketValue: number;
   cashDifference: number;
   cashPayerId: string | null;
+  lastActionById: string | null;
+  stripeProposerSessionId: string | null;
+  stripeReceiverSessionId: string | null;
+  stripeProposerIntentId: string | null;
+  stripeReceiverIntentId: string | null;
   status: TradeStatus;
   items: TradeItem[];
   offers: TradeOffer[];
@@ -105,6 +112,31 @@ export interface Trade {
   verifications: CardVerification[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TradeSnapshotItem {
+  id: string;
+  snapshotId: string;
+  ownedByProposer: boolean;
+  cardName: string;
+  cardSetName: string | null;
+  cardImageUrl: string | null;
+  condition: CardCondition;
+  isFoil: boolean;
+  valueAtTime: number | null;
+}
+
+export interface TradeSnapshot {
+  id: string;
+  tradeId: string;
+  round: number;
+  label: string;
+  actionById: string;
+  actionBy: { id: string; username: string };
+  cashDifference: number;
+  cashPayerId: string | null;
+  createdAt: string;
+  items: TradeSnapshotItem[];
 }
 
 export interface TradeItem {
@@ -131,12 +163,14 @@ export interface Shipment {
   id: string;
   tradeId: string;
   senderId: string;
+  receiverId: string;
   trackingNumber: string | null;
   carrier: string | null;
   direction: "INBOUND" | "OUTBOUND";
   isInsured: boolean;
   insuredValue: number | null;
   status: "PENDING" | "SHIPPED" | "IN_TRANSIT" | "DELIVERED";
+  shippedAt: string | null;
   deliveredAt: string | null;
   createdAt: string;
 }

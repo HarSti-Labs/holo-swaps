@@ -84,6 +84,8 @@ export const me = async (req: AuthenticatedRequest, res: Response): Promise<void
       reputationScore: true,
       tradeCount: true,
       tier: true,
+      stripeCustomerId: true,
+      stripeAccountId: true,
       stripeAccountVerified: true,
       isAdmin: true,
       isBanned: true,

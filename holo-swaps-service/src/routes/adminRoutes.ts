@@ -8,9 +8,12 @@ import { AuthenticatedRequest } from "@/types";
 import { listAllTickets } from "@/controllers/supportController";
 import { selectSafeUser } from "@/repositories/implementations/UserRepository";
 import { EmailService } from "@/services/implementations/EmailService";
+import { StripeService } from "@/services/implementations/StripeService";
+import { logger } from "@/utils/logger";
 import { config } from "@/config";
 
 const emailService = new EmailService();
+const stripeService = new StripeService();
 
 const router = Router();
 
@@ -228,6 +231,30 @@ router.patch("/reports/:reportId/resolve", async (req: AuthenticatedRequest, res
   ).catch(() => {});
 
   sendSuccess(res, updated, "Report resolved");
+});
+
+// POST /api/admin/backfill-stripe-customers
+router.post("/backfill-stripe-customers", authenticate, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  const users = await prisma.user.findMany({
+    where: { stripeCustomerId: null },
+    select: { id: true, email: true },
+  });
+
+  let created = 0;
+  let failed = 0;
+
+  for (const user of users) {
+    try {
+      const customerId = await stripeService.createCustomer(user.id, user.email);
+      await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } });
+      created++;
+    } catch (err) {
+      logger.error("Backfill: failed to create Stripe customer", { userId: user.id, err });
+      failed++;
+    }
+  }
+
+  sendSuccess(res, { total: users.length, created, failed }, "Stripe customer backfill complete");
 });
 
 export default router;

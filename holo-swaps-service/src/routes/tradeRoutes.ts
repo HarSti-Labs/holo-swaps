@@ -15,6 +15,8 @@ import {
   adminVerifyCards,
   adminCompleteTrade,
   adminDisputeTrade,
+  getTradeSnapshots,
+  getCheckoutUrl,
 } from "@/controllers/tradeController";
 import { getMessages, sendMessage } from "@/controllers/messageController";
 import { submitReview } from "@/controllers/reviewController";
@@ -40,7 +42,11 @@ router.patch("/:tradeId/received", confirmReceipt);
 // Price refresh
 router.post("/:id/refresh-prices", refreshPrices);
 
+// Stripe checkout URL
+router.get("/:tradeId/checkout-url", getCheckoutUrl);
+
 // Messages
+router.get("/:tradeId/snapshots", getTradeSnapshots);
 router.get("/:tradeId/messages", getMessages);
 router.post("/:tradeId/messages", sendMessage);
 

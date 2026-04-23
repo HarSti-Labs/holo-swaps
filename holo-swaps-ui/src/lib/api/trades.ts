@@ -98,6 +98,26 @@ export const tradesApi = {
     return res.data.data!;
   },
 
+  confirmReceipt: async (tradeId: string): Promise<Trade> => {
+    const res = await api.patch<ApiResponse<Trade>>(`/trades/${tradeId}/received`);
+    return res.data.data!;
+  },
+
+  submitReview: async (tradeId: string, data: { rating: number; comment?: string }): Promise<any> => {
+    const res = await api.post<ApiResponse<any>>(`/trades/${tradeId}/reviews`, data);
+    return res.data.data!;
+  },
+
+  getSnapshots: async (tradeId: string): Promise<any[]> => {
+    const res = await api.get<ApiResponse<any[]>>(`/trades/${tradeId}/snapshots`);
+    return res.data.data!;
+  },
+
+  getCheckoutUrl: async (tradeId: string): Promise<string> => {
+    const res = await api.get<ApiResponse<{ checkoutUrl: string }>>(`/trades/${tradeId}/checkout-url`);
+    return res.data.data!.checkoutUrl;
+  },
+
   // Trade messages
   getMessages: async (tradeId: string): Promise<any[]> => {
     const res = await api.get<ApiResponse<any[]>>(`/trades/${tradeId}/messages`);

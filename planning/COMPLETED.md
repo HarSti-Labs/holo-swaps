@@ -524,6 +524,40 @@
 
 ---
 
+## Session — 2026-04-22 (Stripe Checkout Integration)
+
+### Stripe Schema Changes
+- [x] **`prisma/schema.prisma`** — Replaced single `stripePaymentIntentId` / `stripeCheckoutSessionId` with four fields on `Trade`:
+  `stripeProposerSessionId`, `stripeReceiverSessionId`, `stripeProposerIntentId`, `stripeReceiverIntentId` — `prisma db push` applied
+
+### Backend — Two-Session Checkout Model
+- [x] **`StripeService.ts`** — `createCheckoutSession` updated: `destinationAccountId` is `string | null`; when null (fee-only), skips `application_fee_amount` + `transfer_data`; added `retrieveCheckoutSession(sessionId)` method
+- [x] **`IStripeService.ts`** — Added `retrieveCheckoutSession` to interface
+- [x] **`TradeService.acceptTrade`** — Always creates two Checkout Sessions at acceptance (one per party, regardless of cash component). Fee = 2.5% of total receive value (cards + any cash received). Proposer's session sends transfer to receiver only when proposer is cash payer; vice versa for receiver's session. Both parties need `stripeCustomerId`; cash recipient needs `stripeAccountId`. Renamed post-accept re-declarations to `acceptor` to avoid variable name conflict.
+- [x] **`TradeService.submitTrackingNumber`** — Gated behind `stripeProposerIntentId && stripeReceiverIntentId`: both parties must complete payment before shipping is unlocked
+- [x] **`stripeController.ts`** — `checkout.session.completed` webhook: matches session ID to `stripeProposerSessionId` / `stripeReceiverSessionId` and saves correct `paymentIntentId`; added `getCheckoutUrl` endpoint to return hosted Stripe URL for the requesting party
+- [x] **`tradeController.ts`** — Added `StripeService` instance; `getCheckoutUrl` handler
+- [x] **`tradeRoutes.ts`** — Added `GET /:tradeId/checkout-url` route
+
+### Backend — Fix: `/auth/me` Missing Stripe Fields
+- [x] **`authController.ts`** — Added `stripeCustomerId: true` and `stripeAccountId: true` to the Prisma select in `GET /api/auth/me`; previously these were missing, causing the frontend to never see these values after `loadUser()`
+
+### Frontend — Stripe Types
+- [x] **`types/index.ts`** — Updated `Trade` interface with `stripeProposerSessionId`, `stripeReceiverSessionId`, `stripeProposerIntentId`, `stripeReceiverIntentId`; added `stripeCustomerId: string | null` and `stripeAccountId: string | null` to `User` interface
+
+### Frontend — Trade Detail Page Stripe UI
+- [x] **`trades/[tradeId]/page.tsx`** — Per-party payment section for ACCEPTED status: each party sees their own "Complete My Payment" button showing their fee; green "Your payment complete" badge once intent is set; other party's payment status shown. Shipping section gated until both intents set. `?payment=success/cancelled` query param detection. All `alert()` calls replaced with dismissible in-app error banners (red, styled dark theme). Added `handleCompletePayment`, `isLoadingCheckout`, `actionError`, `paymentBanner` state.
+- [x] **`lib/api/trades.ts`** — Added `getCheckoutUrl()` method
+
+### Frontend — Settings Payments Page
+- [x] **`settings/page.tsx`** — Full Payments section with: **Payment Method** card (Stripe customer setup, badge shows active when `stripeCustomerId` set, button hidden once set up); **Bank Payout via Stripe** card (renamed from "Payout Account" to clarify it's Stripe, not PayPal; describes bank deposit flow; badge shows connected/verification-pending/not-connected). `handleSetupCustomer` and `handleSetupConnect` with loading states, in-app error/success banners. Detects `?setup=success` query param on return from Stripe onboarding.
+
+### Bug Fixes
+- [x] **Duplicate `iCashPayer` compile error** — `trades/[tradeId]/page.tsx` had two `const iCashPayer` declarations in the same IIFE scope. Fixed by removing the duplicate.
+- [x] **Settings Payments button did nothing** — Root cause: `stripeCustomerId` was missing from both `/auth/me` response and frontend `User` type. After `handleSetupCustomer` ran, `loadUser()` fetched a user object without `stripeCustomerId`, so the badge never updated to "active." Fixed by adding the field to both the backend select and the frontend type. Also hid the setup button once `stripeCustomerId` is set to prevent confusing re-clicks.
+
+---
+
 ## Bug Fixes & Issues Resolved
 
 ### CORS Error

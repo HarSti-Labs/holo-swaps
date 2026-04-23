@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { X, Plus, Package, Heart, Users, ArrowLeftRight, Star, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Plus, Minus, Check, Package, Heart, Users, ArrowLeftRight, Star, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, WantPriority, User } from "@/types";
 import { collectionApi, AddCollectionItemPayload, AddWantPayload } from "@/lib/api/collection";
 import { getCardHolders } from "@/lib/api/cards";
@@ -31,6 +31,8 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
   const [activeTab, setActiveTab] = useState<"details" | "traders">("details");
   const [activeForm, setActiveForm] = useState<"collection" | "wants" | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [successType, setSuccessType] = useState<"collection" | "wants" | null>(null);
   const [holdersPage, setHoldersPage] = useState(1);
   const [tradeTarget, setTradeTarget] = useState<{ user: User; collectionItemId: string } | null>(null);
 
@@ -40,6 +42,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [notes, setNotes] = useState("");
   const [availableForTrade, setAvailableForTrade] = useState(true);
+  const [quantity, setQuantity] = useState(1);
 
   // Wants form state
   const [maxCondition, setMaxCondition] = useState<keyof typeof CONDITION_LABELS>("NEAR_MINT");
@@ -57,6 +60,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
   const handleAddToCollection = async () => {
     if (!user) { router.push("/auth/login"); return; }
     setIsAdding(true);
+    setFormError("");
     try {
       const payload: AddCollectionItemPayload = {
         cardId: card.id,
@@ -65,13 +69,13 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
         isFirstEdition,
         notes: notes || undefined,
         status: availableForTrade ? "AVAILABLE" : "UNAVAILABLE",
+        quantity,
       };
       await collectionApi.addToCollection(payload);
-      alert("Card added to your collection!");
-      onClose();
+      setSuccessType("collection");
       router.refresh();
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to add card to collection");
+      setFormError(err.response?.data?.message || "Failed to add card to collection");
     } finally {
       setIsAdding(false);
     }
@@ -80,14 +84,14 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
   const handleAddToWants = async () => {
     if (!user) { router.push("/auth/login"); return; }
     setIsAdding(true);
+    setFormError("");
     try {
       const payload: AddWantPayload = { cardId: card.id, maxCondition, priority, notes: wantNotes || undefined };
       await collectionApi.addToWants(payload);
-      alert("Card added to your want list!");
-      onClose();
+      setSuccessType("wants");
       router.refresh();
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to add card to want list");
+      setFormError(err.response?.data?.message || "Failed to add card to want list");
     } finally {
       setIsAdding(false);
     }
@@ -220,8 +224,41 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                     </div>
                   )}
 
+                  {/* Success state */}
+                  {successType && (
+                    <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-5 text-center space-y-3">
+                      <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                        <Check className="h-6 w-6 text-green-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white">
+                          {successType === "collection" ? "Added to your collection!" : "Added to your want list!"}
+                        </p>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {successType === "collection"
+                            ? `${quantity > 1 ? `${quantity} copies of ` : ""}${card.name} is now in your collection.`
+                            : `You'll be notified when someone has ${card.name} available.`}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 justify-center pt-1">
+                        <button
+                          onClick={() => { setSuccessType(null); setActiveForm(null); }}
+                          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          Add Another
+                        </button>
+                        <button
+                          onClick={onClose}
+                          className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Collection Form */}
-                  {activeForm === "collection" && (
+                  {!successType && activeForm === "collection" && (
                     <div className="space-y-4 bg-slate-800/50 rounded-lg p-4 border border-slate-700">
                       <h4 className="font-semibold text-lg">Add to Collection</h4>
                       <div>
@@ -251,6 +288,36 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                         </label>
                       </div>
                       <div>
+                        <label className="block text-sm font-medium mb-2">Quantity</label>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition-colors disabled:opacity-40"
+                            disabled={quantity <= 1}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <input
+                            type="number"
+                            min={1}
+                            max={99}
+                            value={quantity}
+                            onChange={(e) => setQuantity(Math.min(99, Math.max(1, parseInt(e.target.value) || 1)))}
+                            className="w-16 text-center px-2 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((q) => Math.min(99, q + 1))}
+                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition-colors disabled:opacity-40"
+                            disabled={quantity >= 99}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                          <span className="text-sm text-slate-400">copies</span>
+                        </div>
+                      </div>
+                      <div>
                         <label className="block text-sm font-medium mb-2">Notes (optional)</label>
                         <textarea
                           value={notes}
@@ -261,11 +328,16 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                           maxLength={500}
                         />
                       </div>
+                      {formError && (
+                        <div className="bg-red-900/20 border border-red-800/50 rounded-lg px-3 py-2 text-sm text-red-300">
+                          {formError}
+                        </div>
+                      )}
                       <div className="flex gap-2">
-                        <button onClick={handleAddToCollection} disabled={isAdding} className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors">
-                          {isAdding ? "Adding..." : "Add to Collection"}
+                        <button onClick={handleAddToCollection} disabled={isAdding} className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors">
+                          {isAdding ? <><Loader2 className="h-4 w-4 animate-spin" /> Adding...</> : "Add to Collection"}
                         </button>
-                        <button onClick={() => setActiveForm(null)} className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors">
+                        <button onClick={() => { setActiveForm(null); setFormError(""); }} className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors">
                           Cancel
                         </button>
                       </div>
@@ -273,7 +345,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                   )}
 
                   {/* Wants Form */}
-                  {activeForm === "wants" && (
+                  {!successType && activeForm === "wants" && (
                     <div className="space-y-4 bg-slate-800/50 rounded-lg p-4 border border-slate-700">
                       <h4 className="font-semibold text-lg">Add to Want List</h4>
                       <div>
@@ -311,11 +383,16 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                           maxLength={500}
                         />
                       </div>
+                      {formError && (
+                        <div className="bg-red-900/20 border border-red-800/50 rounded-lg px-3 py-2 text-sm text-red-300">
+                          {formError}
+                        </div>
+                      )}
                       <div className="flex gap-2">
-                        <button onClick={handleAddToWants} disabled={isAdding} className="flex-1 px-6 py-3 bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors">
-                          {isAdding ? "Adding..." : "Add to Wants"}
+                        <button onClick={handleAddToWants} disabled={isAdding} className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-pink-600 hover:bg-pink-500 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors">
+                          {isAdding ? <><Loader2 className="h-4 w-4 animate-spin" /> Adding...</> : "Add to Wants"}
                         </button>
-                        <button onClick={() => setActiveForm(null)} className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors">
+                        <button onClick={() => { setActiveForm(null); setFormError(""); }} className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors">
                           Cancel
                         </button>
                       </div>

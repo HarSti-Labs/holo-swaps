@@ -109,12 +109,20 @@ export function TradeProposalModal({
     return cards.reduce((sum, card) => sum + (card.askingValueOverride ?? card.currentMarketValue ?? 0), 0);
   };
 
+  const PLATFORM_FEE_RATE = 0.025;
+
   const myTotal = calculateTotalValue(myCards);
   const theirTotal = calculateTotalValue(theirCards);
   const cashAddNumber = parseFloat(cashAdd) || 0;
   // positive = you receive more than you give; negative = you give more than you receive
   const netValue = theirTotal - (myTotal + cashAddNumber);
   const isEven = Math.abs(netValue) < 0.50;
+
+  // Each party pays 2.5% of what they RECEIVE (receiver pays model)
+  const myReceiveTotal = theirTotal; // I receive their cards
+  const theirReceiveTotal = myTotal + cashAddNumber; // They receive my cards + any cash I add
+  const myFee = myReceiveTotal * PLATFORM_FEE_RATE;
+  const theirFee = theirReceiveTotal * PLATFORM_FEE_RATE;
 
   const handleSubmit = async () => {
     if (myCards.length === 0 || theirCards.length === 0) return;
@@ -142,8 +150,8 @@ export function TradeProposalModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-800">
           <h2 className="text-2xl font-bold">Propose Trade with {targetUser.username}</h2>
@@ -441,6 +449,28 @@ export function TradeProposalModal({
                     ? "You're receiving more than you're offering — add cards or cash to balance."
                     : "You're offering more than you're receiving — a generous offer."}
                 </p>
+
+                {/* Platform fee */}
+                {(myCards.length > 0 || theirCards.length > 0) && (
+                  <div className="mt-3 pt-3 border-t border-slate-700 space-y-1">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Platform Fee (2.5%)</p>
+                    {(myCards.length > 0 || theirCards.length > 0) && (
+                      <>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-slate-400">Your fee <span className="text-slate-500">(2.5% of ${myReceiveTotal.toFixed(2)} you receive)</span></span>
+                          <span className="font-semibold text-purple-400">${myFee.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-slate-400">Their fee <span className="text-slate-500">(2.5% of ${theirReceiveTotal.toFixed(2)} they receive)</span></span>
+                          <span className="font-semibold text-slate-300">${theirFee.toFixed(2)}</span>
+                        </div>
+                      </>
+                    )}
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Each party pays 2.5% of the value they receive. Collected at completion.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -482,6 +512,15 @@ export function TradeProposalModal({
             </div>
           )}
 
+          {myReceiveTotal > 0 && (
+            <p className="text-xs text-slate-500 mb-3">
+              By proposing this trade, you agree to a{" "}
+              <span className="text-purple-400 font-medium">
+                ${myFee.toFixed(2)} platform fee
+              </span>{" "}
+              (2.5% of the ${myReceiveTotal.toFixed(2)} you receive), collected when the trade completes.
+            </p>
+          )}
           <div className="flex items-center justify-between">
             <button
               onClick={onClose}

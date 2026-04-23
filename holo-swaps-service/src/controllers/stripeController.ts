@@ -54,8 +54,8 @@ export const setupConnectAccount = async (
     });
   }
 
-  const returnUrl = `${config.frontend.url}/settings/payments?setup=success`;
-  const refreshUrl = `${config.frontend.url}/settings/payments?setup=refresh`;
+  const returnUrl = `${config.frontend.url}/settings?setup=success`;
+  const refreshUrl = `${config.frontend.url}/settings?setup=refresh`;
   const onboardingUrl = await stripeService.getConnectAccountLink(
     accountId,
     returnUrl,
@@ -114,6 +114,38 @@ export const handleWebhook = async (
         paymentIntentId: pi.id,
         tradeId: pi.metadata?.tradeId,
       });
+      break;
+    }
+
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const tradeId = session.metadata?.tradeId;
+      if (tradeId && session.payment_intent) {
+        const paymentIntentId = typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : session.payment_intent.id;
+
+        // Determine which party completed payment by matching session ID
+        const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
+        if (trade) {
+          const isProposerSession = trade.stripeProposerSessionId === session.id;
+          const isReceiverSession = trade.stripeReceiverSessionId === session.id;
+
+          if (isProposerSession) {
+            await prisma.trade.update({
+              where: { id: tradeId },
+              data: { stripeProposerIntentId: paymentIntentId },
+            });
+            logger.info("Proposer payment complete", { tradeId, paymentIntentId });
+          } else if (isReceiverSession) {
+            await prisma.trade.update({
+              where: { id: tradeId },
+              data: { stripeReceiverIntentId: paymentIntentId },
+            });
+            logger.info("Receiver payment complete", { tradeId, paymentIntentId });
+          }
+        }
+      }
       break;
     }
 

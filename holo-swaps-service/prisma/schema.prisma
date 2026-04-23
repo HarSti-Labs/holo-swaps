@@ -197,6 +197,8 @@ model User {
   priceAlerts           PriceAlert[]
   proposedTrades        Trade[]                @relation("ProposerTrades")
   receivedTrades        Trade[]                @relation("ReceiverTrades")
+  lastActionTrades      Trade[]                @relation("LastActionTrades")
+  tradeSnapshots        TradeSnapshot[]
   tradeOffers           TradeOffer[]
   tradeMessages         TradeMessage[]
   shipmentsSent         Shipment[]             @relation("ShipmentSender")
@@ -392,14 +394,19 @@ model Trade {
   priceLockedAt             DateTime?   // set on ACCEPTED — values frozen after this
   priceRefreshCount         Int         @default(0) // rate-limit refreshes to prevent gaming
   status                    TradeStatus @default(PROPOSED)
+  lastActionById            String?     // who submitted the most recent proposal/counter
   expiresAt                 DateTime?   // auto-cancel if no response by this date
-  stripePaymentIntentId     String?
+  stripeProposerSessionId   String?   // proposer's Checkout Session (fee + cash if they're the cash payer)
+  stripeReceiverSessionId   String?   // receiver's Checkout Session (fee + cash if they're the cash payer)
+  stripeProposerIntentId    String?   // set by webhook once proposer completes payment
+  stripeReceiverIntentId    String?   // set by webhook once receiver completes payment
   adminNotes                String?
   createdAt                 DateTime    @default(now())
   updatedAt                 DateTime    @updatedAt
 
   proposer                  User                   @relation("ProposerTrades", fields: [proposerId], references: [id])
   receiver                  User                   @relation("ReceiverTrades", fields: [receiverId], references: [id])
+  lastActionBy              User?                  @relation("LastActionTrades", fields: [lastActionById], references: [id])
   items                     TradeItem[]
   offers                    TradeOffer[]
   messages                  TradeMessage[]
@@ -408,6 +415,7 @@ model Trade {
   reviews                   TradeReview[]
   ownershipTransfers        CardOwnershipHistory[]
   dispute                   Dispute?
+  snapshots                 TradeSnapshot[]
 
   @@index([proposerId])
   @@index([receiverId])
@@ -445,6 +453,41 @@ model TradeOffer {
 
   @@index([tradeId])
   @@map("trade_offers")
+}
+
+model TradeSnapshot {
+  id              String              @id @default(uuid())
+  tradeId         String
+  round           Int                 // 1 = initial proposal, 2 = first counter, etc.
+  actionById      String              // who submitted this offer
+  cashDifference  Float               @default(0)
+  cashPayerId     String?
+  label           String              // e.g. "Initial Offer", "Counter #1"
+  createdAt       DateTime            @default(now())
+
+  trade           Trade               @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  actionBy        User                @relation(fields: [actionById], references: [id])
+  items           TradeSnapshotItem[]
+
+  @@index([tradeId])
+  @@map("trade_snapshots")
+}
+
+model TradeSnapshotItem {
+  id               String        @id @default(uuid())
+  snapshotId       String
+  ownedByProposer  Boolean
+  cardName         String
+  cardSetName      String?
+  cardImageUrl     String?
+  condition        CardCondition
+  isFoil           Boolean       @default(false)
+  valueAtTime      Float?
+
+  snapshot         TradeSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@index([snapshotId])
+  @@map("trade_snapshot_items")
 }
 
 model TradeMessage {

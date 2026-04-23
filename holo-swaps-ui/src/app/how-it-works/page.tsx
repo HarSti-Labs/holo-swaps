@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeroSection } from "./HeroSection";
 import {
   BookMarked,
   Heart,
@@ -13,7 +14,6 @@ import {
   MapPin,
   Clock,
   CheckCircle2,
-  HelpCircle,
 } from "lucide-react";
 
 // ─── UPDATE THIS WHEN YOU HAVE YOUR PO BOX ───────────────────────────────────
@@ -78,6 +78,7 @@ const steps = [
       "Try to keep the total value of cards roughly balanced",
       "A personal message goes a long way — be friendly",
       "You can propose a trade even without a mutual match",
+      "A 2.5% platform fee applies on the value of cards you receive — shown before you submit",
     ],
   },
   {
@@ -146,78 +147,46 @@ const colorMap: Record<string, { bg: string; border: string; text: string; badge
   amber:  { bg: "bg-amber-500/10",  border: "border-amber-500/30",  text: "text-amber-300",  badge: "bg-amber-500/20 text-amber-300",  icon: "text-amber-400" },
 };
 
-const faqs = [
-  {
-    q: "Why do cards go through a verification center instead of directly to the other trader?",
-    a: "Sending cards directly to each other creates a chicken-and-egg problem — who ships first? It also opens the door to scams. By routing through us, both parties are protected: we confirm both sets of cards arrive before forwarding anything. Neither trader is left empty-handed.",
-  },
-  {
-    q: "Who pays for shipping?",
-    a: "Each trader is responsible for shipping their own cards to the verification center. HoloSwaps covers the cost of forwarding cards to the recipients after verification.",
-  },
-  {
-    q: "What happens if a card doesn't pass verification?",
-    a: "If a card's condition is significantly worse than listed, or if it appears counterfeit, we'll pause the trade and open a dispute. Both traders are notified, and we'll work to resolve it fairly. Counterfeit cards are never forwarded — the sender's account is permanently banned.",
-  },
-  {
-    q: "How long does the whole process take?",
-    a: "From acceptance to receiving your cards: shipping to us (varies by location) + 2–5 business days verification + shipping back to you. Most domestic trades complete within 2–3 weeks total.",
-  },
-  {
-    q: "Can I cancel a trade after accepting?",
-    a: "Once both parties accept and shipping has started, cancellation requires mutual agreement and may affect your reputation score. Cancelling without cause repeatedly can result in account suspension.",
-  },
-  {
-    q: "What if the other trader never ships?",
-    a: "If a trader doesn't provide tracking within 5 business days of acceptance, you can open a dispute. We'll attempt to contact them, and if there's no response, we'll cancel the trade and your cards (if already sent) will be returned to you.",
-  },
-  {
-    q: "Is my shipping address kept private?",
-    a: "Yes. Your address is only used to ship your received cards back to you from our verification center. It is never shared with the other trader.",
-  },
-  {
-    q: "How do I report a problem?",
-    a: "Open the trade in question and use the Dispute button, or email us at admin@holoswaps.com. Please include photos and any relevant details.",
-  },
-];
 
 export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden py-20 px-4 text-center">
-          <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -top-20 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700" />
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
-              <ShieldCheck size={16} />
-              Secure · Verified · Simple
+        <HeroSection>
+          <section className="relative overflow-hidden py-20 px-4 text-center">
+            <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute -top-20 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700" />
+            <div className="relative z-10 max-w-3xl mx-auto">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
+                <ShieldCheck size={16} />
+                Secure · Verified · Simple
+              </div>
+              <h1 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight">
+                How Trading Works
+                <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  on HoloSwaps
+                </span>
+              </h1>
+              <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+                HoloSwaps is built around one idea: trading cards should be safe, fair, and easy.
+                Every trade goes through our verification center so both traders are protected from start to finish.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                <Link
+                  href="/auth/register"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-500/30"
+                >
+                  Start Trading
+                  <ChevronRight size={18} />
+                </Link>
+                <Link href="/cards" className="flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-600 text-slate-300 hover:border-slate-400 hover:text-white font-bold transition-all">
+                  Browse Cards
+                </Link>
+              </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-black text-white mb-6 leading-tight">
-              How Trading Works
-              <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                on HoloSwaps
-              </span>
-            </h1>
-            <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-              HoloSwaps is built around one idea: trading cards should be safe, fair, and easy.
-              Every trade goes through our verification center so both traders are protected from start to finish.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link
-                href="/auth/register"
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-500/30"
-              >
-                Start Trading
-                <ChevronRight size={18} />
-              </Link>
-              <Link href="/cards" className="flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-600 text-slate-300 hover:border-slate-400 hover:text-white font-bold transition-all">
-                Browse Cards
-              </Link>
-            </div>
-          </div>
-        </section>
+          </section>
+        </HeroSection>
 
         {/* Quick overview bar */}
         <section className="border-y border-slate-800 bg-slate-900/50 backdrop-blur-sm py-6 px-4">
@@ -383,31 +352,6 @@ export default function HowItWorksPage() {
                   <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Step {item.step}</p>
                   <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">{item.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section id="faq" className="py-16 px-4 bg-slate-900/50 border-t border-slate-800">
-          <div className="container mx-auto max-w-3xl">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-medium mb-4">
-                <HelpCircle size={16} />
-                FAQ
-              </div>
-              <h2 className="text-3xl font-black text-white">Common Questions</h2>
-            </div>
-
-            <div className="space-y-4">
-              {faqs.map((faq, i) => (
-                <div key={i} className="bg-slate-900 border border-slate-700 rounded-xl p-6">
-                  <p className="font-bold text-white mb-3 flex items-start gap-2">
-                    <span className="text-purple-400 mt-0.5 flex-shrink-0">Q.</span>
-                    {faq.q}
-                  </p>
-                  <p className="text-slate-400 text-sm leading-relaxed pl-5">{faq.a}</p>
                 </div>
               ))}
             </div>

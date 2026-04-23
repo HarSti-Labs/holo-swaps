@@ -9,6 +9,7 @@ export interface IStripeService {
   cancelPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent>;
   refundPayment(paymentIntentId: string, amount?: number): Promise<Stripe.Refund>;
   transferToConnectedAccount(data: TransferData): Promise<Stripe.Transfer>;
+  retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session>;
   constructWebhookEvent(payload: Buffer, signature: string): Stripe.Event;
   createReturnShippingInvoice(
     customerId: string,

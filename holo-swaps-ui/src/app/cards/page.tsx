@@ -22,6 +22,7 @@ import {
   ArrowLeftRight,
   Loader2,
   Plus,
+  Minus,
   CheckSquare,
   Square,
   X,
@@ -190,6 +191,7 @@ function BulkAddModal({
   const [isFoil, setIsFoil] = useState(false);
   const [isFirstEdition, setIsFirstEdition] = useState(false);
   const [availableForTrade, setAvailableForTrade] = useState(true);
+  const [quantity, setQuantity] = useState(1);
 
   // Wants fields
   const [maxCondition, setMaxCondition] = useState<CardCondition>("NEAR_MINT");
@@ -222,6 +224,7 @@ function BulkAddModal({
             isFoil,
             isFirstEdition,
             status: availableForTrade ? "AVAILABLE" : "UNAVAILABLE",
+            quantity,
           });
         }
       } catch {
@@ -243,7 +246,7 @@ function BulkAddModal({
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-800">
+        <div className="flex items-center justify-between p-5 border-b border-slate-700">
           <div>
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               {isWants ? <Heart className="h-5 w-5 text-pink-400" /> : <Plus className="h-5 w-5 text-blue-400" />}
@@ -351,6 +354,36 @@ function BulkAddModal({
                       </label>
                     ))}
                   </div>
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-1.5">Quantity per card</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        disabled={quantity <= 1}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition-colors disabled:opacity-40"
+                      >
+                        <Minus className="h-3.5 w-3.5" />
+                      </button>
+                      <input
+                        type="number"
+                        min={1}
+                        max={99}
+                        value={quantity}
+                        onChange={(e) => setQuantity(Math.min(99, Math.max(1, parseInt(e.target.value) || 1)))}
+                        className="w-14 text-center px-2 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.min(99, q + 1))}
+                        disabled={quantity >= 99}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition-colors disabled:opacity-40"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
+                      <span className="text-xs text-slate-500">copies each</span>
+                    </div>
+                  </div>
                 </>
               )}
 
@@ -403,7 +436,7 @@ function BulkAddModal({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-5 border-t border-slate-800">
+        <div className="flex gap-3 p-5 border-t border-slate-700">
           {!done ? (
             <>
               <button

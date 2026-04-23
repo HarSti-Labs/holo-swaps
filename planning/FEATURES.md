@@ -372,6 +372,49 @@ Tiers are calculated from tradeCount + reputationScore combined.
 
 ---
 
+## 💰 Revenue Model & Business Strategy
+
+### Current Fee Structure
+- 2.5% platform fee on completed trades
+
+### Fee Optimizations (Future)
+- **Tiered fees** — 2.5% under $500, 3.5% over $500 (high-value traders accept this)
+- **Flat minimum** — $5 minimum fee so low-value trades are still worth it
+- **Express verification** — optional $10–25 add-on for faster card turnaround
+
+### New Revenue Streams to Add
+- [ ] **Card grading/authentication** — paid in-house grading service (PSA-lite) per card
+- [ ] **Featured placement** — let users pay to pin their listing to the top of browse/listings
+- [ ] **Shipping insurance add-on** — small fee to cover lost/damaged cards in transit
+- [ ] **Membership / bulk discount plan** — e.g. $15/month for reduced fees (predictable MRR)
+
+### Risks to Manage
+- Platform carries liability for lost/disputed cards — clear ToS required before scaling
+- Cash flow is slow when cards sit in verification for days
+- Fraud: fake cards, false "didn't ship" claims — photo submission + rep system are the main defense
+
+---
+
+## 📣 Growth & User Acquisition
+
+### Channels
+- **Reddit** — r/pokemontrades, r/mtgfinance, r/sportscardsswap, r/baseballcards (be helpful, not spammy)
+- **Facebook Groups** — TCG trading groups, game-specific collector communities
+- **Discord** — Pokemon/MTG/One Piece trading servers
+- **Instagram/TikTok** — film card verification process; transparency is marketing
+- **YouTube** — document the verification flow to build trust and organic traffic
+
+### Referral Program
+- [ ] Give users a fee credit (e.g. $5) for each new user they bring in who completes a trade
+
+### Influencer / Creator Partnerships
+- [ ] Partner with card breakers and YouTubers — offer free trades or fee cuts in exchange for promotion
+
+### Reviews
+- Actively collect reviews after every completed trade — trust is the core product, reviews are the proof
+
+---
+
 ## 🚀 Next Priority Features (Roadmap)
 
 ### Option 2: Trade Proposal Flow (HIGH PRIORITY - Core Feature)

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { authApi } from "@/lib/api/auth";
-import { Trash2, AlertTriangle, Edit2, Plus, MapPin, Check, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Trash2, AlertTriangle, Edit2, Plus, MapPin, Check, Loader2, CheckCircle, XCircle, CreditCard, Wallet, ExternalLink, BadgeCheck } from "lucide-react";
 import { api } from "@/lib/api/client";
 
 const US_STATES = [
@@ -42,6 +42,7 @@ interface Address {
 
 export default function SettingsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, logout, loadUser } = useAuthStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [password, setPassword] = useState("");
@@ -93,6 +94,12 @@ export default function SettingsPage() {
   const [addressErrors, setAddressErrors] = useState<Partial<Record<keyof typeof addressForm, string>>>({});
   const line1Ref = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
+
+  // Payments state
+  const [isSettingUpCustomer, setIsSettingUpCustomer] = useState(false);
+  const [isSettingUpConnect, setIsSettingUpConnect] = useState(false);
+  const [paymentsError, setPaymentsError] = useState("");
+  const [paymentsSuccess, setPaymentsSuccess] = useState("");
 
   // Load Google Places script and init autocomplete on line1 when form opens
   useEffect(() => {
@@ -188,6 +195,41 @@ export default function SettingsPage() {
       fetchAddresses();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (searchParams.get("setup") === "success") {
+      setPaymentsSuccess("Payout account connected successfully.");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("setup");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
+
+  const handleSetupCustomer = async () => {
+    setIsSettingUpCustomer(true);
+    setPaymentsError("");
+    try {
+      await api.post("/stripe/setup-customer");
+      await loadUser();
+      setPaymentsSuccess("Payment method set up successfully.");
+    } catch (err: any) {
+      setPaymentsError(err.response?.data?.message || "Failed to set up payment method");
+    } finally {
+      setIsSettingUpCustomer(false);
+    }
+  };
+
+  const handleSetupConnect = async () => {
+    setIsSettingUpConnect(true);
+    setPaymentsError("");
+    try {
+      const res = await api.post("/stripe/connect");
+      window.location.href = res.data.data.onboardingUrl;
+    } catch (err: any) {
+      setPaymentsError(err.response?.data?.message || "Failed to set up payout account");
+      setIsSettingUpConnect(false);
+    }
+  };
 
   const fetchAddresses = async () => {
     try {
@@ -807,6 +849,90 @@ export default function SettingsPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Payments Section */}
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-1">Payments</h2>
+          <p className="text-sm text-slate-400 mb-5">Manage your payment method and payout account for trades.</p>
+
+          {paymentsError && (
+            <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4 text-red-300 text-sm">
+              {paymentsError}
+            </div>
+          )}
+          {paymentsSuccess && (
+            <div className="bg-green-900/20 border border-green-800 rounded-lg p-3 mb-4 text-green-300 text-sm flex items-center gap-2">
+              <BadgeCheck className="h-4 w-4 flex-shrink-0" />
+              {paymentsSuccess}
+            </div>
+          )}
+
+          {/* Payment Method */}
+          <div className="border border-slate-700 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <CreditCard className="h-5 w-5 text-slate-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-white">Payment Method</h3>
+                <p className="text-sm text-slate-400 mt-0.5">
+                  Used to pay your 2.5% platform fee and any cash owed when your trade is accepted. Powered by Stripe — no card details are stored on Holo Swaps.
+                </p>
+                <div className="mt-2">
+                  <span className="inline-flex items-center gap-1.5 text-xs bg-green-900/30 text-green-400 border border-green-500/30 px-2.5 py-1 rounded-full">
+                    <BadgeCheck className="h-3 w-3" />
+                    Ready to pay via Stripe
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bank Payout via Stripe */}
+          <div className="border border-slate-700 rounded-lg p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <Wallet className="h-5 w-5 text-slate-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-medium text-white">Bank Payout via Stripe</h3>
+                  <p className="text-sm text-slate-400 mt-0.5">
+                    Connect your bank account so Stripe can deposit any cash you receive from trades directly to you. This is not PayPal — it&apos;s Stripe, the same payment platform used by millions of businesses.
+                  </p>
+                  <div className="mt-2">
+                    {user?.stripeAccountVerified ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs bg-green-900/30 text-green-400 border border-green-500/30 px-2.5 py-1 rounded-full">
+                        <BadgeCheck className="h-3 w-3" />
+                        Bank account connected
+                      </span>
+                    ) : user?.stripeAccountId ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs bg-amber-900/30 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full">
+                        Connected — verification pending
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-xs bg-slate-700/50 text-slate-400 border border-slate-600 px-2.5 py-1 rounded-full">
+                        Not connected
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {!user?.stripeAccountVerified && (
+                <button
+                  onClick={handleSetupConnect}
+                  disabled={isSettingUpConnect}
+                  className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  {isSettingUpConnect ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Redirecting...</>
+                  ) : (
+                    <>
+                      <ExternalLink className="h-4 w-4" />
+                      {user?.stripeAccountId ? "Complete Bank Verification" : "Connect Bank Account"}
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Danger Zone */}
