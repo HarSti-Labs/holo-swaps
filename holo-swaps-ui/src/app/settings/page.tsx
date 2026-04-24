@@ -568,11 +568,11 @@ export default function SettingsPage() {
               </div>
               <div>
                 <label className="text-sm text-slate-400">Bio</label>
-                <p className="text-white">{user?.bio || <span className="text-slate-500">No bio set</span>}</p>
+                <p className="text-white">{user?.bio || <span className="text-slate-400">No bio set</span>}</p>
               </div>
               <div>
                 <label className="text-sm text-slate-400">Location</label>
-                <p className="text-white">{user?.location || <span className="text-slate-500">No location set</span>}</p>
+                <p className="text-white">{user?.location || <span className="text-slate-400">No location set</span>}</p>
               </div>
             </div>
           )}

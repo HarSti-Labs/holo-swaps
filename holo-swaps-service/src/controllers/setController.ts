@@ -7,38 +7,33 @@ import { CardGame } from "@prisma/client";
 import { z } from "zod";
 
 // GET /api/sets
-// Lists all sets. If CardSet catalog records exist uses those; falls back to
-// distinct setCode/setName values derived from the Card table.
+// Returns all sets derived from the Card table (distinct setCode/setName),
+// enriched with totalCards counts from the CardSet catalog where available.
 export const getSets = async (req: Request, res: Response): Promise<void> => {
   const game = req.query.game as CardGame | undefined;
 
-  // Try the catalog table first
-  const catalogCount = await prisma.cardSet.count();
-
-  if (catalogCount > 0) {
-    const sets = await prisma.cardSet.findMany({
-      where: { ...(game && { game }) },
-      orderBy: [{ game: "asc" }, { releaseDate: "desc" }, { name: "asc" }],
-    });
-    sendSuccess(res, sets);
-    return;
-  }
-
-  // Fallback: derive sets from Card table
-  const sets = await prisma.card.groupBy({
+  // Always derive sets from actual cards in the database
+  const cardSets = await prisma.card.groupBy({
     by: ["setCode", "setName", "game"],
     where: { ...(game && { game }) },
     _count: { id: true },
     orderBy: [{ game: "asc" }, { setName: "asc" }],
   });
 
+  // Enrich with catalog data (totalCards) where available
+  const catalog = await prisma.cardSet.findMany({
+    where: { setCode: { in: cardSets.map((s) => s.setCode) } },
+    select: { setCode: true, totalCards: true },
+  });
+  const catalogMap = new Map(catalog.map((c) => [c.setCode, c.totalCards]));
+
   sendSuccess(
     res,
-    sets.map((s) => ({
+    cardSets.map((s) => ({
       setCode: s.setCode,
       name: s.setName,
       game: s.game,
-      totalCards: s._count.id,
+      totalCards: catalogMap.get(s.setCode) ?? s._count.id,
     }))
   );
 };

@@ -262,7 +262,7 @@ export default function MatchesPage() {
               <Filter size={14} />
               Filters
               {hasActiveFilters && (
-                <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                   {[filters.minReputation > 0, filters.minMatchScore > 1, filters.maxValueDiff > 0].filter(Boolean).length}
                 </span>
               )}
@@ -298,7 +298,7 @@ export default function MatchesPage() {
                   onChange={(e) => setFilter("minReputation", parseFloat(e.target.value))}
                   className="w-full accent-primary"
                 />
-                <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span>Any</span><span>5★</span>
                 </div>
               </div>
@@ -316,7 +316,7 @@ export default function MatchesPage() {
                   onChange={(e) => setFilter("minMatchScore", parseInt(e.target.value))}
                   className="w-full accent-primary"
                 />
-                <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span>1</span><span>10+</span>
                 </div>
               </div>
@@ -336,7 +336,7 @@ export default function MatchesPage() {
                   onChange={(e) => setFilter("maxValueDiff", parseInt(e.target.value))}
                   className="w-full accent-primary"
                 />
-                <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span>Any</span><span>$100</span>
                 </div>
               </div>

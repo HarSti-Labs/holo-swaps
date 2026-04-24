@@ -152,7 +152,7 @@ export default function RegisterPage() {
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   required
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"
+                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   {getValidationIcon(emailStatus)}
@@ -177,7 +177,7 @@ export default function RegisterPage() {
                   placeholder="ProfessorOak"
                   minLength={3}
                   maxLength={20}
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"
+                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   {getValidationIcon(usernameStatus)}
@@ -188,7 +188,7 @@ export default function RegisterPage() {
                   {usernameMessage}
                 </p>
               ) : (
-                <p className="text-xs text-slate-500 mt-2">
+                <p className="text-xs text-slate-400 mt-2">
                   3–20 characters, letters, numbers, underscores only
                 </p>
               )}
@@ -205,7 +205,7 @@ export default function RegisterPage() {
                   required
                   placeholder="Min. 8 characters"
                   minLength={8}
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"
+                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
                 <button
                   type="button"
@@ -227,7 +227,7 @@ export default function RegisterPage() {
                   onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
                   required
                   placeholder="Re-enter your password"
-                  className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 transition-all placeholder:text-slate-500 ${
+                  className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${
                     passwordsMismatch
                       ? "border-red-500 focus:ring-red-500 focus:border-red-500"
                       : passwordsMatch

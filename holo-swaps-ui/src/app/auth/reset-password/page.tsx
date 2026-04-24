@@ -114,7 +114,7 @@ export default function ResetPasswordPage() {
                       required
                       minLength={8}
                       placeholder="Min. 8 characters"
-                      className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"
+                      className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                     />
                     <button
                       type="button"
@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       placeholder="Re-enter your password"
-                      className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 transition-all placeholder:text-slate-500 ${
+                      className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${
                         passwordsMismatch
                           ? "border-red-500 focus:ring-red-500 focus:border-red-500"
                           : passwordsMatch

@@ -105,6 +105,22 @@ export const cancelTrade = async (
   sendSuccess(res, trade, "Trade cancelled");
 };
 
+export const requestCancel = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const trade = await tradeService.requestCancelTrade(req.params.tradeId, req.user!.id);
+  sendSuccess(res, trade, "Cancellation request sent");
+};
+
+export const acceptCancel = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const trade = await tradeService.acceptCancelTrade(req.params.tradeId, req.user!.id);
+  sendSuccess(res, trade, "Trade cancelled");
+};
+
 export const submitTracking = async (
   req: AuthenticatedRequest,
   res: Response

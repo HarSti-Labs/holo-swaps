@@ -425,7 +425,7 @@ export default function ProfilePage() {
               </div>
             ) : theirCollection.length === 0 ? (
               <div className="p-12 text-center">
-                <Package className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                <Package className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                 <p className="text-slate-400">No cards available for trade</p>
               </div>
             ) : (
@@ -443,14 +443,14 @@ export default function ProfilePage() {
                       />
                     ) : (
                       <div className="w-full aspect-[2/3] bg-slate-700 flex items-center justify-center">
-                        <Package className="h-8 w-8 text-slate-500" />
+                        <Package className="h-8 w-8 text-slate-400" />
                       </div>
                     )}
                     <div className="p-3">
                       <p className="text-sm font-medium truncate">{item.card.name}</p>
                       <p className="text-xs text-slate-400 truncate">{item.card.setName}</p>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs text-slate-500">{CONDITION_LABELS[item.condition]}</span>
+                        <span className="text-xs text-slate-400">{CONDITION_LABELS[item.condition]}</span>
                         {item.isFoil && (
                           <span className="text-xs text-yellow-400 font-medium">Foil</span>
                         )}
@@ -487,7 +487,7 @@ export default function ProfilePage() {
 
             {tickets.length === 0 ? (
               <div className="p-12 text-center">
-                <Headphones className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                <Headphones className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                 <p className="text-slate-400 mb-2">No support tickets yet</p>
                 <Link href="/support" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
                   Submit a ticket →
@@ -517,23 +517,23 @@ export default function ProfilePage() {
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-mono text-xs text-slate-500">{ticket.ticketNumber}</span>
+                          <span className="font-mono text-xs text-slate-400">{ticket.ticketNumber}</span>
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${urgencyColor}`}>
                             {ticket.urgency}
                           </span>
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColors[ticket.status] ?? "text-slate-400"}`}>
                             {ticket.status.replace("_", " ")}
                           </span>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-slate-400">
                             {ticket.category.replace(/_/g, " ")}
                           </span>
                         </div>
                         <p className="text-sm font-medium text-white truncate">{ticket.subject}</p>
                         {ticket.tradeCode && (
-                          <p className="text-xs text-slate-500 mt-0.5 font-mono">{ticket.tradeCode}</p>
+                          <p className="text-xs text-slate-400 mt-0.5 font-mono">{ticket.tradeCode}</p>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 whitespace-nowrap flex-shrink-0">
+                      <p className="text-xs text-slate-400 whitespace-nowrap flex-shrink-0">
                         {new Date(ticket.createdAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -599,7 +599,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-1.5">Additional details <span className="text-slate-600">(optional)</span></label>
+                    <label className="block text-sm text-slate-400 mb-1.5">Additional details <span className="text-slate-400">(optional)</span></label>
                     <textarea
                       value={reportDetails}
                       onChange={(e) => setReportDetails(e.target.value)}

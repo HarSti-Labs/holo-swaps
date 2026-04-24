@@ -22,6 +22,7 @@ import {
   Star,
   ShieldCheck,
   CreditCard,
+  AlertTriangle,
 } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { CONDITION_LABELS } from "@/types";
@@ -225,7 +226,10 @@ export default function TradeDetailPage() {
   };
 
   const handleCancel = async () => {
-    if (!confirm("Are you sure you want to cancel this trade?")) return;
+    const msg = trade.status === "ACCEPTED"
+      ? "Are you sure? This trade has already been accepted by both parties. Cancelling will unlock both parties' cards."
+      : "Are you sure you want to cancel this trade?";
+    if (!confirm(msg)) return;
 
     setActionError(null);
     setIsCancelling(true);
@@ -239,7 +243,7 @@ export default function TradeDetailPage() {
     }
   };
 
-  const handleSubmitTracking = async (e: React.FormEvent) => {
+const handleSubmitTracking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!trackingNumber.trim()) return;
     setTrackingError(null);
@@ -333,7 +337,9 @@ if (!user) {
   const isMyTurn = ["PROPOSED", "COUNTERED"].includes(trade.status) && trade.lastActionById !== user.id;
   const canAccept = isMyTurn;
   const canDecline = isMyTurn;
-  const canCancel = ["PROPOSED", "COUNTERED"].includes(trade.status);
+  const neitherPaid = !trade.stripeProposerIntentId && !trade.stripeReceiverIntentId;
+  const canCancel = ["PROPOSED", "COUNTERED"].includes(trade.status) ||
+    (trade.status === "ACCEPTED" && neitherPaid);
   const canCounter = ["PROPOSED", "COUNTERED"].includes(trade.status);
 
   return (
@@ -391,15 +397,15 @@ if (!user) {
                 {steps.map((step, i) => (
                   <div key={step.label} className="flex items-center flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                         i < currentIdx ? "bg-green-500 text-white" :
                         i === currentIdx ? "bg-blue-500 text-white" :
-                        "bg-slate-700 text-slate-500"
+                        "bg-slate-700 text-slate-400"
                       }`}>
                         {i < currentIdx ? <Check size={10} /> : i + 1}
                       </div>
                       <span className={`text-xs font-medium hidden sm:block ${
-                        i === currentIdx ? "text-blue-400" : i < currentIdx ? "text-green-400" : "text-slate-500"
+                        i === currentIdx ? "text-blue-400" : i < currentIdx ? "text-green-400" : "text-slate-400"
                       }`}>{step.label}</span>
                     </div>
                     {i < steps.length - 1 && (
@@ -416,7 +422,7 @@ if (!user) {
           <div className="flex items-start gap-3 bg-red-950/40 border border-red-500/30 rounded-xl p-4 mt-4">
             <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-red-300 flex-1">{actionError}</p>
-            <button onClick={() => setActionError(null)} className="text-slate-500 hover:text-white flex-shrink-0">
+            <button onClick={() => setActionError(null)} className="text-slate-400 hover:text-white flex-shrink-0">
               <X size={14} />
             </button>
           </div>
@@ -454,7 +460,7 @@ if (!user) {
                             />
                           ) : (
                             <div className="w-16 h-20 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
-                              <Package className="h-8 w-8 text-slate-500" />
+                              <Package className="h-8 w-8 text-slate-400" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -464,14 +470,14 @@ if (!user) {
                             <p className="text-xs text-slate-400 truncate">
                               {card.card.setName}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-slate-400">
                               {CONDITION_LABELS[card.condition]}
                               {card.isFoil && " • Foil"}
                             </p>
                             {card.askingValueOverride != null ? (
                               <div className="mt-1">
                                 <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                                <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                                <span className="text-xs text-teal-500 ml-1">Owner price</span>
                               </div>
                             ) : (
                               <p className="text-xs text-green-400 mt-1">
@@ -509,7 +515,7 @@ if (!user) {
                             />
                           ) : (
                             <div className="w-16 h-20 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
-                              <Package className="h-8 w-8 text-slate-500" />
+                              <Package className="h-8 w-8 text-slate-400" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -519,14 +525,14 @@ if (!user) {
                             <p className="text-xs text-slate-400 truncate">
                               {card.card.setName}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-slate-400">
                               {CONDITION_LABELS[card.condition]}
                               {card.isFoil && " • Foil"}
                             </p>
                             {card.askingValueOverride != null ? (
                               <div className="mt-1">
                                 <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                                <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                                <span className="text-xs text-teal-500 ml-1">Owner price</span>
                               </div>
                             ) : (
                               <p className="text-xs text-green-400 mt-1">
@@ -562,20 +568,20 @@ if (!user) {
                   <div className="mt-6 pt-5 border-t border-slate-700 space-y-3">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-slate-800/50 rounded-lg p-3">
-                        <p className="text-xs text-slate-500 mb-1">You're offering</p>
+                        <p className="text-xs text-slate-400 mb-1">You're offering</p>
                         <p className="text-lg font-bold text-white">${myMarketValue.toFixed(2)}</p>
                         {iPayCash && (
                           <p className="text-xs text-amber-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash</p>
                         )}
-                        <p className="text-xs text-slate-500 mt-1">{myItems.length} card{myItems.length !== 1 ? "s" : ""}</p>
+                        <p className="text-xs text-slate-400 mt-1">{myItems.length} card{myItems.length !== 1 ? "s" : ""}</p>
                       </div>
                       <div className="bg-slate-800/50 rounded-lg p-3">
-                        <p className="text-xs text-slate-500 mb-1">You're receiving</p>
+                        <p className="text-xs text-slate-400 mb-1">You're receiving</p>
                         <p className="text-lg font-bold text-white">${theirMarketValue.toFixed(2)}</p>
                         {theyPayCash && (
                           <p className="text-xs text-green-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash from them</p>
                         )}
-                        <p className="text-xs text-slate-500 mt-1">{theirItems.length} card{theirItems.length !== 1 ? "s" : ""}</p>
+                        <p className="text-xs text-slate-400 mt-1">{theirItems.length} card{theirItems.length !== 1 ? "s" : ""}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between px-1">
@@ -591,11 +597,11 @@ if (!user) {
                     {/* Platform fee */}
                     <div className="flex items-center justify-between px-1 pt-2 border-t border-slate-700">
                       <span className="text-sm text-slate-400">
-                        Your platform fee <span className="text-slate-500 text-xs">(2.5% of ${theirTotal.toFixed(2)} you receive)</span>
+                        Your platform fee <span className="text-slate-400 text-xs">(2.5% of ${theirTotal.toFixed(2)} you receive)</span>
                       </span>
                       <span className="text-sm font-semibold text-purple-400">${myFee.toFixed(2)}</span>
                     </div>
-                    <p className="text-[11px] text-slate-500 px-1">
+                    <p className="text-xs text-slate-400 px-1">
                       Each party pays 2.5% of the value they receive. Collected at completion.
                     </p>
                   </div>
@@ -619,34 +625,34 @@ if (!user) {
                             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${snap.round === snapshots.length ? "bg-blue-500/20 text-blue-300" : "bg-slate-700 text-slate-400"}`}>
                               {snap.label}
                             </span>
-                            <span className="text-xs text-slate-500">by {isMe ? "You" : snap.actionBy.username}</span>
+                            <span className="text-xs text-slate-400">by {isMe ? "You" : snap.actionBy.username}</span>
                           </div>
-                          <span className="text-xs text-slate-500">{new Date(snap.createdAt).toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                          <span className="text-xs text-slate-400">{new Date(snap.createdAt).toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <p className="text-[11px] text-slate-500 mb-1.5">{trade.proposer.username}'s cards</p>
+                            <p className="text-xs text-slate-400 mb-1.5">{trade.proposer.username}'s cards</p>
                             <div className="space-y-1">
                               {proposerItems.map((item: any) => (
                                 <div key={item.id} className="flex items-center gap-2">
                                   {item.cardImageUrl && <img src={item.cardImageUrl} alt={item.cardName} className="w-7 h-9 object-cover rounded flex-shrink-0" />}
                                   <div className="min-w-0">
                                     <p className="text-xs text-white truncate">{item.cardName}</p>
-                                    {item.valueAtTime != null && <p className="text-[10px] text-green-400">${item.valueAtTime.toFixed(2)}</p>}
+                                    {item.valueAtTime != null && <p className="text-xs text-green-400">${item.valueAtTime.toFixed(2)}</p>}
                                   </div>
                                 </div>
                               ))}
                             </div>
                           </div>
                           <div>
-                            <p className="text-[11px] text-slate-500 mb-1.5">{trade.receiver.username}'s cards</p>
+                            <p className="text-xs text-slate-400 mb-1.5">{trade.receiver.username}'s cards</p>
                             <div className="space-y-1">
                               {receiverItems.map((item: any) => (
                                 <div key={item.id} className="flex items-center gap-2">
                                   {item.cardImageUrl && <img src={item.cardImageUrl} alt={item.cardName} className="w-7 h-9 object-cover rounded flex-shrink-0" />}
                                   <div className="min-w-0">
                                     <p className="text-xs text-white truncate">{item.cardName}</p>
-                                    {item.valueAtTime != null && <p className="text-[10px] text-green-400">${item.valueAtTime.toFixed(2)}</p>}
+                                    {item.valueAtTime != null && <p className="text-xs text-green-400">${item.valueAtTime.toFixed(2)}</p>}
                                   </div>
                                 </div>
                               ))}
@@ -666,7 +672,7 @@ if (!user) {
             )}
 
             {/* Action Buttons */}
-            {(canAccept || canDecline || canCancel || canCounter) && (
+            {(canAccept || canDecline || canCounter) && (
               <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
                 <h3 className="text-lg font-semibold mb-4">Actions</h3>
                 <div className="flex flex-wrap gap-3 mb-4">
@@ -717,25 +723,6 @@ if (!user) {
                       )}
                     </button>
                   )}
-                  {canCancel && (
-                    <button
-                      onClick={handleCancel}
-                      disabled={isCancelling}
-                      className="flex items-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
-                    >
-                      {isCancelling ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Cancelling...
-                        </>
-                      ) : (
-                        <>
-                          <X className="h-4 w-4" />
-                          Cancel Trade
-                        </>
-                      )}
-                    </button>
-                  )}
                 </div>
 
               </div>
@@ -750,7 +737,7 @@ if (!user) {
                 <p className="text-sm font-semibold text-green-300">Payment successful!</p>
                 <p className="text-xs text-slate-400 mt-0.5">Your payment is held in escrow and will be released when the trade completes verification.</p>
               </div>
-              <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-500 hover:text-white"><X size={14} /></button>
+              <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-400 hover:text-white"><X size={14} /></button>
             </div>
           )}
           {paymentBanner === "cancelled" && (
@@ -760,7 +747,7 @@ if (!user) {
                 <p className="text-sm font-semibold text-amber-300">Payment cancelled</p>
                 <p className="text-xs text-slate-400 mt-0.5">You can complete payment below whenever you're ready.</p>
               </div>
-              <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-500 hover:text-white"><X size={14} /></button>
+              <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-400 hover:text-white"><X size={14} /></button>
             </div>
           )}
 
@@ -781,7 +768,8 @@ if (!user) {
             // My total receive value = their card value + any cash they send me
             const myReceiveValue = theirCardsValue + (theyAreCashPayer ? trade.cashDifference : 0);
             const myFee = myReceiveValue * PLATFORM_FEE_RATE;
-            const myTotal = myFee + (iCashPayer ? trade.cashDifference : 0);
+            const RETURN_SHIPPING = 4.99;
+            const myTotal = myFee + RETURN_SHIPPING + (iCashPayer ? trade.cashDifference : 0);
 
             // Did I already pay?
             const myIntentId = myIsProposer ? trade.stripeProposerIntentId : trade.stripeReceiverIntentId;
@@ -800,16 +788,17 @@ if (!user) {
                         <p className="text-sm font-semibold text-amber-300">Your payment is required</p>
                         <p className="text-xs text-slate-400 mt-1">
                           Platform fee: <span className="text-white">${myFee.toFixed(2)}</span>
+                          {" "}+ return shipping: <span className="text-white">${RETURN_SHIPPING.toFixed(2)}</span>
                           {iCashPayer && <> + cash to {otherUser.username}: <span className="text-white">${trade.cashDifference.toFixed(2)}</span></>}
                           {" "}= <span className="text-white font-semibold">${myTotal.toFixed(2)} total</span>
                         </p>
-                        <p className="text-[11px] text-slate-500 mt-1">Funds are held in escrow until the trade is verified and completed.</p>
+                        <p className="text-xs text-slate-400 mt-1">Return shipping covers us mailing your new cards back to you after verification.</p>
                       </div>
                     </div>
                     <button
                       onClick={handleCompletePayment}
                       disabled={isLoadingCheckout}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors"
                     >
                       {isLoadingCheckout ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
                       {isLoadingCheckout ? "Loading..." : `Complete My Payment — $${myTotal.toFixed(2)}`}
@@ -837,6 +826,7 @@ if (!user) {
                     <p className="text-xs text-slate-400"><span className="text-slate-300 font-medium">{otherUser.username}</span>'s payment is confirmed.</p>
                   </div>
                 )}
+
               </div>
             );
           })()}
@@ -881,11 +871,17 @@ if (!user) {
                     <div>
                       <p className="text-sm font-semibold text-green-300">Your tracking submitted</p>
                       <p className="text-xs text-slate-400 mt-0.5">{myShipment.carrier} · {myShipment.trackingNumber}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Status: {myShipment.status}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Status: {myShipment.status}</p>
                     </div>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmitTracking} className="space-y-3">
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/40 border border-amber-500/30">
+                      <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-300 leading-relaxed">
+                        <span className="font-semibold">Ship with tracking only.</span> Packages sent without a tracking number are not covered by our dispute policy and cannot be verified.
+                      </p>
+                    </div>
                     <p className="text-sm font-semibold text-white">Submit your tracking number</p>
                     {trackingError && <p className="text-xs text-red-400">{trackingError}</p>}
                     <div className="grid grid-cols-2 gap-3">
@@ -937,7 +933,7 @@ if (!user) {
                     <button
                       type="submit"
                       disabled={isSubmittingTracking || !trackingNumber.trim()}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
                     >
                       {isSubmittingTracking ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
                       Submit Tracking
@@ -947,13 +943,13 @@ if (!user) {
 
                 {/* Their tracking status */}
                 <div className={`flex items-start gap-3 rounded-lg p-3 ${theirShipment ? "bg-green-950/20 border border-green-500/20" : "bg-slate-800/40 border border-slate-700"}`}>
-                  {theirShipment ? <CheckCircle size={15} className="text-green-400 mt-0.5 flex-shrink-0" /> : <Clock size={15} className="text-slate-500 mt-0.5 flex-shrink-0" />}
+                  {theirShipment ? <CheckCircle size={15} className="text-green-400 mt-0.5 flex-shrink-0" /> : <Clock size={15} className="text-slate-400 mt-0.5 flex-shrink-0" />}
                   <div>
                     <p className="text-xs font-semibold text-slate-300">{otherUser.username}'s shipment</p>
                     {theirShipment ? (
                       <p className="text-xs text-slate-400 mt-0.5">{theirShipment.carrier} · {theirShipment.trackingNumber} · <span className="text-slate-300">{theirShipment.status}</span></p>
                     ) : (
-                      <p className="text-xs text-slate-500 mt-0.5">Waiting for them to submit tracking</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Waiting for them to submit tracking</p>
                     )}
                   </div>
                 </div>
@@ -972,7 +968,7 @@ if (!user) {
                       <button
                         onClick={handleConfirmReceipt}
                         disabled={isConfirmingReceipt || alreadyConfirmed}
-                        className="flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-600 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-600 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
                       >
                         {isConfirmingReceipt ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
                         {alreadyConfirmed ? "Receipt Confirmed" : "Confirm Receipt (Admin)"}
@@ -1006,7 +1002,7 @@ if (!user) {
                           key={star}
                           type="button"
                           onClick={() => setReviewRating(star)}
-                          className={`text-2xl transition-colors ${star <= reviewRating ? "text-yellow-400" : "text-slate-600 hover:text-yellow-600"}`}
+                          className={`text-2xl transition-colors ${star <= reviewRating ? "text-yellow-400" : "text-slate-400 hover:text-yellow-600"}`}
                         >
                           ★
                         </button>
@@ -1029,13 +1025,38 @@ if (!user) {
                   <button
                     type="submit"
                     disabled={isSubmittingReview || reviewRating === 0}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
                   >
                     {isSubmittingReview ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
                     Submit Review
                   </button>
                 </form>
               )}
+            </div>
+          )}
+
+          {/* Cancel Trade */}
+          {canCancel && (
+            <div className="lg:col-span-2 border border-red-500/30 bg-red-950/20 rounded-xl p-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-red-400">Cancel this trade</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {trade.status === "ACCEPTED"
+                    ? "Neither party has paid yet. Cancelling will unlock all cards and notify the other party."
+                    : "This will cancel the trade and notify the other party."}
+                </p>
+              </div>
+              <button
+                onClick={handleCancel}
+                disabled={isCancelling}
+                className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                {isCancelling ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Cancelling...</>
+                ) : (
+                  <><X className="h-4 w-4" /> Cancel Trade</>
+                )}
+              </button>
             </div>
           )}
 
@@ -1048,7 +1069,7 @@ if (!user) {
                   <MessageSquare className="h-5 w-5 text-blue-400" />
                   <h3 className="font-semibold">Trade Chat</h3>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-400 mt-1">
                   Messages are only visible to you and {otherUser.username}
                 </p>
               </div>
@@ -1056,7 +1077,7 @@ if (!user) {
               {/* Messages List */}
               <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.length === 0 ? (
-                  <p className="text-center text-slate-500 text-sm py-8">
+                  <p className="text-center text-slate-400 text-sm py-8">
                     No messages yet. Start the conversation!
                   </p>
                 ) : (
@@ -1081,7 +1102,7 @@ if (!user) {
                             className={`text-xs mt-1 ${
                               isMyMessage
                                 ? "text-blue-200"
-                                : "text-slate-500"
+                                : "text-slate-400"
                             }`}
                           >
                             {new Date(msg.createdAt).toLocaleTimeString([], {
@@ -1114,7 +1135,7 @@ if (!user) {
                   <button
                     type="submit"
                     disabled={!newMessage.trim() || isSendingMessage}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
                   >
                     {isSendingMessage ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
@@ -1138,6 +1159,7 @@ if (!user) {
           onSuccess={loadTrade}
         />
       )}
+
     </div>
   );
 }

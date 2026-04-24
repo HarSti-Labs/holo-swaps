@@ -27,4 +27,6 @@ export interface IEmailService {
   sendReportAdminReplyEmail(to: string, reporterUsername: string, messageBody: string, reportUrl: string): Promise<void>;
   sendReportResolvedEmail(to: string, reporterUsername: string, reportedUsername: string, reason: string, note: string | null): Promise<void>;
   sendTradeMessageEmail(to: string, recipientUsername: string, senderUsername: string, tradeCode: string, messageBody: string, tradeUrl: string): Promise<void>;
+  sendCancelRequestEmail(to: string, recipientUsername: string, requesterUsername: string, tradeCode: string, tradeUrl: string): Promise<void>;
+  sendCancelAcceptedEmail(to: string, recipientUsername: string, otherUsername: string, tradeCode: string): Promise<void>;
 }

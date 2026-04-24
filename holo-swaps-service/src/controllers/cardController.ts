@@ -175,6 +175,16 @@ export const getCardHolders = async (req: Request, res: Response): Promise<void>
   });
 };
 
+// GET /api/cards/sets - Get all distinct set names from cards
+export const getCardSets = async (req: Request, res: Response): Promise<void> => {
+  const rows = await prisma.card.findMany({
+    select: { setName: true },
+    distinct: ["setName"],
+    orderBy: { setName: "asc" },
+  });
+  sendSuccess(res, rows.map((r) => r.setName));
+};
+
 // GET /api/cards/rarities?setCode=XXX
 export const getRarities = async (req: Request, res: Response): Promise<void> => {
   const { setCode } = req.query;

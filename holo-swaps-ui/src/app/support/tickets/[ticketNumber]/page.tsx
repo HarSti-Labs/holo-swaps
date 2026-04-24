@@ -135,14 +135,14 @@ export default function TicketDetailPage() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className="font-mono text-xs text-slate-500">{ticket.ticketNumber}</span>
+                <span className="font-mono text-xs text-slate-400">{ticket.ticketNumber}</span>
                 <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full border", STATUS_STYLES[ticket.status])}>
                   {STATUS_LABELS[ticket.status]}
                 </span>
                 <span className={cn("text-xs font-medium", URGENCY_STYLES[ticket.urgency])}>
                   {ticket.urgency}
                 </span>
-                <span className="text-xs text-slate-500">{ticket.category.replace(/_/g, " ")}</span>
+                <span className="text-xs text-slate-400">{ticket.category.replace(/_/g, " ")}</span>
               </div>
               <h1 className="text-xl font-bold text-white mb-1">{ticket.subject}</h1>
               {ticket.user && (
@@ -152,7 +152,7 @@ export default function TicketDetailPage() {
                 </p>
               )}
               {ticket.tradeCode && (
-                <p className="text-xs text-slate-500 font-mono mt-1">{ticket.tradeCode}</p>
+                <p className="text-xs text-slate-400 font-mono mt-1">{ticket.tradeCode}</p>
               )}
             </div>
 
@@ -176,7 +176,7 @@ export default function TicketDetailPage() {
 
         {/* Original description */}
         <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-4">
-          <p className="text-xs text-slate-500 uppercase tracking-wider mb-3">Original Message</p>
+          <p className="text-xs text-slate-400 uppercase tracking-wider mb-3">Original Message</p>
           <p className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
         </div>
 
@@ -207,7 +207,7 @@ export default function TicketDetailPage() {
               }}
               placeholder={user?.isAdmin ? "Write your reply to the user…" : "Write a reply…"}
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-500 resize-none mb-3"
+              className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400 resize-none mb-3"
             />
             <div className="flex justify-end">
               <button
@@ -221,7 +221,7 @@ export default function TicketDetailPage() {
             </div>
           </div>
         ) : (
-          <div className="text-center py-6 text-slate-500 text-sm border border-slate-800 rounded-xl bg-slate-900/30">
+          <div className="text-center py-6 text-slate-400 text-sm border border-slate-800 rounded-xl bg-slate-900/30">
             This ticket has been resolved. If you need further help,{" "}
             <Link href="/support" className="text-blue-400 hover:text-blue-300">open a new ticket</Link>.
           </div>
@@ -255,7 +255,7 @@ function MessageBubble({ msg }: { msg: TicketMessage }) {
           <span className={cn("text-xs font-semibold", msg.isAdminReply ? "text-blue-300" : "text-slate-300")}>
             {msg.isAdminReply ? "HoloSwaps Support" : `@${msg.author?.username ?? "User"}`}
           </span>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-400">
             {new Date(msg.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             {" "}
             {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}

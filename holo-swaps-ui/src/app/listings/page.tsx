@@ -239,7 +239,7 @@ export default function ListingsPage() {
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -273,7 +273,7 @@ export default function ListingsPage() {
             <SlidersHorizontal className="h-4 w-4" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="bg-green-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="bg-green-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
@@ -353,7 +353,7 @@ export default function ListingsPage() {
                 </label>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs">$</span>
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
                     <input
                       type="number"
                       min="0"
@@ -363,9 +363,9 @@ export default function ListingsPage() {
                       className="w-full pl-6 pr-2 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
                   </div>
-                  <span className="text-slate-600 text-sm">–</span>
+                  <span className="text-slate-400 text-sm">–</span>
                   <div className="relative flex-1">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs">$</span>
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
                     <input
                       type="number"
                       min="0"
@@ -412,7 +412,7 @@ export default function ListingsPage() {
               <div className="pt-2 border-t border-slate-800">
                 <button
                   onClick={clearAllFilters}
-                  className="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1"
+                  className="text-xs text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1"
                 >
                   <X className="h-3 w-3" /> Clear all filters
                 </button>
@@ -454,7 +454,7 @@ export default function ListingsPage() {
           <div className="text-center py-24">
             <ShoppingBag className="h-16 w-16 text-slate-700 mx-auto mb-4" />
             <p className="text-slate-400 text-lg font-medium">No listings found</p>
-            <p className="text-slate-500 text-sm mt-1">
+            <p className="text-slate-400 text-sm mt-1">
               {search || game || activeFilterCount > 0
                 ? "Try adjusting your filters"
                 : "No cards are currently listed for trade"}
@@ -561,7 +561,7 @@ function ListingCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Package className="h-10 w-10 text-slate-600" />
+            <Package className="h-10 w-10 text-slate-400" />
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950 to-transparent" />
@@ -569,7 +569,7 @@ function ListingCard({
         {/* Price badge */}
         {price != null && (
           <div className={`absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-xs font-bold px-2 py-0.5 rounded-lg ${listing.askingValueOverride != null ? "text-teal-400" : "text-green-400"}`}>
-            {listing.askingValueOverride != null && <span className="opacity-70 text-[9px] block leading-none mb-0.5">ASKING</span>}
+            {listing.askingValueOverride != null && <span className="opacity-70 text-xs block leading-none mb-0.5">ASKING</span>}
             ${price.toFixed(2)}
           </div>
         )}
@@ -583,7 +583,7 @@ function ListingCard({
 
         {/* Rarity badge */}
         {listing.card.rarity && (
-          <div className="absolute bottom-3 left-2 bg-black/60 backdrop-blur-sm text-slate-300 text-[9px] font-semibold px-1.5 py-0.5 rounded">
+          <div className="absolute bottom-3 left-2 bg-black/60 backdrop-blur-sm text-slate-300 text-xs font-semibold px-1.5 py-0.5 rounded">
             {listing.card.rarity}
           </div>
         )}
@@ -595,7 +595,7 @@ function ListingCard({
           <p className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-green-400 transition-colors">
             {listing.card.name}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5 truncate">{listing.card.setName}</p>
+          <p className="text-xs text-slate-400 mt-0.5 truncate">{listing.card.setName}</p>
         </div>
 
         {/* Condition */}
@@ -612,7 +612,7 @@ function ListingCard({
             {listing.user.avatarUrl ? (
               <img src={listing.user.avatarUrl} alt="" className="w-5 h-5 object-cover" />
             ) : (
-              <span className="text-[9px] font-bold text-slate-400">
+              <span className="text-xs font-bold text-slate-400">
                 {listing.user.username[0].toUpperCase()}
               </span>
             )}
@@ -626,7 +626,7 @@ function ListingCard({
           </Link>
           {listing.user.tier && TIER_STYLES[listing.user.tier] && (
             <span className={cn(
-              "ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
+              "ml-auto text-xs font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
               TIER_STYLES[listing.user.tier]
             )}>
               {listing.user.tier[0]}
@@ -636,7 +636,7 @@ function ListingCard({
 
         {/* Description */}
         {listing.listingDescription && (
-          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
             {listing.listingDescription}
           </p>
         )}
@@ -659,7 +659,7 @@ function ListingCard({
             Sign in to offer
           </Link>
         ) : (
-          <div className="w-full py-2 text-center text-xs text-slate-600 mt-1">Your listing</div>
+          <div className="w-full py-2 text-center text-xs text-slate-400 mt-1">Your listing</div>
         )}
       </div>
     </div>
@@ -720,7 +720,7 @@ function ListingDetailModal({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <Package className="h-12 w-12 text-slate-600" />
+                  <Package className="h-12 w-12 text-slate-400" />
                 </div>
               )}
               {listing.isFoil && (
@@ -754,7 +754,7 @@ function ListingDetailModal({
             <div>
               <p className="text-slate-400 text-sm">{listing.card.setName}</p>
               {listing.card.cardNumber && (
-                <p className="text-slate-500 text-xs mt-0.5">#{listing.card.cardNumber}</p>
+                <p className="text-slate-400 text-xs mt-0.5">#{listing.card.cardNumber}</p>
               )}
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className={cn(
@@ -801,7 +801,7 @@ function ListingDetailModal({
                 </div>
               )}
               {price == null && (
-                <p className="text-slate-500 text-sm">No price set</p>
+                <p className="text-slate-400 text-sm">No price set</p>
               )}
             </div>
 
@@ -846,7 +846,7 @@ function ListingDetailModal({
                     <Star className="h-3 w-3 text-yellow-400" />
                     <span className="text-xs text-slate-400">{listing.user.reputationScore} rep</span>
                     {listing.user.tier && TIER_STYLES[listing.user.tier] && (
-                      <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", TIER_STYLES[listing.user.tier])}>
+                      <span className={cn("text-xs font-bold px-1.5 py-0.5 rounded-full", TIER_STYLES[listing.user.tier])}>
                         {listing.user.tier}
                       </span>
                     )}
@@ -876,7 +876,7 @@ function ListingDetailModal({
               Sign in to make an offer
             </Link>
           ) : (
-            <p className="text-center text-sm text-slate-500 py-2">This is your listing</p>
+            <p className="text-center text-sm text-slate-400 py-2">This is your listing</p>
           )}
         </div>
       </div>

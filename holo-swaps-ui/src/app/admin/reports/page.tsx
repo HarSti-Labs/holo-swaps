@@ -98,7 +98,7 @@ export default function AdminReportsPage() {
             </div>
           ) : visibleReports.length === 0 ? (
             <div className="text-center py-16">
-              <Flag className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+              <Flag className="h-12 w-12 text-slate-400 mx-auto mb-4" />
               <p className="text-slate-400">
                 {showResolved ? "No reports yet" : "No pending reports"}
               </p>
@@ -106,7 +106,7 @@ export default function AdminReportsPage() {
           ) : (
             <div className="divide-y divide-slate-800">
               {/* Table header */}
-              <div className="hidden md:grid grid-cols-[1fr_1fr_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="hidden md:grid grid-cols-[1fr_1fr_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 <span>Reported User</span>
                 <span>Reporter</span>
                 <span>Reason</span>
@@ -135,7 +135,7 @@ export default function AdminReportsPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-white">@{report.reported.username}</p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-400">
                           {new Date(report.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </p>
                       </div>
@@ -152,7 +152,7 @@ export default function AdminReportsPage() {
                       </div>
                       <div>
                         <p className="text-sm text-slate-300">@{report.reporter.username}</p>
-                        <p className="text-xs text-slate-500">Reporter</p>
+                        <p className="text-xs text-slate-400">Reporter</p>
                       </div>
                     </div>
 
@@ -176,7 +176,7 @@ export default function AdminReportsPage() {
                   </div>
 
                   {report.details && (
-                    <p className="mt-2 text-xs text-slate-500 line-clamp-1 pl-11">{report.details}</p>
+                    <p className="mt-2 text-xs text-slate-400 line-clamp-1 pl-11">{report.details}</p>
                   )}
                 </Link>
               ))}

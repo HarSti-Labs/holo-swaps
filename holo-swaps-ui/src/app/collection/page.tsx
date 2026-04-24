@@ -5,10 +5,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { collectionApi } from "@/lib/api/collection";
 import { searchCards } from "@/lib/api/cards";
+import { api } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import {
   Plus, Search, Filter, Grid3x3, List, Trash2, Edit2,
-  ArrowLeftRight, X, Star, BookMarked, Heart, CheckSquare, Square, Tag, Lock,
+  ArrowLeftRight, X, Star, BookMarked, Heart, CheckSquare, Square, Tag, Lock, Trophy,
 } from "lucide-react";
 import { Card as CardType, CollectionItem, CardCondition, WantItem, WantPriority } from "@/types";
 import { CONDITION_LABELS } from "@/types";
@@ -234,6 +235,35 @@ export default function MyCardsPage() {
     return counts;
   }, [collection]);
 
+  // ── Set catalog (for totalCards per set) ─────────────────────────
+  const { data: setsData } = useQuery({
+    queryKey: ["cardSets"],
+    queryFn: async () => {
+      const res = await api.get<{ data: Array<{ setCode: string; name: string; totalCards: number | null }> }>("/sets");
+      return res.data.data;
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
+  // Map setName -> totalCards from catalog
+  const setTotalCards = useMemo(() => {
+    const map: Record<string, number | null> = {};
+    if (setsData) {
+      for (const s of setsData) map[s.name] = s.totalCards ?? null;
+    }
+    return map;
+  }, [setsData]);
+
+  // Unique card IDs owned per setName (ignores quantity duplicates)
+  const ownedUniquePerSet = useMemo(() => {
+    const map: Record<string, Set<string>> = {};
+    for (const item of collection) {
+      if (!map[item.card.setName]) map[item.card.setName] = new Set();
+      map[item.card.setName].add(item.card.id);
+    }
+    return map;
+  }, [collection]);
+
   // ── Collection filters ────────────────────────────────────────────
   const availableSets = useMemo(
     () => [...new Set(collection.map((item) => item.card.setName))].sort(),
@@ -312,7 +342,7 @@ export default function MyCardsPage() {
                   <span className="inline-block w-2 h-2 bg-blue-400 rounded-full"></span>
                   {collection.length} in collection
                 </span>
-                <span className="text-slate-600">·</span>
+                <span className="text-slate-400">·</span>
                 <span className="flex items-center gap-1.5">
                   <span className="inline-block w-2 h-2 bg-pink-400 rounded-full animate-pulse"></span>
                   {wants.length} wanted
@@ -435,13 +465,13 @@ export default function MyCardsPage() {
                 <button onClick={toggleSelectAllCollection} className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors">
                   {selectedCollectionIds.size === filteredCollection.length ? "Deselect All" : "Select All"}
                 </button>
-                <span className="text-slate-600">|</span>
+                <span className="text-slate-400">|</span>
                 <span className="text-sm text-slate-400">
                   {selectedCollectionIds.size} selected
                 </span>
                 {selectedCollectionIds.size > 0 && (
                   <>
-                    <span className="text-slate-600">|</span>
+                    <span className="text-slate-400">|</span>
                     <button
                       onClick={() => bulkSetTradeCollection(true)}
                       disabled={isBulkCollectionLoading}
@@ -468,7 +498,7 @@ export default function MyCardsPage() {
                     </button>
                   </>
                 )}
-                <button onClick={exitCollectionSelect} className="ml-auto text-sm text-slate-500 hover:text-slate-300 transition-colors">
+                <button onClick={exitCollectionSelect} className="ml-auto text-sm text-slate-400 hover:text-slate-300 transition-colors">
                   Cancel
                 </button>
               </div>
@@ -529,18 +559,70 @@ export default function MyCardsPage() {
                 {availableSets.length > 1 && (
                   <div>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Set</p>
-                    <select
-                      value={filterSet}
-                      onChange={(e) => setFilterSet(e.target.value)}
-                      className="px-4 py-2 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white focus:border-blue-500 focus:outline-none"
-                    >
-                      <option value="">All Sets</option>
-                      {availableSets.map((set) => <option key={set} value={set}>{set}</option>)}
-                    </select>
+                    <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1">
+                      {availableSets.map((setName) => {
+                        const owned = ownedUniquePerSet[setName]?.size ?? 0;
+                        const total = setTotalCards[setName] ?? null;
+                        const isComplete = total !== null && owned >= total;
+                        const isActive = filterSet === setName;
+                        return (
+                          <button
+                            key={setName}
+                            onClick={() => setFilterSet(isActive ? "" : setName)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 text-sm font-medium transition-colors ${
+                              isActive
+                                ? "border-blue-500 bg-blue-500/20 text-blue-300"
+                                : "border-slate-700 bg-slate-950/50 text-slate-300 hover:border-slate-500"
+                            }`}
+                          >
+                            {isComplete && <Trophy size={11} className="text-yellow-400 flex-shrink-0" />}
+                            <span className="truncate max-w-[160px]">{setName}</span>
+                            <span className={`text-xs flex-shrink-0 ${isComplete ? "text-yellow-400 font-bold" : "text-slate-400"}`}>
+                              {total !== null ? `${owned}/${total}` : `${owned}`}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
             )}
+
+            {/* Set completion banner */}
+            {filterSet && (() => {
+              const owned = ownedUniquePerSet[filterSet]?.size ?? 0;
+              const total = setTotalCards[filterSet] ?? null;
+              const isComplete = total !== null && owned >= total;
+              const pct = total ? Math.round((owned / total) * 100) : null;
+              return (
+                <div className={`rounded-2xl border-2 p-4 ${isComplete ? "border-yellow-500/50 bg-yellow-500/10" : "border-slate-700 bg-slate-900/50"}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {isComplete && <Trophy size={16} className="text-yellow-400" />}
+                      <span className="font-semibold text-white text-sm">{filterSet}</span>
+                      {isComplete && <span className="text-xs font-bold text-yellow-400 bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-500/40">Complete Set!</span>}
+                    </div>
+                    <span className="text-sm font-bold text-white">
+                      {total !== null ? `${owned} / ${total} cards` : `${owned} cards`}
+                    </span>
+                  </div>
+                  {total !== null && (
+                    <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div
+                        className={`h-2 rounded-full transition-all ${isComplete ? "bg-yellow-400" : "bg-blue-500"}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  )}
+                  {total !== null && !isComplete && (
+                    <p className="text-xs text-slate-400 mt-1.5">{pct}% complete · {total - owned} card{total - owned !== 1 ? "s" : ""} missing</p>
+                  )}
+                </div>
+              );
+            })()}
+
+            <div className="mb-6" />
 
             {collectionLoading && (
               <div className="text-center py-20">
@@ -660,7 +742,7 @@ export default function MyCardsPage() {
                   <button onClick={toggleSelectAllWants} className="text-sm font-bold text-pink-400 hover:text-pink-300 transition-colors">
                     {selectedWantIds.size === filteredWants.length ? "Deselect All" : "Select All"}
                   </button>
-                  <span className="text-slate-600">|</span>
+                  <span className="text-slate-400">|</span>
                   <span className="text-sm text-slate-400">{selectedWantIds.size} selected</span>
                   {selectedWantIds.size > 0 && (
                     <button
@@ -672,14 +754,14 @@ export default function MyCardsPage() {
                       Remove
                     </button>
                   )}
-                  <button onClick={exitWantSelect} className="ml-auto text-sm text-slate-500 hover:text-slate-300 transition-colors">
+                  <button onClick={exitWantSelect} className="ml-auto text-sm text-slate-400 hover:text-slate-300 transition-colors">
                     Cancel
                   </button>
                 </div>
 
                 {selectedWantIds.size > 0 && (
                   <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-700/50">
-                    <span className="text-xs text-slate-500 self-center mr-1">Set priority:</span>
+                    <span className="text-xs text-slate-400 self-center mr-1">Set priority:</span>
                     {(["HIGH", "MEDIUM", "LOW"] as WantPriority[]).map((p) => (
                       <button
                         key={p}
@@ -690,8 +772,8 @@ export default function MyCardsPage() {
                         {p}
                       </button>
                     ))}
-                    <span className="text-slate-600 self-center mx-1">|</span>
-                    <span className="text-xs text-slate-500 self-center mr-1">Set max condition:</span>
+                    <span className="text-slate-400 self-center mx-1">|</span>
+                    <span className="text-xs text-slate-400 self-center mr-1">Set max condition:</span>
                     <select
                       onChange={(e) => e.target.value && bulkUpdateWants({ maxCondition: e.target.value as CardCondition })}
                       disabled={isBulkWantLoading}
@@ -904,7 +986,7 @@ function CollectionCard({
       >
         {selectMode && (
           <div className="flex items-center gap-3 mb-3">
-            {selected ? <CheckSquare size={18} className="text-blue-400 flex-shrink-0" /> : <Square size={18} className="text-slate-500 flex-shrink-0" />}
+            {selected ? <CheckSquare size={18} className="text-blue-400 flex-shrink-0" /> : <Square size={18} className="text-slate-400 flex-shrink-0" />}
           </div>
         )}
         <div className="flex items-center justify-between">
@@ -921,17 +1003,17 @@ function CollectionCard({
               <p className="text-sm text-slate-400">{item.card.setName}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Set Code</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Set Code</p>
               <p className="text-sm text-white font-mono">{item.card.setCode}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Condition</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Condition</p>
               <span className="inline-block px-3 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
                 {CONDITION_LABELS[item.condition]}
               </span>
             </div>
             <div className="text-center">
-              <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Attributes</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Attributes</p>
               <div className="flex justify-center gap-2">
                 {item.isFoil && <span className="px-2 py-1 rounded-lg bg-yellow-500/20 text-yellow-300 text-xs font-bold">FOIL</span>}
                 {item.isFirstEdition && <span className="px-2 py-1 rounded-lg bg-purple-500/20 text-purple-300 text-xs font-bold">1ST ED</span>}
@@ -954,7 +1036,7 @@ function CollectionCard({
                   className={`p-3 rounded-lg border-2 transition-colors ${
                     item.status === "AVAILABLE"
                       ? "bg-green-500/20 border-green-500 text-green-400 hover:bg-green-500/30"
-                      : "bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300"
+                      : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-300"
                   }`}
                 >
                   <ArrowLeftRight size={18} />
@@ -965,7 +1047,7 @@ function CollectionCard({
                   className={`p-3 rounded-lg border-2 transition-colors ${
                     item.isOpenListing
                       ? "bg-teal-500/20 border-teal-500 text-teal-400 hover:bg-teal-500/30"
-                      : "bg-slate-800 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300"
+                      : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-300"
                   }`}
                 >
                   <Tag size={18} />
@@ -987,7 +1069,7 @@ function CollectionCard({
   return (
     <div
       onClick={selectMode ? onToggleSelect : undefined}
-      className={`group relative bg-slate-900/50 backdrop-blur-sm border-2 rounded-3xl overflow-hidden transition-all duration-300 ${
+      className={`group relative bg-slate-900/50 backdrop-blur-sm border-2 rounded-3xl overflow-hidden transition-all duration-300 flex flex-col ${
         selectMode ? "cursor-pointer" : "hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 hover:-translate-y-2 duration-500"
       } ${selected ? "border-blue-500 shadow-lg shadow-blue-500/30" : "border-slate-700/50 hover:border-blue-500/70"}`}
     >
@@ -1007,7 +1089,7 @@ function CollectionCard({
             : <Square size={22} className="text-slate-400 drop-shadow-lg" />}
         </div>
       )}
-      <div onClick={!selectMode ? onEdit : undefined} className={!selectMode ? "cursor-pointer" : ""}>
+      <div onClick={!selectMode ? onEdit : undefined} className={`flex-1 flex flex-col${!selectMode ? " cursor-pointer" : ""}`}>
         <div className="aspect-[2/3] bg-gradient-to-br from-blue-950 via-purple-950 to-slate-950 flex items-center justify-center relative">
           {count > 1 && (
             <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-lg bg-black/70 backdrop-blur-sm border border-blue-500/50 text-blue-300 text-xs font-black leading-none">
@@ -1049,7 +1131,7 @@ function CollectionCard({
               className={`flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold transition-colors ${
                 item.status === "AVAILABLE"
                   ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                  : "bg-slate-900/90 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                  : "bg-slate-900/90 text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
               }`}
             >
               <ArrowLeftRight size={12} />
@@ -1061,7 +1143,7 @@ function CollectionCard({
               className={`flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold border-l-2 border-slate-700/50 transition-colors ${
                 item.isOpenListing
                   ? "bg-teal-500/20 text-teal-400 hover:bg-teal-500/30"
-                  : "bg-slate-900/90 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                  : "bg-slate-900/90 text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
               }`}
             >
               <Tag size={12} />
@@ -1126,7 +1208,7 @@ function WantCard({ want, viewMode, onEdit, onRemove, selectMode = false, select
           <span className="inline-block px-2 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
             Max: {CONDITION_LABELS[want.maxCondition]}
           </span>
-          {want.notes && <p className="text-xs text-slate-500 truncate">{want.notes}</p>}
+          {want.notes && <p className="text-xs text-slate-400 truncate">{want.notes}</p>}
         </div>
         {!selectMode && (
           <div className="flex border-t-2 border-slate-700/50">
@@ -1155,7 +1237,7 @@ function WantCard({ want, viewMode, onEdit, onRemove, selectMode = false, select
         <div className="flex items-center gap-4 flex-1 min-w-0">
           {selectMode && (
             <div className="flex-shrink-0">
-              {selected ? <CheckSquare size={18} className="text-pink-400" /> : <Square size={18} className="text-slate-500" />}
+              {selected ? <CheckSquare size={18} className="text-pink-400" /> : <Square size={18} className="text-slate-400" />}
             </div>
           )}
           <div className="w-12 h-16 rounded-lg bg-gradient-to-br from-pink-950 via-purple-950 to-slate-950 flex items-center justify-center flex-shrink-0 border border-slate-700">
@@ -1169,7 +1251,7 @@ function WantCard({ want, viewMode, onEdit, onRemove, selectMode = false, select
           <div className="min-w-0">
             <h3 className="font-bold text-white truncate">{want.card.name}</h3>
             <p className="text-sm text-slate-400">{want.card.setName} · #{want.card.cardNumber}</p>
-            {want.notes && <p className="text-xs text-slate-500 mt-1 truncate">{want.notes}</p>}
+            {want.notes && <p className="text-xs text-slate-400 mt-1 truncate">{want.notes}</p>}
           </div>
         </div>
 
@@ -1274,13 +1356,13 @@ function EditWantDialog({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Notes <span className="text-slate-500 font-normal">(optional)</span></label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any specific details (e.g. 1st edition only, specific language…)"
               rows={3}
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
+              className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
             />
           </div>
         </div>
@@ -1357,7 +1439,7 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
                   placeholder="Search for a card..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   autoFocus
                 />
               </div>
@@ -1494,7 +1576,7 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
                   placeholder="Search for a card..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm"
                   autoFocus
                 />
               </div>
@@ -1544,7 +1626,7 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Max Acceptable Condition</label>
-                <p className="text-xs text-slate-500 mb-1.5">The worst condition you'd accept for this card</p>
+                <p className="text-xs text-slate-400 mb-1.5">The worst condition you'd accept for this card</p>
                 <select
                   value={maxCondition}
                   onChange={(e) => setMaxCondition(e.target.value as CardCondition)}
@@ -1554,12 +1636,12 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Notes <span className="text-slate-500 font-normal">(optional)</span></label>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Any specific details (e.g. 1st edition only, English version)..."
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm resize-none"
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm resize-none"
                   rows={3}
                   maxLength={500}
                 />
@@ -1624,8 +1706,8 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
   });
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700 flex-shrink-0">
           <div>
@@ -1696,7 +1778,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
 
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">Quantity</label>
-            <p className="text-xs text-slate-500 mb-2">How many identical copies of this card you own</p>
+            <p className="text-xs text-slate-400 mb-2">How many identical copies of this card you own</p>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -1724,13 +1806,13 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Notes <span className="text-slate-500 font-normal">(optional)</span></label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any notes about this card..."
               disabled={item.status === "IN_TRADE"}
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none disabled:opacity-40 disabled:cursor-not-allowed"
               rows={3}
               maxLength={500}
             />
@@ -1758,7 +1840,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
                 }
               }}
               disabled={updateMutation.isPending}
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+              className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
             >
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </button>

@@ -87,6 +87,16 @@ export const tradesApi = {
     return res.data.data!;
   },
 
+  requestCancel: async (tradeId: string): Promise<Trade> => {
+    const res = await api.post<ApiResponse<Trade>>(`/trades/${tradeId}/request-cancel`);
+    return res.data.data!;
+  },
+
+  acceptCancel: async (tradeId: string): Promise<Trade> => {
+    const res = await api.post<ApiResponse<Trade>>(`/trades/${tradeId}/accept-cancel`);
+    return res.data.data!;
+  },
+
   submitTracking: async (
     tradeId: string,
     data: TrackingPayload

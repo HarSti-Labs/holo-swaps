@@ -166,7 +166,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                       <img src={card.imageUrl} alt={card.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Package className="h-20 w-20 text-slate-600" />
+                        <Package className="h-20 w-20 text-slate-400" />
                       </div>
                     )}
                   </div>
@@ -412,9 +412,9 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                 </div>
               ) : holders.length === 0 ? (
                 <div className="text-center py-16">
-                  <Users className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+                  <Users className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                   <p className="text-lg font-semibold text-slate-300">No traders available</p>
-                  <p className="text-slate-500 mt-1 text-sm">Nobody currently has this card available for trade.</p>
+                  <p className="text-slate-400 mt-1 text-sm">Nobody currently has this card available for trade.</p>
                   <button
                     onClick={() => setActiveForm("wants")}
                     className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-pink-600/20 border border-pink-500/40 text-pink-300 text-sm font-medium hover:bg-pink-600/30 transition-colors"
@@ -465,7 +465,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                                 <Star size={11} fill="currentColor" />
                                 <span>{holder.user.reputationScore?.toFixed(1) ?? "—"}</span>
                               </div>
-                              <span className="text-xs text-slate-500">{holder.user.tradeCount} trades</span>
+                              <span className="text-xs text-slate-400">{holder.user.tradeCount} trades</span>
                             </div>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                               <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-xs font-bold">
@@ -512,7 +512,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                             </div>
                           )}
                           {isOwnCard && (
-                            <span className="text-xs text-slate-500 italic flex-shrink-0">Your card</span>
+                            <span className="text-xs text-slate-400 italic flex-shrink-0">Your card</span>
                           )}
                         </div>
                       );

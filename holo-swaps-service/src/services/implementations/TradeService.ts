@@ -390,20 +390,32 @@ export class TradeService implements ITradeService {
     }
 
     const PLATFORM_FEE_PERCENT = 0.025;
+    const RETURN_SHIPPING_CENTS = 499; // $4.99 flat — covers return shipping back to trader
     const cashAmountCents = Math.round(trade.cashDifference * 100);
     const frontendUrl = config.frontend.url;
 
     const proposerIsCashPayer = cashAmountCents > 0 && trade.cashPayerId === trade.proposerId;
     const receiverIsCashPayer = cashAmountCents > 0 && trade.cashPayerId === trade.receiverId;
 
+    // Recalculate market values from actual item prices (stored values can be stale/zero)
+    const getItemValue = (item: any): number => {
+      const c = item.collectionItem ?? item.proposerCollection ?? item.receiverCollection;
+      return (c?.askingValueOverride ?? c?.currentMarketValue ?? 0) as number;
+    };
+    const proposerItemsValue = (trade.items as any[])
+      .filter((i) => i.ownedByProposer)
+      .reduce((sum, i) => sum + getItemValue(i), 0);
+    const receiverItemsValue = (trade.items as any[])
+      .filter((i) => !i.ownedByProposer)
+      .reduce((sum, i) => sum + getItemValue(i), 0);
+
     // Each party's fee = 2.5% of everything they receive:
-    // cards received + any cash received from the other party.
     // Proposer receives: receiver's cards + cash from receiver (if receiver is cash payer)
     const proposerReceiveValue =
-      trade.receiverMarketValue + (receiverIsCashPayer ? trade.cashDifference : 0);
+      receiverItemsValue + (receiverIsCashPayer ? trade.cashDifference : 0);
     // Receiver receives: proposer's cards + cash from proposer (if proposer is cash payer)
     const receiverReceiveValue =
-      trade.proposerMarketValue + (proposerIsCashPayer ? trade.cashDifference : 0);
+      proposerItemsValue + (proposerIsCashPayer ? trade.cashDifference : 0);
 
     const proposerFeeCents = Math.round(proposerReceiveValue * PLATFORM_FEE_PERCENT * 100);
     const receiverFeeCents = Math.round(receiverReceiveValue * PLATFORM_FEE_PERCENT * 100);
@@ -436,7 +448,7 @@ export class TradeService implements ITradeService {
     //   - If proposer is the cash payer, also includes the cash amount
     //   - application_fee_amount = proposerFee (platform keeps this)
     //   - transfer_data = cashAmount goes to receiver (Stripe sends amount - fee to destination)
-    const proposerSessionAmount = proposerFeeCents + (proposerIsCashPayer ? cashAmountCents : 0);
+    const proposerSessionAmount = proposerFeeCents + RETURN_SHIPPING_CENTS + (proposerIsCashPayer ? cashAmountCents : 0);
     const proposerSession = await this.stripeService.createCheckoutSession({
       amount: proposerSessionAmount,
       platformFeeAmount: proposerFeeCents,
@@ -449,14 +461,15 @@ export class TradeService implements ITradeService {
       cancelUrl: `${frontendUrl}/trades/${trade.id}?payment=cancelled`,
       description: [
         `$${(proposerFeeCents / 100).toFixed(2)} platform fee`,
+        `$${(RETURN_SHIPPING_CENTS / 100).toFixed(2)} return shipping`,
         proposerIsCashPayer && `$${trade.cashDifference.toFixed(2)} cash to ${receiver.username}`,
       ].filter(Boolean).join(" + "),
     });
 
     // Receiver's session:
-    //   - Always includes their platform fee
+    //   - Always includes their platform fee + return shipping
     //   - If receiver is the cash payer, also includes the cash amount
-    const receiverSessionAmount = receiverFeeCents + (receiverIsCashPayer ? cashAmountCents : 0);
+    const receiverSessionAmount = receiverFeeCents + RETURN_SHIPPING_CENTS + (receiverIsCashPayer ? cashAmountCents : 0);
     const receiverSession = await this.stripeService.createCheckoutSession({
       amount: receiverSessionAmount,
       platformFeeAmount: receiverFeeCents,
@@ -469,6 +482,7 @@ export class TradeService implements ITradeService {
       cancelUrl: `${frontendUrl}/trades/${trade.id}?payment=cancelled`,
       description: [
         `$${(receiverFeeCents / 100).toFixed(2)} platform fee`,
+        `$${(RETURN_SHIPPING_CENTS / 100).toFixed(2)} return shipping`,
         receiverIsCashPayer && `$${trade.cashDifference.toFixed(2)} cash to ${proposer.username}`,
       ].filter(Boolean).join(" + "),
     });
@@ -560,9 +574,21 @@ export class TradeService implements ITradeService {
       );
     }
 
-    if (trade.stripePaymentIntentId) {
-      await this.stripeService.cancelPaymentIntent(trade.stripePaymentIntentId);
+    // If either party has already paid, only an admin can cancel (refunds required)
+    const eitherPaid = !!(trade as any).stripeProposerIntentId || !!(trade as any).stripeReceiverIntentId;
+    if (eitherPaid) {
+      throw ApiError.badRequest(
+        "Payment has already been made on this trade. Please contact support to cancel and arrange a refund."
+      );
     }
+
+    // Cancel any open Stripe sessions (expire them so users can't pay into a cancelled trade)
+    const proposerSessionId = (trade as any).stripeProposerSessionId;
+    const receiverSessionId = (trade as any).stripeReceiverSessionId;
+    await Promise.allSettled([
+      proposerSessionId ? this.stripeService.expireCheckoutSession(proposerSessionId) : Promise.resolve(),
+      receiverSessionId ? this.stripeService.expireCheckoutSession(receiverSessionId) : Promise.resolve(),
+    ]);
 
     const itemIds = await this.getTradeItemIds(tradeId);
     const updated = await this.tradeRepository.updateStatus(tradeId, TradeStatus.CANCELLED);
@@ -586,6 +612,139 @@ export class TradeService implements ITradeService {
     }
 
     return updated;
+  }
+
+  // ─── Request mutual cancellation ─────────────────────────────────────────
+  async requestCancelTrade(tradeId: string, userId: string): Promise<Trade> {
+    const trade = await this.tradeRepository.findById(tradeId);
+    if (!trade) throw ApiError.notFound("Trade not found");
+
+    if (trade.proposerId !== userId && trade.receiverId !== userId) {
+      throw ApiError.forbidden("You are not part of this trade");
+    }
+
+    const requestableCancelStatuses: TradeStatus[] = [
+      TradeStatus.ACCEPTED,
+      TradeStatus.PROPOSED,
+      TradeStatus.COUNTERED,
+    ];
+    if (!requestableCancelStatuses.includes(trade.status)) {
+      throw ApiError.badRequest("This trade cannot be cancelled at this stage");
+    }
+
+    const eitherPaid = !!(trade as any).stripeProposerIntentId || !!(trade as any).stripeReceiverIntentId;
+    if (eitherPaid) {
+      throw ApiError.badRequest("Payment has already been made. Please contact support to cancel.");
+    }
+
+    // For PROPOSED/COUNTERED the requester can cancel directly — no mutual needed
+    // For ACCEPTED we require mutual agreement
+    if (trade.status !== TradeStatus.ACCEPTED) {
+      return this.cancelTrade(tradeId, userId);
+    }
+
+    const existingRequesterId = (trade as any).cancellationRequestedById;
+    if (existingRequesterId === userId) {
+      throw ApiError.badRequest("You have already requested cancellation. Waiting for the other party.");
+    }
+    if (existingRequesterId && existingRequesterId !== userId) {
+      // Other party already requested — just accept it
+      return this.acceptCancelTrade(tradeId, userId);
+    }
+
+    const updated = await prisma.trade.update({
+      where: { id: tradeId },
+      data: { cancellationRequestedById: userId },
+    });
+
+    // Notify and email the other party
+    const otherId = userId === trade.proposerId ? trade.receiverId : trade.proposerId;
+    const actor = await prisma.user.findUnique({ where: { id: userId } });
+    const other = await prisma.user.findUnique({ where: { id: otherId } });
+
+    await this.notificationService.notify({
+      userId: otherId,
+      type: NotificationType.TRADE_CANCELLED,
+      title: "Cancellation requested",
+      body: `${actor?.username ?? "Your trade partner"} has requested to cancel trade ${trade.tradeCode}`,
+      data: { tradeId, tradeCode: trade.tradeCode },
+    });
+
+    if (other?.email) {
+      const tradeUrl = `${config.frontend.url}/trades/${tradeId}`;
+      this.emailService.sendCancelRequestEmail(other.email, other.username, actor?.username ?? "Your trade partner", trade.tradeCode, tradeUrl).catch(() => {});
+    }
+
+    return updated as any;
+  }
+
+  // ─── Accept mutual cancellation ───────────────────────────────────────────
+  async acceptCancelTrade(tradeId: string, userId: string): Promise<Trade> {
+    const trade = await this.tradeRepository.findById(tradeId);
+    if (!trade) throw ApiError.notFound("Trade not found");
+
+    if (trade.proposerId !== userId && trade.receiverId !== userId) {
+      throw ApiError.forbidden("You are not part of this trade");
+    }
+
+    const existingRequesterId = (trade as any).cancellationRequestedById;
+    if (!existingRequesterId) {
+      throw ApiError.badRequest("No cancellation has been requested for this trade");
+    }
+    if (existingRequesterId === userId) {
+      throw ApiError.badRequest("You cannot accept your own cancellation request");
+    }
+
+    const eitherPaid = !!(trade as any).stripeProposerIntentId || !!(trade as any).stripeReceiverIntentId;
+    if (eitherPaid) {
+      throw ApiError.badRequest("Payment has already been made. Please contact support to cancel.");
+    }
+
+    // Expire any open checkout sessions
+    const proposerSessionId = (trade as any).stripeProposerSessionId;
+    const receiverSessionId = (trade as any).stripeReceiverSessionId;
+    await Promise.allSettled([
+      proposerSessionId ? this.stripeService.expireCheckoutSession(proposerSessionId) : Promise.resolve(),
+      receiverSessionId ? this.stripeService.expireCheckoutSession(receiverSessionId) : Promise.resolve(),
+    ]);
+
+    const itemIds = await this.getTradeItemIds(tradeId);
+    const updated = await prisma.trade.update({
+      where: { id: tradeId },
+      data: { status: TradeStatus.CANCELLED, cancellationRequestedById: null },
+    });
+    await this.unlockCards(itemIds);
+
+    // Notify and email both parties
+    const actor = await prisma.user.findUnique({ where: { id: userId } });
+    const requesterId = existingRequesterId as string;
+    const requester = await prisma.user.findUnique({ where: { id: requesterId } });
+
+    await Promise.all([
+      this.notificationService.notify({
+        userId: requesterId,
+        type: NotificationType.TRADE_CANCELLED,
+        title: "Trade cancelled",
+        body: `${actor?.username ?? "Your trade partner"} accepted the cancellation of trade ${trade.tradeCode}`,
+        data: { tradeId, tradeCode: trade.tradeCode },
+      }),
+      this.notificationService.notify({
+        userId,
+        type: NotificationType.TRADE_CANCELLED,
+        title: "Trade cancelled",
+        body: `Trade ${trade.tradeCode} has been cancelled by mutual agreement`,
+        data: { tradeId, tradeCode: trade.tradeCode },
+      }),
+    ]);
+
+    if (requester?.email) {
+      this.emailService.sendCancelAcceptedEmail(requester.email, requester.username, actor?.username ?? "Your trade partner", trade.tradeCode).catch(() => {});
+    }
+    if (actor?.email) {
+      this.emailService.sendCancelAcceptedEmail(actor.email, actor.username, requester?.username ?? "Your trade partner", trade.tradeCode).catch(() => {});
+    }
+
+    return updated as any;
   }
 
   // ─────────────────────────────────────────────────────────────────────────

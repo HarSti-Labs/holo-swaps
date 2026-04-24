@@ -104,9 +104,9 @@ export default function SupportPage() {
               We've received your request and will respond to <span className="text-white font-medium">{email}</span> as soon as possible.
             </p>
             <div className="bg-slate-950/60 border border-slate-700 rounded-xl px-5 py-4 mb-6">
-              <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">Your ticket number</p>
+              <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Your ticket number</p>
               <p className="text-xl font-black text-white font-mono">{ticketNumber}</p>
-              <p className="text-xs text-slate-500 mt-1">Save this for your records</p>
+              <p className="text-xs text-slate-400 mt-1">Save this for your records</p>
             </div>
             <div className="flex flex-col gap-2">
               <Link href="/" className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm hover:from-blue-500 hover:to-purple-500 transition-all text-center">
@@ -173,7 +173,7 @@ export default function SupportPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -198,7 +198,7 @@ export default function SupportPage() {
                 <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
               {selectedCategory?.description && (
-                <p className="text-xs text-slate-500 mt-2">{selectedCategory.description}</p>
+                <p className="text-xs text-slate-400 mt-2">{selectedCategory.description}</p>
               )}
             </div>
 
@@ -207,7 +207,7 @@ export default function SupportPage() {
               <div>
                 <label className="block text-sm font-bold text-white mb-2 flex items-center gap-1.5">
                   <Hash size={13} className="text-slate-400" /> Trade Code
-                  <span className="text-slate-500 font-normal">(optional)</span>
+                  <span className="text-slate-400 font-normal">(optional)</span>
                 </label>
                 <input
                   type="text"
@@ -215,9 +215,9 @@ export default function SupportPage() {
                   onChange={(e) => setTradeCode(e.target.value)}
                   placeholder="TRD-00142"
                   maxLength={20}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
-                <p className="text-xs text-slate-500 mt-2">
+                <p className="text-xs text-slate-400 mt-2">
                   Find your trade code on the trade detail page — it starts with TRD-.
                 </p>
               </div>
@@ -238,11 +238,11 @@ export default function SupportPage() {
                       "flex flex-col items-center gap-1 px-3 py-3 rounded-xl border-2 text-sm font-bold transition-all",
                       urgency === u.value
                         ? `${u.color} bg-slate-800`
-                        : "border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300"
+                        : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-300"
                     )}
                   >
                     {u.label}
-                    <span className="text-[10px] font-normal text-slate-500 text-center leading-tight">{u.desc}</span>
+                    <span className="text-xs font-normal text-slate-400 text-center leading-tight">{u.desc}</span>
                   </button>
                 ))}
               </div>
@@ -261,9 +261,9 @@ export default function SupportPage() {
                 minLength={5}
                 maxLength={120}
                 placeholder="Brief summary of your issue"
-                className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"
+                className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
               />
-              <p className="text-xs text-slate-500 mt-1.5 text-right">{subject.length}/120</p>
+              <p className="text-xs text-slate-400 mt-1.5 text-right">{subject.length}/120</p>
             </div>
 
             {/* Description */}
@@ -285,9 +285,9 @@ export default function SupportPage() {
                     ? "Describe the incident in detail. Include the username(s) involved, what happened, and any evidence you have."
                     : "Please describe your issue in as much detail as possible."
                 }
-                className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500 resize-none"
+                className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 resize-none"
               />
-              <p className="text-xs text-slate-500 mt-1.5 text-right">{description.length}/5000</p>
+              <p className="text-xs text-slate-400 mt-1.5 text-right">{description.length}/5000</p>
             </div>
 
             {/* Browser info note (for bug reports) */}
@@ -314,7 +314,7 @@ export default function SupportPage() {
             </button>
           </form>
 
-          <p className="text-center text-xs text-slate-500 mt-6">
+          <p className="text-center text-xs text-slate-400 mt-6">
             Prefer to email directly?{" "}
             <a href="mailto:admin@holoswaps.com" className="text-blue-400 hover:text-blue-300 underline">
               admin@holoswaps.com

@@ -42,7 +42,7 @@ export class CollectionRepository implements ICollectionRepository {
         include: collectionInclude,
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy: { card: { name: "asc" } },
       }),
       prisma.userCollection.count({ where }),
     ]);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Plus, Minus, Package, Send, Loader2, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Minus as MinusIcon } from "lucide-react";
+import { X, Plus, Minus, Package, Send, Loader2, AlertTriangle, DollarSign, TrendingUp, TrendingDown, Minus as MinusIcon, Search } from "lucide-react";
 import { CollectionItem, User } from "@/types";
 import { collectionApi } from "@/lib/api/collection";
 import { tradesApi } from "@/lib/api/trades";
@@ -36,6 +36,8 @@ export function TradeProposalModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [cashAdd, setCashAdd] = useState<string>("");
+  const [mySearch, setMySearch] = useState("");
+  const [theirSearch, setTheirSearch] = useState("");
   const [hasAddress, setHasAddress] = useState(false);
   const [isCheckingAddress, setIsCheckingAddress] = useState(true);
 
@@ -44,6 +46,8 @@ export function TradeProposalModal({
       loadMyCollection();
       loadTheirCollection();
       checkAddress();
+      setMySearch("");
+      setTheirSearch("");
     }
   }, [isOpen, currentUser]);
 
@@ -193,7 +197,7 @@ export function TradeProposalModal({
                           />
                         ) : (
                           <div className="w-12 h-16 bg-slate-700 rounded flex items-center justify-center">
-                            <Package className="h-6 w-6 text-slate-500" />
+                            <Package className="h-6 w-6 text-slate-400" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
@@ -201,7 +205,7 @@ export function TradeProposalModal({
                           {card.askingValueOverride != null ? (
                             <div>
                               <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                              <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                              <span className="text-xs text-teal-500 ml-1">Owner price</span>
                             </div>
                           ) : (
                             <p className="text-xs text-slate-400">
@@ -223,17 +227,27 @@ export function TradeProposalModal({
 
               {/* Available Cards */}
               <div>
-                <p className="text-sm text-slate-400 mb-2">Available</p>
+                <div className="relative mb-2">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={mySearch}
+                    onChange={(e) => setMySearch(e.target.value)}
+                    placeholder="Search your cards..."
+                    className="w-full pl-8 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
                 {isLoadingMy ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
                   </div>
                 ) : myCollection.length === 0 ? (
-                  <p className="text-slate-500 text-center py-8">No cards available for trade</p>
+                  <p className="text-slate-400 text-center py-8">No cards available for trade</p>
                 ) : (
                   <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
                     {myCollection
                       .filter((c) => !myCards.find((sc) => sc.id === c.id))
+                      .filter((c) => !mySearch || c.card.name.toLowerCase().includes(mySearch.toLowerCase()))
                       .map((card) => (
                         <button
                           key={card.id}
@@ -248,7 +262,7 @@ export function TradeProposalModal({
                             />
                           ) : (
                             <div className="w-12 h-16 bg-slate-700 rounded flex items-center justify-center">
-                              <Package className="h-6 w-6 text-slate-500" />
+                              <Package className="h-6 w-6 text-slate-400" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -259,7 +273,7 @@ export function TradeProposalModal({
                             {card.askingValueOverride != null ? (
                               <div>
                                 <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                                <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                                <span className="text-xs text-teal-500 ml-1">Owner price</span>
                               </div>
                             ) : (
                               <p className="text-xs text-green-400">
@@ -302,7 +316,7 @@ export function TradeProposalModal({
                           />
                         ) : (
                           <div className="w-12 h-16 bg-slate-700 rounded flex items-center justify-center">
-                            <Package className="h-6 w-6 text-slate-500" />
+                            <Package className="h-6 w-6 text-slate-400" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
@@ -310,7 +324,7 @@ export function TradeProposalModal({
                           {card.askingValueOverride != null ? (
                             <div>
                               <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                              <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                              <span className="text-xs text-teal-500 ml-1">Owner price</span>
                             </div>
                           ) : (
                             <p className="text-xs text-slate-400">
@@ -332,17 +346,27 @@ export function TradeProposalModal({
 
               {/* Available Cards */}
               <div>
-                <p className="text-sm text-slate-400 mb-2">Available</p>
+                <div className="relative mb-2">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={theirSearch}
+                    onChange={(e) => setTheirSearch(e.target.value)}
+                    placeholder={`Search ${targetUser.username}'s cards...`}
+                    className="w-full pl-8 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
                 {isLoadingTheir ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
                   </div>
                 ) : theirCollection.length === 0 ? (
-                  <p className="text-slate-500 text-center py-8">No cards available for trade</p>
+                  <p className="text-slate-400 text-center py-8">No cards available for trade</p>
                 ) : (
                   <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
                     {theirCollection
                       .filter((c) => !theirCards.find((sc) => sc.id === c.id))
+                      .filter((c) => !theirSearch || c.card.name.toLowerCase().includes(theirSearch.toLowerCase()))
                       .map((card) => (
                         <button
                           key={card.id}
@@ -357,7 +381,7 @@ export function TradeProposalModal({
                             />
                           ) : (
                             <div className="w-12 h-16 bg-slate-700 rounded flex items-center justify-center">
-                              <Package className="h-6 w-6 text-slate-500" />
+                              <Package className="h-6 w-6 text-slate-400" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -368,7 +392,7 @@ export function TradeProposalModal({
                             {card.askingValueOverride != null ? (
                               <div>
                                 <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                                <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                                <span className="text-xs text-teal-500 ml-1">Owner price</span>
                               </div>
                             ) : (
                               <p className="text-xs text-green-400">
@@ -404,7 +428,7 @@ export function TradeProposalModal({
                   className="w-full pl-9 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 This cash will be added on top of your cards to sweeten the deal.
               </p>
             </div>
@@ -442,7 +466,7 @@ export function TradeProposalModal({
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   {isEven
                     ? "Values are roughly equal — a fair trade."
                     : netValue > 0
@@ -457,16 +481,16 @@ export function TradeProposalModal({
                     {(myCards.length > 0 || theirCards.length > 0) && (
                       <>
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-400">Your fee <span className="text-slate-500">(2.5% of ${myReceiveTotal.toFixed(2)} you receive)</span></span>
+                          <span className="text-slate-400">Your fee <span className="text-slate-400">(2.5% of ${myReceiveTotal.toFixed(2)} you receive)</span></span>
                           <span className="font-semibold text-purple-400">${myFee.toFixed(2)}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-400">Their fee <span className="text-slate-500">(2.5% of ${theirReceiveTotal.toFixed(2)} they receive)</span></span>
+                          <span className="text-slate-400">Their fee <span className="text-slate-400">(2.5% of ${theirReceiveTotal.toFixed(2)} they receive)</span></span>
                           <span className="font-semibold text-slate-300">${theirFee.toFixed(2)}</span>
                         </div>
                       </>
                     )}
-                    <p className="text-[11px] text-slate-500 mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       Each party pays 2.5% of the value they receive. Collected at completion.
                     </p>
                   </div>
@@ -486,7 +510,7 @@ export function TradeProposalModal({
               rows={3}
               maxLength={500}
             />
-            <p className="text-xs text-slate-500 mt-1">{message.length}/500</p>
+            <p className="text-xs text-slate-400 mt-1">{message.length}/500</p>
           </div>
         </div>
 
@@ -513,7 +537,7 @@ export function TradeProposalModal({
           )}
 
           {myReceiveTotal > 0 && (
-            <p className="text-xs text-slate-500 mb-3">
+            <p className="text-xs text-slate-400 mb-3">
               By proposing this trade, you agree to a{" "}
               <span className="text-purple-400 font-medium">
                 ${myFee.toFixed(2)} platform fee
@@ -531,7 +555,7 @@ export function TradeProposalModal({
             <button
               onClick={handleSubmit}
               disabled={myCards.length === 0 || theirCards.length === 0 || isSubmitting || !hasAddress}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
             >
               {isSubmitting ? (
                 <>

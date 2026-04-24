@@ -177,6 +177,14 @@ export class StripeService implements IStripeService {
     return this.stripe.checkout.sessions.retrieve(sessionId);
   }
 
+  async expireCheckoutSession(sessionId: string): Promise<void> {
+    try {
+      await this.stripe.checkout.sessions.expire(sessionId);
+    } catch {
+      // Session may already be expired or completed — safe to ignore
+    }
+  }
+
   constructWebhookEvent(payload: Buffer, signature: string): Stripe.Event {
     return this.stripe.webhooks.constructEvent(
       payload,

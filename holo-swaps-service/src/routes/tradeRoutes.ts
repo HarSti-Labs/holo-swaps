@@ -6,6 +6,8 @@ import {
   acceptTrade,
   declineTrade,
   cancelTrade,
+  requestCancel,
+  acceptCancel,
   submitTracking,
   confirmReceipt,
   getUserTrades,
@@ -36,6 +38,8 @@ router.post("/:tradeId/counter", counterOffer);
 router.patch("/:tradeId/accept", acceptTrade);
 router.patch("/:tradeId/decline", declineTrade);
 router.patch("/:tradeId/cancel", cancelTrade);
+router.post("/:tradeId/request-cancel", requestCancel);
+router.post("/:tradeId/accept-cancel", acceptCancel);
 router.patch("/:tradeId/tracking", submitTracking);
 router.patch("/:tradeId/received", confirmReceipt);
 

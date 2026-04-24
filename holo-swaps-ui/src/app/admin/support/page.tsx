@@ -202,13 +202,13 @@ export default function AdminSupportPage() {
             </div>
           ) : tickets.length === 0 ? (
             <div className="text-center py-16">
-              <Headphones className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+              <Headphones className="h-12 w-12 text-slate-400 mx-auto mb-4" />
               <p className="text-slate-400">No {activeTab.replace("_", " ").toLowerCase()} tickets</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-800">
               {/* Table header */}
-              <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 <span>Ticket</span>
                 <span>Category</span>
                 <span>Urgency</span>
@@ -229,16 +229,16 @@ export default function AdminSupportPage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="font-mono text-xs text-slate-500">{ticket.ticketNumber}</span>
+                        <span className="font-mono text-xs text-slate-400">{ticket.ticketNumber}</span>
                         {ticket.messages.length > 0 && (
-                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                          <span className="flex items-center gap-1 text-xs text-slate-400">
                             <MessageSquare className="h-3 w-3" />
                             {ticket.messages.length}
                           </span>
                         )}
                       </div>
                       <p className="text-sm font-medium text-white truncate">{ticket.subject}</p>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                      <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
                         <span>{ticket.user ? `@${ticket.user.username}` : ticket.email}</span>
                         <span>·</span>
                         <span>{ticket.category.replace(/_/g, " ")}</span>

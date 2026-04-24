@@ -1198,6 +1198,9 @@ video {
 .max-h-36 {
   max-height: 9rem;
 }
+.max-h-48 {
+  max-height: 12rem;
+}
 .max-h-52 {
   max-height: 13rem;
 }
@@ -1342,6 +1345,9 @@ video {
 }
 .max-w-\[1400px\] {
   max-width: 1400px;
+}
+.max-w-\[160px\] {
+  max-width: 160px;
 }
 .max-w-\[80\%\] {
   max-width: 80%;
@@ -1947,6 +1953,21 @@ video {
   --tw-border-opacity: 1;
   border-color: rgb(133 77 14 / var(--tw-border-opacity, 1));
 }
+.border-cyan-400\/60 {
+  border-color: rgb(34 211 238 / 0.6);
+}
+.border-orange-800\/60 {
+  border-color: rgb(154 52 18 / 0.6);
+}
+.border-slate-500\/60 {
+  border-color: rgb(100 116 139 / 0.6);
+}
+.border-yellow-500\/20 {
+  border-color: rgb(234 179 8 / 0.2);
+}
+.border-yellow-500\/60 {
+  border-color: rgb(234 179 8 / 0.6);
+}
 .border-r-transparent {
   border-right-color: transparent;
 }
@@ -2379,6 +2400,9 @@ video {
 }
 .bg-yellow-900\/20 {
   background-color: rgb(113 63 18 / 0.2);
+}
+.bg-orange-900\/10 {
+  background-color: rgb(124 45 18 / 0.1);
 }
 .bg-gradient-to-b {
   background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
@@ -3320,6 +3344,9 @@ video {
 .ring-yellow-500\/40 {
   --tw-ring-color: rgb(234 179 8 / 0.4);
 }
+.ring-cyan-400\/20 {
+  --tw-ring-color: rgb(34 211 238 / 0.2);
+}
 .ring-offset-background {
   --tw-ring-offset-color: hsl(var(--background));
 }
@@ -3550,6 +3577,16 @@ video {
 .placeholder\:text-slate-500::placeholder {
   --tw-text-opacity: 1;
   color: rgb(100 116 139 / var(--tw-text-opacity, 1));
+}
+
+.placeholder\:text-slate-400::-moz-placeholder {
+  --tw-text-opacity: 1;
+  color: rgb(148 163 184 / var(--tw-text-opacity, 1));
+}
+
+.placeholder\:text-slate-400::placeholder {
+  --tw-text-opacity: 1;
+  color: rgb(148 163 184 / var(--tw-text-opacity, 1));
 }
 
 .hover\:-translate-y-1:hover {
@@ -4028,6 +4065,11 @@ video {
 .disabled\:text-slate-600:disabled {
   --tw-text-opacity: 1;
   color: rgb(71 85 105 / var(--tw-text-opacity, 1));
+}
+
+.disabled\:text-slate-400:disabled {
+  --tw-text-opacity: 1;
+  color: rgb(148 163 184 / var(--tw-text-opacity, 1));
 }
 
 .disabled\:opacity-40:disabled {

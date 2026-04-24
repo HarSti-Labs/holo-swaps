@@ -422,7 +422,7 @@ export default function CardConditionGuidePage() {
                 </div>
               ))}
             </div>
-            <p className="text-slate-500 text-sm mt-8">
+            <p className="text-slate-400 text-sm mt-8">
               Questions about a condition ruling?{" "}
               <a href="mailto:admin@holoswaps.com" className="text-blue-400 hover:text-blue-300 underline">
                 admin@holoswaps.com

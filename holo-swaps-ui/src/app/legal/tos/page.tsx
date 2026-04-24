@@ -231,7 +231,7 @@ export default function TermsOfServicePage() {
                   "Conduct of any third party on the Platform",
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-slate-500 mt-1">•</span>
+                    <span className="text-slate-400 mt-1">•</span>
                     <span>{item}</span>
                   </li>
                 ))}

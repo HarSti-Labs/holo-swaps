@@ -92,6 +92,12 @@ export async function getSets(game?: string) {
   return data.data!;
 }
 
+// GET /api/cards/sets - Get all distinct set names
+export async function getCardSetNames(): Promise<string[]> {
+  const { data } = await api.get<ApiResponse<string[]>>("/cards/sets");
+  return data.data!;
+}
+
 // GET /api/cards/rarities?setCode=XXX - Get distinct rarities (optionally scoped to a set)
 export async function getRarities(setCode?: string) {
   const { data } = await api.get<ApiResponse<string[]>>("/cards/rarities", {

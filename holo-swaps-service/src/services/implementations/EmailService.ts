@@ -583,6 +583,72 @@ export class EmailService implements IEmailService {
     }
   }
 
+  async sendCancelRequestEmail(to: string, recipientUsername: string, requesterUsername: string, tradeCode: string, tradeUrl: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `Cancellation request — ${tradeCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <h1 style="color: #1a1a2e; font-size: 22px; margin-top: 0;">Cancellation Request</h1>
+              <p style="color: #444; font-size: 15px; line-height: 1.6;">
+                Hi ${recipientUsername}, <strong>${requesterUsername}</strong> has requested to cancel trade <span style="font-family: monospace; font-weight: bold;">${tradeCode}</span>.
+              </p>
+              <p style="color: #444; font-size: 14px; line-height: 1.6;">
+                You need to accept this request for the trade to be cancelled. If you do not wish to cancel, no action is needed — the trade will continue as normal.
+              </p>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${tradeUrl}" style="background: #dc2626; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                  View Trade
+                </a>
+              </div>
+              <p style="color: #888; font-size: 12px; margin-top: 24px;">
+                Questions? Contact us at <a href="mailto:admin@holoswaps.com" style="color: #4f46e5;">admin@holoswaps.com</a>.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send cancel request email", { to, tradeCode, err });
+    }
+  }
+
+  async sendCancelAcceptedEmail(to: string, recipientUsername: string, otherUsername: string, tradeCode: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `Trade cancelled by mutual agreement — ${tradeCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <h1 style="color: #1a1a2e; font-size: 22px; margin-top: 0;">Trade Cancelled</h1>
+              <p style="color: #444; font-size: 15px; line-height: 1.6;">
+                Hi ${recipientUsername}, trade <span style="font-family: monospace; font-weight: bold;">${tradeCode}</span> has been cancelled by mutual agreement with <strong>${otherUsername}</strong>.
+              </p>
+              <p style="color: #444; font-size: 14px; line-height: 1.6;">
+                All cards involved in this trade have been unlocked and are available again.
+              </p>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${config.frontend.url}/trades" style="background: #4f46e5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                  View My Trades
+                </a>
+              </div>
+              <p style="color: #888; font-size: 12px; margin-top: 24px;">
+                Questions? Contact us at <a href="mailto:admin@holoswaps.com" style="color: #4f46e5;">admin@holoswaps.com</a>.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send cancel accepted email", { to, tradeCode, err });
+    }
+  }
+
   async sendTicketResolved(to: string, ticketNumber: string, subject: string): Promise<void> {
     const ticketUrl = `${config.frontend.url}/support/tickets/${ticketNumber}`;
     try {

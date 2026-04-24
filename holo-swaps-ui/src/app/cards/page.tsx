@@ -5,7 +5,7 @@ import { useQuery, useQueries } from "@tanstack/react-query";
 import {
   searchCards,
   getCardHolders,
-  getSets,
+  getCardSetNames,
   getRarities,
   SearchCardsParams,
   CardHolder,
@@ -151,7 +151,7 @@ function CardItem({
             {card.setCode}
           </span>
           {card.cardNumber && (
-            <span className="text-slate-500 font-mono font-bold">#{card.cardNumber}</span>
+            <span className="text-slate-400 font-mono font-bold">#{card.cardNumber}</span>
           )}
         </div>
         <p className="text-xs text-slate-400 line-clamp-1 font-semibold">{card.setName}</p>
@@ -274,12 +274,12 @@ function BulkAddModal({
                   <div key={c.id} className="flex items-center gap-2 text-sm">
                     <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isWants ? "bg-pink-400" : "bg-blue-400"}`} />
                     <span className="text-slate-200 truncate">{c.name}</span>
-                    <span className="text-slate-500 text-xs flex-shrink-0">{c.setCode}</span>
+                    <span className="text-slate-400 text-xs flex-shrink-0">{c.setCode}</span>
                   </div>
                 ))}
               </div>
 
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">
                 Apply to all selected cards
               </p>
 
@@ -381,7 +381,7 @@ function BulkAddModal({
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
-                      <span className="text-xs text-slate-500">copies each</span>
+                      <span className="text-xs text-slate-400">copies each</span>
                     </div>
                   </div>
                 </>
@@ -504,7 +504,7 @@ function TradersPanel({
       <div className="flex flex-col items-center justify-center h-full text-center py-20 px-6">
         <Users className="h-16 w-16 text-slate-700 mb-4" />
         <h3 className="text-base font-semibold text-slate-400 mb-2">Select a card</h3>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-400">
           Click any card to see which traders have it available
         </p>
       </div>
@@ -522,7 +522,7 @@ function TradersPanel({
           <img src={card.imageUrl} alt={card.name} className="w-10 h-14 object-cover rounded-lg border border-slate-700 flex-shrink-0" />
         ) : (
           <div className="w-10 h-14 bg-slate-800 rounded-lg flex items-center justify-center border border-slate-700 flex-shrink-0">
-            <Package className="h-5 w-5 text-slate-600" />
+            <Package className="h-5 w-5 text-slate-400" />
           </div>
         )}
         <div className="min-w-0">
@@ -554,7 +554,7 @@ function TradersPanel({
           <div className="text-center py-10 px-4">
             <Package className="h-10 w-10 text-slate-700 mx-auto mb-3" />
             <p className="text-slate-400 text-sm font-medium">No traders yet</p>
-            <p className="text-xs text-slate-500 mt-1">Nobody has this card available for trade right now.</p>
+            <p className="text-xs text-slate-400 mt-1">Nobody has this card available for trade right now.</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-800/60">
@@ -646,7 +646,7 @@ function MultiCardTradersPanel({
       <div className="flex flex-col items-center justify-center h-full text-center py-16 px-6">
         <Layers className="h-12 w-12 text-slate-700 mb-3" />
         <p className="text-sm font-semibold text-slate-400">Select cards to see traders</p>
-        <p className="text-xs text-slate-500 mt-1">Check cards in the grid to view who has them</p>
+        <p className="text-xs text-slate-400 mt-1">Check cards in the grid to view who has them</p>
       </div>
     );
   }
@@ -708,18 +708,18 @@ function MultiCardTradersPanel({
                   />
                 ) : (
                   <div className="w-7 h-10 bg-slate-700 rounded flex-shrink-0 flex items-center justify-center border border-slate-600">
-                    <Package className="h-3.5 w-3.5 text-slate-500" />
+                    <Package className="h-3.5 w-3.5 text-slate-400" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-white truncate leading-tight">{card.name}</p>
-                  <p className="text-xs text-slate-500 truncate">{card.setCode} {card.cardNumber ? `#${card.cardNumber}` : ""}</p>
+                  <p className="text-xs text-slate-400 truncate">{card.setCode} {card.cardNumber ? `#${card.cardNumber}` : ""}</p>
                 </div>
                 <div className="flex-shrink-0 text-right">
                   {query?.isLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />
                   ) : (
-                    <span className={`text-xs font-bold ${holders.length > 0 ? "text-green-400" : "text-slate-500"}`}>
+                    <span className={`text-xs font-bold ${holders.length > 0 ? "text-green-400" : "text-slate-400"}`}>
                       {holders.length}{conditionFilter ? "" : totalRaw > 15 ? "+" : ""}
                     </span>
                   )}
@@ -732,7 +732,7 @@ function MultiCardTradersPanel({
                   <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
                 </div>
               ) : holders.length === 0 ? (
-                <p className="text-xs text-slate-600 italic px-4 py-2.5">
+                <p className="text-xs text-slate-400 italic px-4 py-2.5">
                   {conditionFilter ? "No traders match this condition" : "No traders available"}
                 </p>
               ) : (
@@ -824,7 +824,7 @@ export default function CardsPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data: setsData } = useQuery({ queryKey: ["sets"], queryFn: getSets, staleTime: 5 * 60 * 1000 });
+  const { data: setsData } = useQuery({ queryKey: ["cardSetNames"], queryFn: getCardSetNames, staleTime: 5 * 60 * 1000 });
   const { data: raritiesData } = useQuery({ queryKey: ["rarities", selectedSet], queryFn: () => getRarities(selectedSet || undefined), staleTime: 5 * 60 * 1000 });
 
   const sets = setsData ?? [];
@@ -832,18 +832,15 @@ export default function CardsPage() {
 
   const params: SearchCardsParams = {
     ...(debouncedQuery && { q: debouncedQuery }),
-    ...(selectedSet && { setCode: selectedSet }),
+    ...(selectedSet && { setName: selectedSet }),
     ...(selectedRarity && { rarity: selectedRarity }),
     page,
     limit,
   };
 
-  const hasFilter = debouncedQuery.trim().length > 0 || selectedSet !== "" || selectedRarity !== "";
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["cards", params],
     queryFn: () => searchCards(params),
-    enabled: hasFilter,
   });
 
   const handleProposeTrade = useCallback((holder: CardHolder) => {
@@ -898,7 +895,7 @@ export default function CardsPage() {
                 placeholder="Search by card name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-14 text-base bg-slate-900/90 backdrop-blur-xl border-2 border-slate-700 hover:border-blue-500/50 focus:border-blue-500 text-white placeholder:text-slate-500 rounded-2xl shadow-2xl transition-all"
+                className="pl-12 h-14 text-base bg-slate-900/90 backdrop-blur-xl border-2 border-slate-700 hover:border-blue-500/50 focus:border-blue-500 text-white placeholder:text-slate-400 rounded-2xl shadow-2xl transition-all"
               />
             </div>
           </div>
@@ -910,7 +907,7 @@ export default function CardsPage() {
               className="w-full h-14 pl-4 pr-10 rounded-2xl bg-slate-800 border-2 border-slate-600 hover:border-slate-400 focus:border-slate-400 text-white appearance-none cursor-pointer transition-all outline-none shadow-2xl"
             >
               <option value="">All Sets</option>
-              {sets.map((s) => <option key={s.setCode} value={s.setCode}>{s.name}</option>)}
+              {sets.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div className="relative sm:w-48">
@@ -940,15 +937,7 @@ export default function CardsPage() {
               <div className="text-center py-12 text-red-400">Failed to load cards. Please try again.</div>
             )}
 
-            {!hasFilter && !isLoading && (
-              <div className="text-center py-24">
-                <div className="text-6xl mb-6">🔍</div>
-                <p className="text-xl text-slate-400 font-semibold">Search or pick a set to get started</p>
-                <p className="text-slate-500 mt-2">Search by name, filter by set, or narrow down by rarity</p>
-              </div>
-            )}
-
-            {hasFilter && data && !isLoading && (
+            {data && !isLoading && (
               <>
                 {data.data.length === 0 ? (
                   <div className="text-center py-12">
@@ -958,7 +947,7 @@ export default function CardsPage() {
                   <>
                     {/* Toolbar row */}
                     <div className="flex items-center justify-between mb-4 gap-3">
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-400">
                         {data.total} card{data.total !== 1 ? "s" : ""} found
                         {!isSelectMode && " — click one to see traders"}
                       </p>

@@ -21,7 +21,7 @@
 - [x] `PriceAlert` — user-defined price alerts (above/below target)
 - [x] `UserCollection` — per-user card inventory with condition, grading, status, media, quantity
 - [x] `UserWant` — want list with priority, condition preference, grading preference
-- [x] `Trade` — full trade model with value snapshots, cash difference, Stripe payment intent
+- [x] `Trade` — full trade model with value snapshots, cash difference, Stripe payment intent; `cancellationRequestedById` field for mutual cancel flow
 - [x] `TradeItem` — cards on each side of a trade
 - [x] `TradeOffer` — counter-offer history
 - [x] `TradeMessage` — in-trade messaging thread
@@ -49,7 +49,9 @@
 - [x] `POST   /api/trades/:id/counter` — counter-offer with optional cash adjustment
 - [x] `PATCH  /api/trades/:id/accept` — accept trade; creates Stripe PaymentIntent if cash owed
 - [x] `PATCH  /api/trades/:id/decline` — receiver declines
-- [x] `PATCH  /api/trades/:id/cancel` — cancel at PROPOSED/COUNTERED/ACCEPTED; refunds Stripe if needed
+- [x] `PATCH  /api/trades/:id/cancel` — direct cancel at PROPOSED/COUNTERED status
+- [x] `POST   /api/trades/:id/request-cancel` — request mutual cancellation at ACCEPTED status; notifies + emails other party
+- [x] `POST   /api/trades/:id/accept-cancel` — accept the other party's cancellation request; unlocks cards, emails both parties
 - [x] `PATCH  /api/trades/:id/tracking` — submit tracking number + carrier; transitions to BOTH_SHIPPED when both submit
 - [x] `GET    /api/trades` — paginated list of own trades, filterable by status
 - [x] `GET    /api/trades/:id` — single trade detail (participants only)

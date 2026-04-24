@@ -60,7 +60,7 @@ export default function FollowersPage() {
           </div>
         ) : followers.length === 0 ? (
           <div className="text-center py-12">
-            <Users className="h-16 w-16 mx-auto mb-4 text-slate-600" />
+            <Users className="h-16 w-16 mx-auto mb-4 text-slate-400" />
             <p className="text-slate-400 text-lg">No followers yet</p>
           </div>
         ) : (
@@ -111,7 +111,7 @@ export default function FollowersPage() {
                 <button
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:text-slate-600 text-white rounded-lg transition-colors"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:text-slate-400 text-white rounded-lg transition-colors"
                 >
                   Previous
                 </button>
@@ -121,7 +121,7 @@ export default function FollowersPage() {
                 <button
                   onClick={() => setPage(page + 1)}
                   disabled={page === totalPages}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:text-slate-600 text-white rounded-lg transition-colors"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:text-slate-400 text-white rounded-lg transition-colors"
                 >
                   Next
                 </button>

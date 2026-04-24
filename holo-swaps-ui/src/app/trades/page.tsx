@@ -146,9 +146,9 @@ export default function TradesPage() {
           </div>
         ) : trades.length === 0 ? (
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center">
-            <Package className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+            <Package className="h-12 w-12 text-slate-400 mx-auto mb-4" />
             <p className="text-slate-400 mb-2">No trades found</p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-400">
               {filter === "all"
                 ? "Start trading by browsing other users' collections"
                 : filter === "active"
@@ -202,7 +202,7 @@ export default function TradesPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                     {/* Your Cards */}
                     <div>
-                      <p className="text-xs text-slate-500 mb-2">You're trading</p>
+                      <p className="text-xs text-slate-400 mb-2">You're trading</p>
                       <div className="flex flex-wrap gap-1">
                         {myItems.slice(0, 3).map((item) => (
                           <div
@@ -225,12 +225,12 @@ export default function TradesPage() {
 
                     {/* Arrow */}
                     <div className="flex justify-center">
-                      <ArrowRight className="h-6 w-6 text-slate-600" />
+                      <ArrowRight className="h-6 w-6 text-slate-400" />
                     </div>
 
                     {/* Their Cards */}
                     <div>
-                      <p className="text-xs text-slate-500 mb-2">You're receiving</p>
+                      <p className="text-xs text-slate-400 mb-2">You're receiving</p>
                       <div className="flex flex-wrap gap-1">
                         {theirItems.slice(0, 3).map((item) => (
                           <div

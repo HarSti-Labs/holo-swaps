@@ -107,7 +107,7 @@ export default function VerifyEmailPage() {
               >
                 Sign In
               </Link>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 You can request a new verification email from your dashboard after signing in.
               </p>
             </div>

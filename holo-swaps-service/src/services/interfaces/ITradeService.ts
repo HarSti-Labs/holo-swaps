@@ -7,6 +7,8 @@ export interface ITradeService {
   acceptTrade(tradeId: string, userId: string): Promise<Trade>;
   declineTrade(tradeId: string, userId: string): Promise<Trade>;
   cancelTrade(tradeId: string, userId: string): Promise<Trade>;
+  requestCancelTrade(tradeId: string, userId: string): Promise<Trade>;
+  acceptCancelTrade(tradeId: string, userId: string): Promise<Trade>;
   submitTrackingNumber(tradeId: string, userId: string, data: TrackingData): Promise<Trade>;
   getUserTrades(userId: string, params: PaginationParams & { status?: TradeStatus }): Promise<PaginatedResult<Trade>>;
   getTradeById(tradeId: string, userId: string): Promise<Trade>;

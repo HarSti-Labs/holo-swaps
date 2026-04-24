@@ -174,7 +174,7 @@ export default function ShippingGuidePage() {
         {/* Disclaimer */}
         <section className="py-6 px-4">
           <div className="container mx-auto max-w-3xl">
-            <p className="text-xs text-slate-500 text-center leading-relaxed">
+            <p className="text-xs text-slate-400 text-center leading-relaxed">
               <span className="font-semibold text-slate-400">Disclaimer:</span> HoloSwaps is not liable for any card damage, loss, or deterioration resulting from improper packaging by the sender. It is the sender's sole responsibility to ensure cards are packaged securely and appropriately before shipment. By submitting a trade, you acknowledge and accept this responsibility.
             </p>
           </div>

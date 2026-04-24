@@ -14,6 +14,7 @@ import {
   MapPin,
   Clock,
   CheckCircle2,
+  Trophy,
 } from "lucide-react";
 
 // ─── UPDATE THIS WHEN YOU HAVE YOUR PO BOX ───────────────────────────────────
@@ -158,7 +159,7 @@ export default function HowItWorksPage() {
             <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
             <div className="absolute -top-20 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700" />
             <div className="relative z-10 max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-base font-medium mb-6">
                 <ShieldCheck size={16} />
                 Secure · Verified · Simple
               </div>
@@ -200,8 +201,8 @@ export default function HowItWorksPage() {
               ].map(({ icon: Icon, label, sub, color }) => (
                 <div key={label} className="flex flex-col items-center gap-1">
                   <Icon size={24} className={color} />
-                  <p className="text-white font-bold text-sm">{label}</p>
-                  <p className="text-slate-500 text-xs">{sub}</p>
+                  <p className="text-white font-bold text-base">{label}</p>
+                  <p className="text-slate-400 text-base">{sub}</p>
                 </div>
               ))}
             </div>
@@ -231,7 +232,7 @@ export default function HowItWorksPage() {
 
                     <div className={`relative z-10 rounded-2xl border-2 p-6 ${c.bg} ${c.border} ${step.highlight ? "ring-2 ring-yellow-500/40" : ""}`}>
                       {step.highlight && (
-                        <div className="absolute -top-3 left-6 flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500 text-slate-950 text-xs font-black">
+                        <div className="absolute -top-3 left-6 flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500 text-slate-950 text-base font-black">
                           <AlertTriangle size={12} />
                           Important Step
                         </div>
@@ -243,7 +244,7 @@ export default function HowItWorksPage() {
                           <div className={`w-14 h-14 rounded-2xl ${c.bg} border-2 ${c.border} flex items-center justify-center`}>
                             <Icon size={24} className={c.icon} />
                           </div>
-                          <span className={`text-xs font-black ${c.text} opacity-60`}>{step.number}</span>
+                          <span className={`text-base font-black ${c.text} opacity-60`}>{step.number}</span>
                         </div>
 
                         {/* Content */}
@@ -255,7 +256,7 @@ export default function HowItWorksPage() {
                             {step.tips.map((tip, i) => (
                               <div key={i} className="flex items-start gap-2">
                                 <CheckCircle2 size={15} className={`${c.icon} mt-0.5 flex-shrink-0`} />
-                                <p className="text-sm text-slate-400">{tip}</p>
+                                <p className="text-base text-slate-400">{tip}</p>
                               </div>
                             ))}
                           </div>
@@ -272,7 +273,7 @@ export default function HowItWorksPage() {
         {/* Verification Center / Shipping address */}
         <section className="py-16 px-4 bg-slate-900/50 border-y border-slate-800">
           <div className="container mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-base font-medium mb-6">
               <MapPin size={16} />
               Verification Center Address
             </div>
@@ -290,7 +291,7 @@ export default function HowItWorksPage() {
                 </div>
                 <div>
                   <p className="text-white font-black text-lg">HoloSwaps</p>
-                  <p className="text-cyan-400 text-sm font-medium">Verified Trading Hub</p>
+                  <p className="text-cyan-400 text-base font-medium">Verified Trading Hub</p>
                 </div>
               </div>
 
@@ -310,7 +311,7 @@ export default function HowItWorksPage() {
                 ].map((note, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <AlertTriangle size={14} className="text-yellow-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-slate-400">{note}</p>
+                    <p className="text-base text-slate-400">{note}</p>
                   </div>
                 ))}
               </div>
@@ -349,9 +350,101 @@ export default function HowItWorksPage() {
               ].map((item) => (
                 <div key={item.step} className="bg-slate-900/60 border border-slate-700 rounded-2xl p-6">
                   <div className="text-4xl mb-4">{item.icon}</div>
-                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Step {item.step}</p>
+                  <p className="text-base font-black text-slate-400 uppercase tracking-widest mb-2">Step {item.step}</p>
                   <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">{item.body}</p>
+                  <p className="text-base text-slate-400 leading-relaxed">{item.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Trader Tiers */}
+        <section className="py-16 px-4 bg-slate-900/50 border-y border-slate-800">
+          <div className="container mx-auto max-w-4xl">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-base font-medium mb-6">
+                <Trophy size={16} />
+                Trader Tiers
+              </div>
+              <h2 className="text-3xl font-black text-white mb-3">Level Up Your Trader Tier</h2>
+              <p className="text-slate-400 max-w-xl mx-auto">
+                Your tier is calculated automatically based on your completed trades and reputation score. Complete more trades and keep your ratings high to climb the ranks.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+              {[
+                {
+                  tier: "Bronze",
+                  emoji: "🥉",
+                  color: "border-orange-800/60 bg-orange-900/10",
+                  badge: "text-orange-400 bg-orange-500/10 border-orange-500/30",
+                  trades: "Starting tier",
+                  rep: "All new traders",
+                  description: "Everyone begins here. Complete your first trades to start climbing.",
+                },
+                {
+                  tier: "Silver",
+                  emoji: "🥈",
+                  color: "border-slate-500/60 bg-slate-500/10",
+                  badge: "text-slate-300 bg-slate-500/10 border-slate-500/30",
+                  trades: "10+ trades",
+                  rep: "3.5+ reputation",
+                  description: "You're an established trader. The community knows they can trust you.",
+                },
+                {
+                  tier: "Gold",
+                  emoji: "🥇",
+                  color: "border-yellow-500/60 bg-yellow-500/10",
+                  badge: "text-yellow-400 bg-yellow-500/10 border-yellow-500/30",
+                  trades: "50+ trades",
+                  rep: "4.0+ reputation",
+                  description: "A seasoned trader with a strong track record and high ratings.",
+                },
+                {
+                  tier: "Diamond",
+                  emoji: "💎",
+                  color: "border-cyan-400/60 bg-cyan-500/10 ring-2 ring-cyan-400/20",
+                  badge: "text-cyan-300 bg-cyan-500/10 border-cyan-500/30",
+                  trades: "100+ trades",
+                  rep: "4.5+ reputation",
+                  description: "Elite status. Only the most active and trusted traders reach this tier.",
+                },
+              ].map((t) => (
+                <div key={t.tier} className={`rounded-2xl border-2 p-5 flex flex-col gap-3 ${t.color}`}>
+                  <div className="text-4xl">{t.emoji}</div>
+                  <div>
+                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-base font-black uppercase tracking-widest border ${t.badge}`}>
+                      {t.tier}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <ArrowLeftRight size={12} className="text-slate-400 flex-shrink-0" />
+                      <span className="text-base text-slate-300 font-semibold">{t.trades}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Star size={12} className="text-slate-400 flex-shrink-0" />
+                      <span className="text-base text-slate-300 font-semibold">{t.rep}</span>
+                    </div>
+                  </div>
+                  <p className="text-base text-slate-400 leading-relaxed">{t.description}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-700 rounded-2xl p-6 space-y-3">
+              <h3 className="text-white font-bold text-base mb-3">How tiers are calculated</h3>
+              {[
+                "Your tier updates automatically every time you complete a trade or receive a new review.",
+                "Both conditions must be met — trade count alone isn't enough. You also need the minimum reputation score.",
+                "Reputation score is the average of all reviews left by your trade partners. Be honest, ship fast, and pack carefully.",
+                "You can see your current tier and reputation score on your public profile.",
+              ].map((tip, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <CheckCircle2 size={15} className="text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-base text-slate-400">{tip}</p>
                 </div>
               ))}
             </div>
@@ -378,7 +471,7 @@ export default function HowItWorksPage() {
                 Browse Cards First
               </Link>
             </div>
-            <p className="text-slate-500 text-sm mt-6">
+            <p className="text-slate-400 text-base mt-6">
               Questions?{" "}
               <a href="mailto:admin@holoswaps.com" className="text-blue-400 hover:text-blue-300 underline">
                 admin@holoswaps.com

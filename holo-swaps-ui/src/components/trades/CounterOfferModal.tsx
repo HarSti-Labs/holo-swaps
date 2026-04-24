@@ -138,13 +138,13 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
             {/* My cards (editable) */}
             <div>
               <h3 className="text-sm font-semibold text-slate-300 mb-3">
-                Your Cards <span className="text-slate-500 font-normal">— edit your side</span>
+                Your Cards <span className="text-slate-400 font-normal">— edit your side</span>
               </h3>
 
               {/* Currently in counter */}
               <div className="space-y-2 mb-3">
                 {myCards.length === 0 ? (
-                  <p className="text-xs text-slate-500 py-3 text-center border border-dashed border-slate-700 rounded-lg">No cards selected — add from below</p>
+                  <p className="text-xs text-slate-400 py-3 text-center border border-dashed border-slate-700 rounded-lg">No cards selected — add from below</p>
                 ) : (
                   myCards.map((card) => (
                     <div key={card.id} className="flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-lg p-2">
@@ -152,7 +152,7 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
                         <img src={card.card.imageUrl} alt={card.card.name} className="w-10 h-14 object-cover rounded flex-shrink-0" />
                       ) : (
                         <div className="w-10 h-14 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
-                          <Package className="h-4 w-4 text-slate-500" />
+                          <Package className="h-4 w-4 text-slate-400" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -161,7 +161,7 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
                         {card.askingValueOverride != null ? (
                           <div>
                             <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                            <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                            <span className="text-xs text-teal-500 ml-1">Owner price</span>
                           </div>
                         ) : (
                           <p className="text-xs text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</p>
@@ -176,13 +176,13 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
               </div>
 
               {/* Add from collection */}
-              <p className="text-xs text-slate-500 mb-2">Add from your collection:</p>
+              <p className="text-xs text-slate-400 mb-2">Add from your collection:</p>
               {isLoadingCollection ? (
                 <div className="flex items-center justify-center py-6">
                   <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
                 </div>
               ) : availableToAdd.length === 0 ? (
-                <p className="text-xs text-slate-600 text-center py-4">No other available cards</p>
+                <p className="text-xs text-slate-400 text-center py-4">No other available cards</p>
               ) : (
                 <div className="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
                   {availableToAdd.map((card) => (
@@ -195,16 +195,16 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
                         <img src={card.card.imageUrl} alt={card.card.name} className="w-8 h-11 object-cover rounded flex-shrink-0" />
                       ) : (
                         <div className="w-8 h-11 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
-                          <Package className="h-3 w-3 text-slate-500" />
+                          <Package className="h-3 w-3 text-slate-400" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">{card.card.name}</p>
-                        <p className="text-xs text-slate-500">{CONDITION_LABELS[card.condition]}</p>
+                        <p className="text-xs text-slate-400">{CONDITION_LABELS[card.condition]}</p>
                         {card.askingValueOverride != null ? (
                           <div>
                             <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                            <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                            <span className="text-xs text-teal-500 ml-1">Owner price</span>
                           </div>
                         ) : (
                           <p className="text-xs text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</p>
@@ -220,11 +220,11 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
             {/* Their cards (read-only) */}
             <div>
               <h3 className="text-sm font-semibold text-slate-300 mb-3">
-                Their Cards <span className="text-slate-500 font-normal">— current offer</span>
+                Their Cards <span className="text-slate-400 font-normal">— current offer</span>
               </h3>
               <div className="space-y-2">
                 {theirCards.length === 0 ? (
-                  <p className="text-xs text-slate-500 py-3 text-center border border-dashed border-slate-700 rounded-lg">No cards on their side</p>
+                  <p className="text-xs text-slate-400 py-3 text-center border border-dashed border-slate-700 rounded-lg">No cards on their side</p>
                 ) : (
                   theirCards.map((card) => (
                     <div key={card.id} className="flex items-center gap-2 bg-slate-800/30 border border-slate-700/50 rounded-lg p-2">
@@ -232,7 +232,7 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
                         <img src={card.card.imageUrl} alt={card.card.name} className="w-10 h-14 object-cover rounded flex-shrink-0" />
                       ) : (
                         <div className="w-10 h-14 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
-                          <Package className="h-4 w-4 text-slate-500" />
+                          <Package className="h-4 w-4 text-slate-400" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -241,7 +241,7 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
                         {card.askingValueOverride != null ? (
                           <div>
                             <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                            <span className="text-[10px] text-teal-500 ml-1">Owner price</span>
+                            <span className="text-xs text-teal-500 ml-1">Owner price</span>
                           </div>
                         ) : (
                           <p className="text-xs text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</p>
@@ -330,7 +330,7 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || myCards.length === 0}
-            className="flex items-center gap-2 px-6 py-2.5 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
           >
             {isSubmitting ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Sending...</>
