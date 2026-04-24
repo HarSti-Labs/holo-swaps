@@ -88,13 +88,13 @@ export default function FollowersPage() {
                       <h3 className="font-semibold text-white text-lg">
                         {follower.username}
                       </h3>
-                      <div className="flex items-center gap-4 text-sm text-slate-400 mt-1">
+                      <div className="flex items-center gap-4 text-base text-slate-400 mt-1">
                         <span>
                           {follower.tradeCount || 0} {follower.tradeCount === 1 ? "trade" : "trades"}
                         </span>
                         <span>⭐ {follower.reputationScore?.toFixed(1) || "0.0"}</span>
                         {follower.tier && (
-                          <span className="px-2 py-0.5 bg-slate-800 rounded text-xs uppercase">
+                          <span className="px-2 py-0.5 bg-slate-800 rounded text-base uppercase">
                             {follower.tier}
                           </span>
                         )}

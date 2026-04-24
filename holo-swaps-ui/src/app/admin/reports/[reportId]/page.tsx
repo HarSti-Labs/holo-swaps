@@ -101,7 +101,7 @@ export default function AdminReportDetailPage() {
         {/* Back */}
         <button
           onClick={() => router.push("/admin/reports")}
-          className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors text-sm"
+          className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors text-base"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Reports
@@ -115,17 +115,17 @@ export default function AdminReportDetailPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">User Report</h1>
-              <p className="text-sm text-slate-400">
+              <p className="text-base text-slate-400">
                 {new Date(report.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
               </p>
             </div>
           </div>
           {report.isResolved ? (
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 text-green-400 text-sm font-medium">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 text-green-400 text-base font-medium">
               <CheckCircle className="h-4 w-4" /> Resolved
             </span>
           ) : (
-            <span className="px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-400 text-sm font-medium">
+            <span className="px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-400 text-base font-medium">
               Pending
             </span>
           )}
@@ -135,12 +135,12 @@ export default function AdminReportDetailPage() {
 
           {/* Report Details */}
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 space-y-5">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Report Details</h2>
+            <h2 className="text-base font-semibold text-slate-400 uppercase tracking-wider">Report Details</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Reported */}
               <div>
-                <p className="text-xs text-slate-400 mb-2">Reported User</p>
+                <p className="text-base text-slate-400 mb-2">Reported User</p>
                 <div className="flex items-center gap-3 bg-slate-800/50 rounded-lg p-3">
                   <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
                     {report.reported.avatarUrl ? (
@@ -155,7 +155,7 @@ export default function AdminReportDetailPage() {
 
               {/* Reporter */}
               <div>
-                <p className="text-xs text-slate-400 mb-2">Reported By</p>
+                <p className="text-base text-slate-400 mb-2">Reported By</p>
                 <div className="flex items-center gap-3 bg-slate-800/50 rounded-lg p-3">
                   <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
                     {report.reporter.avatarUrl ? (
@@ -171,23 +171,23 @@ export default function AdminReportDetailPage() {
 
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-400 w-20 flex-shrink-0">Reason</span>
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-red-500/10 text-red-400">
+                <span className="text-base text-slate-400 w-20 flex-shrink-0">Reason</span>
+                <span className="text-base font-medium px-2.5 py-1 rounded-full bg-red-500/10 text-red-400">
                   {REASON_LABELS[report.reason] ?? report.reason}
                 </span>
               </div>
 
               {report.tradeId && (
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-slate-400 w-20 flex-shrink-0">Trade Ref</span>
-                  <span className="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-1 rounded">{report.tradeId}</span>
+                  <span className="text-base text-slate-400 w-20 flex-shrink-0">Trade Ref</span>
+                  <span className="text-base font-mono text-slate-400 bg-slate-800 px-2 py-1 rounded">{report.tradeId}</span>
                 </div>
               )}
 
               {report.details && (
                 <div>
-                  <p className="text-xs text-slate-400 mb-2">Details</p>
-                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-base text-slate-400 mb-2">Details</p>
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 text-base text-slate-300 leading-relaxed whitespace-pre-wrap">
                     {report.details}
                   </div>
                 </div>
@@ -195,8 +195,8 @@ export default function AdminReportDetailPage() {
 
               {report.isResolved && report.resolvedNote && (
                 <div>
-                  <p className="text-xs text-slate-400 mb-2">Resolution Note</p>
-                  <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-base text-slate-400 mb-2">Resolution Note</p>
+                  <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 text-base text-slate-300 leading-relaxed whitespace-pre-wrap">
                     {report.resolvedNote}
                   </div>
                 </div>
@@ -207,13 +207,13 @@ export default function AdminReportDetailPage() {
           {/* Message Thread */}
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-800">
-              <h2 className="text-sm font-semibold text-slate-300">Communication</h2>
-              <p className="text-xs text-slate-400 mt-0.5">Messages sent here are emailed to the reporter</p>
+              <h2 className="text-base font-semibold text-slate-300">Communication</h2>
+              <p className="text-base text-slate-400 mt-0.5">Messages sent here are emailed to the reporter</p>
             </div>
 
             <div className="p-6 space-y-3 min-h-[80px]">
               {report.messages.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-4">No messages yet — use the box below to contact the reporter.</p>
+                <p className="text-base text-slate-400 text-center py-4">No messages yet — use the box below to contact the reporter.</p>
               ) : (
                 report.messages.map((msg) => (
                   <div
@@ -226,14 +226,14 @@ export default function AdminReportDetailPage() {
                     )}
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-semibold text-slate-400">
+                      <span className="text-base font-semibold text-slate-400">
                         {msg.isAdminReply ? "Admin" : `@${report.reporter.username}`}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-base text-slate-400">
                         {new Date(msg.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{msg.body}</p>
+                    <p className="text-base text-slate-300 leading-relaxed whitespace-pre-wrap">{msg.body}</p>
                   </div>
                 ))
               )}
@@ -248,13 +248,13 @@ export default function AdminReportDetailPage() {
                   rows={3}
                   maxLength={2000}
                   placeholder="Write a message to the reporter..."
-                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base resize-none"
                 />
                 <div className="flex justify-end">
                   <button
                     onClick={handleSendReply}
                     disabled={!replyBody.trim() || isSending}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium text-base transition-colors"
                   >
                     {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     Send Message
@@ -269,13 +269,13 @@ export default function AdminReportDetailPage() {
             <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-300">Resolve Report</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">The reporter will be emailed when you resolve this.</p>
+                  <h2 className="text-base font-semibold text-slate-300">Resolve Report</h2>
+                  <p className="text-base text-slate-400 mt-0.5">The reporter will be emailed when you resolve this.</p>
                 </div>
                 {!showResolveForm && (
                   <button
                     onClick={() => setShowResolveForm(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-medium text-sm transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-medium text-base transition-colors"
                   >
                     <ShieldCheck className="h-4 w-4" />
                     Resolve
@@ -286,27 +286,27 @@ export default function AdminReportDetailPage() {
               {showResolveForm && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1.5">Resolution note (optional — included in email to reporter)</label>
+                    <label className="block text-base text-slate-400 mb-1.5">Resolution note (optional — included in email to reporter)</label>
                     <textarea
                       value={resolveNote}
                       onChange={(e) => setResolveNote(e.target.value)}
                       rows={3}
                       maxLength={1000}
                       placeholder="Describe the action taken..."
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm resize-none"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 text-base resize-none"
                     />
                   </div>
                   <div className="flex gap-3 justify-end">
                     <button
                       onClick={() => setShowResolveForm(false)}
-                      className="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors"
+                      className="px-4 py-2 text-slate-400 hover:text-white text-base transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleResolve}
                       disabled={isResolving}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium text-base transition-colors"
                     >
                       {isResolving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
                       Confirm Resolve
@@ -317,7 +317,7 @@ export default function AdminReportDetailPage() {
             </div>
           )}
 
-          {error && <p className="text-sm text-red-400 text-center">{error}</p>}
+          {error && <p className="text-base text-red-400 text-center">{error}</p>}
 
         </div>
       </main>

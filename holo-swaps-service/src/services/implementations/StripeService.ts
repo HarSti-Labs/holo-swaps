@@ -63,7 +63,7 @@ export class StripeService implements IStripeService {
       currency: data.currency,
       customer: data.customerId,
       capture_method: "manual", // hold funds, capture only on completion
-      application_fee_amount: Math.round(data.platformFeeAmount), // platform 2.5% fee
+      application_fee_amount: Math.round(data.platformFeeAmount), // platform 10% fee
       transfer_data: {
         destination: data.destinationAccountId,
       },

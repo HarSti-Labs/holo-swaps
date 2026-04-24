@@ -113,8 +113,8 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-slate-900 border-2 border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="bg-slate-900 border-2 border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
 
           {/* Header */}
           <div className="sticky top-0 bg-slate-900 border-b border-slate-800 p-6 flex items-center justify-between z-10">
@@ -128,7 +128,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
           <div className="flex border-b border-slate-800">
             <button
               onClick={() => setActiveTab("details")}
-              className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-6 py-3 text-base font-semibold border-b-2 transition-colors ${
                 activeTab === "details"
                   ? "border-blue-500 text-white"
                   : "border-transparent text-slate-400 hover:text-slate-200"
@@ -139,7 +139,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
             </button>
             <button
               onClick={() => { setActiveTab("traders"); setActiveForm(null); }}
-              className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-6 py-3 text-base font-semibold border-b-2 transition-colors ${
                 activeTab === "traders"
                   ? "border-green-500 text-white"
                   : "border-transparent text-slate-400 hover:text-slate-200"
@@ -189,7 +189,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                       </span>
                     )}
                     {card.rarity && (
-                      <span className={`px-4 py-2 rounded-lg bg-gradient-to-r ${getRarityColor(card.rarity)} font-bold uppercase text-xs tracking-wider`}>
+                      <span className={`px-4 py-2 rounded-lg bg-gradient-to-r ${getRarityColor(card.rarity)} font-bold uppercase text-base tracking-wider`}>
                         {card.rarity}
                       </span>
                     )}
@@ -234,7 +234,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                         <p className="font-semibold text-white">
                           {successType === "collection" ? "Added to your collection!" : "Added to your want list!"}
                         </p>
-                        <p className="text-sm text-slate-400 mt-1">
+                        <p className="text-base text-slate-400 mt-1">
                           {successType === "collection"
                             ? `${quantity > 1 ? `${quantity} copies of ` : ""}${card.name} is now in your collection.`
                             : `You'll be notified when someone has ${card.name} available.`}
@@ -243,13 +243,13 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                       <div className="flex gap-2 justify-center pt-1">
                         <button
                           onClick={() => { setSuccessType(null); setActiveForm(null); }}
-                          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors"
+                          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-base font-medium transition-colors"
                         >
                           Add Another
                         </button>
                         <button
                           onClick={onClose}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-medium transition-colors"
+                          className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-base font-medium transition-colors"
                         >
                           Done
                         </button>
@@ -262,7 +262,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                     <div className="space-y-4 bg-slate-800/50 rounded-lg p-4 border border-slate-700">
                       <h4 className="font-semibold text-lg">Add to Collection</h4>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Condition</label>
+                        <label className="block text-base font-medium mb-2">Condition</label>
                         <select
                           value={condition}
                           onChange={(e) => setCondition(e.target.value as any)}
@@ -276,19 +276,19 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input type="checkbox" checked={isFoil} onChange={(e) => setIsFoil(e.target.checked)} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600" />
-                          <span className="text-sm">Foil/Holo</span>
+                          <span className="text-base">Foil/Holo</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input type="checkbox" checked={isFirstEdition} onChange={(e) => setIsFirstEdition(e.target.checked)} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600" />
-                          <span className="text-sm">1st Edition</span>
+                          <span className="text-base">1st Edition</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input type="checkbox" checked={availableForTrade} onChange={(e) => setAvailableForTrade(e.target.checked)} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600" />
-                          <span className="text-sm">Available for Trade</span>
+                          <span className="text-base">Available for Trade</span>
                         </label>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Quantity</label>
+                        <label className="block text-base font-medium mb-2">Quantity</label>
                         <div className="flex items-center gap-3">
                           <button
                             type="button"
@@ -314,11 +314,11 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                           >
                             <Plus className="h-4 w-4" />
                           </button>
-                          <span className="text-sm text-slate-400">copies</span>
+                          <span className="text-base text-slate-400">copies</span>
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Notes (optional)</label>
+                        <label className="block text-base font-medium mb-2">Notes (optional)</label>
                         <textarea
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
@@ -329,7 +329,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                         />
                       </div>
                       {formError && (
-                        <div className="bg-red-900/20 border border-red-800/50 rounded-lg px-3 py-2 text-sm text-red-300">
+                        <div className="bg-red-900/20 border border-red-800/50 rounded-lg px-3 py-2 text-base text-red-300">
                           {formError}
                         </div>
                       )}
@@ -349,7 +349,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                     <div className="space-y-4 bg-slate-800/50 rounded-lg p-4 border border-slate-700">
                       <h4 className="font-semibold text-lg">Add to Want List</h4>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Maximum Acceptable Condition</label>
+                        <label className="block text-base font-medium mb-2">Maximum Acceptable Condition</label>
                         <select
                           value={maxCondition}
                           onChange={(e) => setMaxCondition(e.target.value as any)}
@@ -361,7 +361,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Priority</label>
+                        <label className="block text-base font-medium mb-2">Priority</label>
                         <select
                           value={priority}
                           onChange={(e) => setPriority(e.target.value as WantPriority)}
@@ -373,7 +373,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Notes (optional)</label>
+                        <label className="block text-base font-medium mb-2">Notes (optional)</label>
                         <textarea
                           value={wantNotes}
                           onChange={(e) => setWantNotes(e.target.value)}
@@ -384,7 +384,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                         />
                       </div>
                       {formError && (
-                        <div className="bg-red-900/20 border border-red-800/50 rounded-lg px-3 py-2 text-sm text-red-300">
+                        <div className="bg-red-900/20 border border-red-800/50 rounded-lg px-3 py-2 text-base text-red-300">
                           {formError}
                         </div>
                       )}
@@ -414,10 +414,10 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                 <div className="text-center py-16">
                   <Users className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                   <p className="text-lg font-semibold text-slate-300">No traders available</p>
-                  <p className="text-slate-400 mt-1 text-sm">Nobody currently has this card available for trade.</p>
+                  <p className="text-slate-400 mt-1 text-base">Nobody currently has this card available for trade.</p>
                   <button
                     onClick={() => setActiveForm("wants")}
-                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-pink-600/20 border border-pink-500/40 text-pink-300 text-sm font-medium hover:bg-pink-600/30 transition-colors"
+                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-pink-600/20 border border-pink-500/40 text-pink-300 text-base font-medium hover:bg-pink-600/30 transition-colors"
                     onClickCapture={() => setActiveTab("details")}
                   >
                     <Heart size={16} />
@@ -426,7 +426,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                 </div>
               ) : (
                 <>
-                  <p className="text-sm text-slate-400 mb-4">
+                  <p className="text-base text-slate-400 mb-4">
                     <span className="text-white font-semibold">{totalHolders}</span> trader{totalHolders !== 1 ? "s" : ""} ha{totalHolders !== 1 ? "ve" : "s"} this card available for trade
                   </p>
 
@@ -446,7 +446,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                               {holder.user.avatarUrl ? (
                                 <img src={holder.user.avatarUrl} alt={holder.user.username} className="w-full h-full rounded-full object-cover" />
                               ) : (
-                                <span className="text-sm font-bold text-white">{getInitials(holder.user.username)}</span>
+                                <span className="text-base font-bold text-white">{getInitials(holder.user.username)}</span>
                               )}
                             </div>
                           </Link>
@@ -461,11 +461,11 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                               >
                                 @{holder.user.username}
                               </Link>
-                              <div className="flex items-center gap-0.5 text-yellow-400 text-xs">
+                              <div className="flex items-center gap-0.5 text-yellow-400 text-base">
                                 <Star size={11} fill="currentColor" />
                                 <span>{holder.user.reputationScore?.toFixed(1) ?? "—"}</span>
                               </div>
-                              <span className="text-xs text-slate-400">{holder.user.tradeCount} trades</span>
+                              <span className="text-base text-slate-400">{holder.user.tradeCount} trades</span>
                             </div>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                               <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-xs font-bold">
@@ -474,7 +474,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                               {holder.isFoil && <span className="px-2 py-0.5 rounded-md bg-yellow-500/20 text-yellow-300 text-xs font-bold">FOIL</span>}
                               {holder.isFirstEdition && <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-xs font-bold">1ST ED</span>}
                               {value != null && (
-                                <span className="text-xs text-green-400 font-semibold">${value.toFixed(2)}</span>
+                                <span className="text-base text-green-400 font-semibold">${value.toFixed(2)}</span>
                               )}
                             </div>
                           </div>
@@ -485,7 +485,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                               <Link
                                 href={`/profile/${holder.user.username}`}
                                 onClick={onClose}
-                                className="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-medium transition-colors"
+                                className="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-base font-medium transition-colors"
                               >
                                 View Collection
                               </Link>
@@ -495,7 +495,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                                     user: holder.user as User,
                                     collectionItemId: holder.id,
                                   })}
-                                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-base font-medium transition-colors"
                                 >
                                   <ArrowLeftRight size={14} />
                                   Propose Trade
@@ -504,7 +504,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                                 <Link
                                   href="/auth/login"
                                   onClick={onClose}
-                                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-base font-medium transition-colors"
                                 >
                                   Sign in to trade
                                 </Link>
@@ -512,7 +512,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                             </div>
                           )}
                           {isOwnCard && (
-                            <span className="text-xs text-slate-400 italic flex-shrink-0">Your card</span>
+                            <span className="text-base text-slate-400 italic flex-shrink-0">Your card</span>
                           )}
                         </div>
                       );
@@ -529,7 +529,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                       >
                         <ChevronLeft size={16} />
                       </button>
-                      <span className="text-sm text-slate-400">
+                      <span className="text-base text-slate-400">
                         Page {holdersPage} of {totalHolderPages}
                       </span>
                       <button

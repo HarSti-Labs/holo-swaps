@@ -148,7 +148,7 @@ export default function TradesPage() {
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center">
             <Package className="h-12 w-12 text-slate-400 mx-auto mb-4" />
             <p className="text-slate-400 mb-2">No trades found</p>
-            <p className="text-sm text-slate-400">
+            <p className="text-base text-slate-400">
               {filter === "all"
                 ? "Start trading by browsing other users' collections"
                 : filter === "active"
@@ -188,13 +188,13 @@ export default function TradesPage() {
                         <p className="font-semibold">
                           Trade with {otherUser.username}
                         </p>
-                        <p className="text-sm text-slate-400">
+                        <p className="text-base text-slate-400">
                           {direction === "sent" ? "You proposed" : "They proposed"} •{" "}
                           {new Date(trade.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[trade.status]}`}>
+                    <div className={`px-3 py-1 rounded-full text-base font-medium border ${STATUS_COLORS[trade.status]}`}>
                       {STATUS_LABELS[trade.status]}
                     </div>
                   </div>
@@ -202,23 +202,23 @@ export default function TradesPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                     {/* Your Cards */}
                     <div>
-                      <p className="text-xs text-slate-400 mb-2">You're trading</p>
+                      <p className="text-base text-slate-400 mb-2">You're trading</p>
                       <div className="flex flex-wrap gap-1">
                         {myItems.slice(0, 3).map((item) => (
                           <div
                             key={item.id}
-                            className="bg-slate-800 rounded px-2 py-1 text-xs truncate max-w-[120px]"
+                            className="bg-slate-800 rounded px-2 py-1 text-base truncate max-w-[120px]"
                           >
                             {item.collectionItem?.card.name || item.proposerCollection?.card.name || item.receiverCollection?.card.name}
                           </div>
                         ))}
                         {myItems.length > 3 && (
-                          <div className="bg-slate-800 rounded px-2 py-1 text-xs text-slate-400">
+                          <div className="bg-slate-800 rounded px-2 py-1 text-base text-slate-400">
                             +{myItems.length - 3} more
                           </div>
                         )}
                       </div>
-                      <p className="text-xs text-slate-400 mt-1">
+                      <p className="text-base text-slate-400 mt-1">
                         ${myValue.toFixed(2)}
                       </p>
                     </div>
@@ -230,23 +230,23 @@ export default function TradesPage() {
 
                     {/* Their Cards */}
                     <div>
-                      <p className="text-xs text-slate-400 mb-2">You're receiving</p>
+                      <p className="text-base text-slate-400 mb-2">You're receiving</p>
                       <div className="flex flex-wrap gap-1">
                         {theirItems.slice(0, 3).map((item) => (
                           <div
                             key={item.id}
-                            className="bg-slate-800 rounded px-2 py-1 text-xs truncate max-w-[120px]"
+                            className="bg-slate-800 rounded px-2 py-1 text-base truncate max-w-[120px]"
                           >
                             {item.collectionItem?.card.name || item.proposerCollection?.card.name || item.receiverCollection?.card.name}
                           </div>
                         ))}
                         {theirItems.length > 3 && (
-                          <div className="bg-slate-800 rounded px-2 py-1 text-xs text-slate-400">
+                          <div className="bg-slate-800 rounded px-2 py-1 text-base text-slate-400">
                             +{theirItems.length - 3} more
                           </div>
                         )}
                       </div>
-                      <p className="text-xs text-slate-400 mt-1">
+                      <p className="text-base text-slate-400 mt-1">
                         ${theirValue.toFixed(2)}
                       </p>
                     </div>
@@ -254,7 +254,7 @@ export default function TradesPage() {
 
                   {/* Actions needed indicator */}
                   {["PROPOSED", "COUNTERED"].includes(trade.status) && trade.lastActionById !== user?.id && (
-                    <div className="mt-4 flex items-center gap-2 text-sm text-yellow-400">
+                    <div className="mt-4 flex items-center gap-2 text-base text-yellow-400">
                       <Clock className="h-4 w-4" />
                       {trade.status === "COUNTERED" ? "Action needed: Review counter offer" : "Action needed: Review and respond"}
                     </div>

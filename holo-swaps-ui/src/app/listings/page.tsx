@@ -216,7 +216,7 @@ export default function ListingsPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Listings</h1>
-              <p className="text-slate-400 text-sm mt-0.5">
+              <p className="text-slate-400 text-base mt-0.5">
                 {total > 0
                   ? `${total.toLocaleString()} card${total !== 1 ? "s" : ""} available for trade`
                   : "Browse available cards"}
@@ -234,7 +234,7 @@ export default function ListingsPage() {
               placeholder="Search by card name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-9 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+              className="w-full pl-10 pr-9 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
             />
             {search && (
               <button
@@ -251,7 +251,7 @@ export default function ListingsPage() {
             <select
               value={sortBy}
               onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
-              className="appearance-none pl-3 pr-8 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+              className="appearance-none pl-3 pr-8 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-base text-white focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
             >
               {SORT_OPTIONS.map((o) => (
                 <option key={o.key} value={o.key}>{o.label}</option>
@@ -264,7 +264,7 @@ export default function ListingsPage() {
           <button
             onClick={() => setFiltersOpen((v) => !v)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors",
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl border text-base font-medium transition-colors",
               filtersOpen || activeFilterCount > 0
                 ? "bg-green-600/20 border-green-600/40 text-green-400"
                 : "bg-slate-800/60 border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
@@ -273,7 +273,7 @@ export default function ListingsPage() {
             <SlidersHorizontal className="h-4 w-4" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="bg-green-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="bg-green-500 text-white text-base font-bold w-4 h-4 rounded-full flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
@@ -287,7 +287,7 @@ export default function ListingsPage() {
               key={g.key}
               onClick={() => handleGameChange(g.key)}
               className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+                "px-4 py-1.5 rounded-full text-base font-medium transition-colors",
                 game === g.key
                   ? "bg-green-600 text-white"
                   : "bg-slate-800/60 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
@@ -305,7 +305,7 @@ export default function ListingsPage() {
 
               {/* Condition */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-base font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Condition
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -314,7 +314,7 @@ export default function ListingsPage() {
                       key={c.key}
                       onClick={() => { setCondition(condition === c.key ? "" : c.key); setPage(1); }}
                       className={cn(
-                        "px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+                        "px-2.5 py-1 rounded-full text-base font-medium transition-colors",
                         condition === c.key
                           ? "bg-green-600 text-white"
                           : "bg-slate-800 border border-slate-700 text-slate-400 hover:text-white"
@@ -328,14 +328,14 @@ export default function ListingsPage() {
 
               {/* Rarity */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-base font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Rarity
                 </label>
                 <div className="relative">
                   <select
                     value={rarity}
                     onChange={(e) => { setRarity(e.target.value); setPage(1); }}
-                    className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="">All Rarities</option>
                     {rarities.map((r) => (
@@ -348,31 +348,31 @@ export default function ListingsPage() {
 
               {/* Price Range */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-base font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Price Range
                 </label>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-base">$</span>
                     <input
                       type="number"
                       min="0"
                       placeholder="Min"
                       value={minPrice}
                       onChange={(e) => { setMinPrice(e.target.value); setPage(1); }}
-                      className="w-full pl-6 pr-2 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full pl-6 pr-2 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
                   </div>
-                  <span className="text-slate-400 text-sm">–</span>
+                  <span className="text-slate-400 text-base">–</span>
                   <div className="relative flex-1">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-base">$</span>
                     <input
                       type="number"
                       min="0"
                       placeholder="Max"
                       value={maxPrice}
                       onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }}
-                      className="w-full pl-6 pr-2 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full pl-6 pr-2 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                 </div>
@@ -380,13 +380,13 @@ export default function ListingsPage() {
 
               {/* Extras */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-base font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Special
                 </label>
                 <button
                   onClick={() => { setFoilOnly(!foilOnly); setPage(1); }}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors w-full",
+                    "flex items-center gap-2 px-3 py-2 rounded-lg border text-base font-medium transition-colors w-full",
                     foilOnly
                       ? "bg-purple-600/20 border-purple-600/40 text-purple-400"
                       : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
@@ -412,7 +412,7 @@ export default function ListingsPage() {
               <div className="pt-2 border-t border-slate-800">
                 <button
                   onClick={clearAllFilters}
-                  className="text-xs text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1"
+                  className="text-base text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1"
                 >
                   <X className="h-3 w-3" /> Clear all filters
                 </button>
@@ -454,7 +454,7 @@ export default function ListingsPage() {
           <div className="text-center py-24">
             <ShoppingBag className="h-16 w-16 text-slate-700 mx-auto mb-4" />
             <p className="text-slate-400 text-lg font-medium">No listings found</p>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-400 text-base mt-1">
               {search || game || activeFilterCount > 0
                 ? "Try adjusting your filters"
                 : "No cards are currently listed for trade"}
@@ -481,15 +481,15 @@ export default function ListingsPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-700 text-sm text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-700 text-base text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
             >
               <ChevronLeft className="h-4 w-4" /> Previous
             </button>
-            <span className="text-sm text-slate-400">Page {page} of {totalPages}</span>
+            <span className="text-base text-slate-400">Page {page} of {totalPages}</span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-700 text-sm text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-700 text-base text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
             >
               Next <ChevronRight className="h-4 w-4" />
             </button>
@@ -523,7 +523,7 @@ export default function ListingsPage() {
 
 function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="flex items-center gap-1 bg-green-600/15 border border-green-600/30 text-green-400 text-xs font-medium px-2.5 py-1 rounded-full">
+    <span className="flex items-center gap-1 bg-green-600/15 border border-green-600/30 text-green-400 text-base font-medium px-2.5 py-1 rounded-full">
       {label}
       <button onClick={onRemove} className="hover:text-white transition-colors ml-0.5">
         <X className="h-3 w-3" />
@@ -568,22 +568,22 @@ function ListingCard({
 
         {/* Price badge */}
         {price != null && (
-          <div className={`absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-xs font-bold px-2 py-0.5 rounded-lg ${listing.askingValueOverride != null ? "text-teal-400" : "text-green-400"}`}>
-            {listing.askingValueOverride != null && <span className="opacity-70 text-xs block leading-none mb-0.5">ASKING</span>}
+          <div className={`absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-base font-bold px-2 py-0.5 rounded-lg ${listing.askingValueOverride != null ? "text-teal-400" : "text-green-400"}`}>
+            {listing.askingValueOverride != null && <span className="opacity-70 text-base block leading-none mb-0.5">ASKING</span>}
             ${price.toFixed(2)}
           </div>
         )}
 
         {/* Foil badge */}
         {listing.isFoil && (
-          <div className="absolute top-2 left-2 bg-purple-600/80 backdrop-blur-sm text-white text-xs font-bold px-1.5 py-0.5 rounded-md">
+          <div className="absolute top-2 left-2 bg-purple-600/80 backdrop-blur-sm text-white text-base font-bold px-1.5 py-0.5 rounded-md">
             Foil
           </div>
         )}
 
         {/* Rarity badge */}
         {listing.card.rarity && (
-          <div className="absolute bottom-3 left-2 bg-black/60 backdrop-blur-sm text-slate-300 text-xs font-semibold px-1.5 py-0.5 rounded">
+          <div className="absolute bottom-3 left-2 bg-black/60 backdrop-blur-sm text-slate-300 text-base font-semibold px-1.5 py-0.5 rounded">
             {listing.card.rarity}
           </div>
         )}
@@ -592,15 +592,15 @@ function ListingCard({
       {/* Info */}
       <div className="p-3 flex flex-col gap-2 flex-1">
         <div>
-          <p className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-green-400 transition-colors">
+          <p className="text-base font-bold text-white line-clamp-2 leading-tight group-hover:text-green-400 transition-colors">
             {listing.card.name}
           </p>
-          <p className="text-xs text-slate-400 mt-0.5 truncate">{listing.card.setName}</p>
+          <p className="text-base text-slate-400 mt-0.5 truncate">{listing.card.setName}</p>
         </div>
 
         {/* Condition */}
         <span className={cn(
-          "self-start text-xs font-medium px-2 py-0.5 rounded-full",
+          "self-start text-base font-medium px-2 py-0.5 rounded-full",
           CONDITION_COLORS[listing.condition] ?? "bg-slate-700 text-slate-400"
         )}>
           {CONDITION_LABELS[listing.condition]}
@@ -612,7 +612,7 @@ function ListingCard({
             {listing.user.avatarUrl ? (
               <img src={listing.user.avatarUrl} alt="" className="w-5 h-5 object-cover" />
             ) : (
-              <span className="text-xs font-bold text-slate-400">
+              <span className="text-base font-bold text-slate-400">
                 {listing.user.username[0].toUpperCase()}
               </span>
             )}
@@ -620,13 +620,13 @@ function ListingCard({
           <Link
             href={`/profile/${listing.user.username}`}
             onClick={(e) => { e.stopPropagation(); }}
-            className="text-xs text-slate-400 hover:text-white truncate transition-colors"
+            className="text-base text-slate-400 hover:text-white truncate transition-colors"
           >
             {listing.user.username}
           </Link>
           {listing.user.tier && TIER_STYLES[listing.user.tier] && (
             <span className={cn(
-              "ml-auto text-xs font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
+              "ml-auto text-base font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
               TIER_STYLES[listing.user.tier]
             )}>
               {listing.user.tier[0]}
@@ -636,7 +636,7 @@ function ListingCard({
 
         {/* Description */}
         {listing.listingDescription && (
-          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+          <p className="text-base text-slate-400 line-clamp-2 leading-relaxed">
             {listing.listingDescription}
           </p>
         )}
@@ -645,7 +645,7 @@ function ListingCard({
         {isAuthenticated && !isOwnListing ? (
           <button
             onClick={(e) => { e.stopPropagation(); onOffer(); }}
-            className="w-full flex items-center justify-center gap-1.5 py-2 bg-green-600/20 hover:bg-green-600 border border-green-600/40 hover:border-green-600 text-green-400 hover:text-white rounded-lg text-xs font-semibold transition-all duration-200 mt-1"
+            className="w-full flex items-center justify-center gap-1.5 py-2 bg-green-600/20 hover:bg-green-600 border border-green-600/40 hover:border-green-600 text-green-400 hover:text-white rounded-lg text-base font-semibold transition-all duration-200 mt-1"
           >
             <ArrowLeftRight className="h-3.5 w-3.5" />
             Make Offer
@@ -654,12 +654,12 @@ function ListingCard({
           <Link
             href="/auth/login"
             onClick={(e) => e.stopPropagation()}
-            className="w-full flex items-center justify-center gap-1.5 py-2 bg-slate-800 border border-slate-700 text-slate-400 hover:text-white rounded-lg text-xs font-semibold transition-colors mt-1"
+            className="w-full flex items-center justify-center gap-1.5 py-2 bg-slate-800 border border-slate-700 text-slate-400 hover:text-white rounded-lg text-base font-semibold transition-colors mt-1"
           >
             Sign in to offer
           </Link>
         ) : (
-          <div className="w-full py-2 text-center text-xs text-slate-400 mt-1">Your listing</div>
+          <div className="w-full py-2 text-center text-base text-slate-400 mt-1">Your listing</div>
         )}
       </div>
     </div>
@@ -724,7 +724,7 @@ function ListingDetailModal({
                 </div>
               )}
               {listing.isFoil && (
-                <div className="absolute top-2 left-2 bg-purple-600/80 text-white text-xs font-bold px-1.5 py-0.5 rounded-md">
+                <div className="absolute top-2 left-2 bg-purple-600/80 text-white text-base font-bold px-1.5 py-0.5 rounded-md">
                   Foil
                 </div>
               )}
@@ -752,29 +752,29 @@ function ListingDetailModal({
           <div className="flex-1 min-w-0 space-y-4">
             {/* Card identity */}
             <div>
-              <p className="text-slate-400 text-sm">{listing.card.setName}</p>
+              <p className="text-slate-400 text-base">{listing.card.setName}</p>
               {listing.card.cardNumber && (
-                <p className="text-slate-400 text-xs mt-0.5">#{listing.card.cardNumber}</p>
+                <p className="text-slate-400 text-base mt-0.5">#{listing.card.cardNumber}</p>
               )}
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className={cn(
-                  "text-xs font-medium px-2.5 py-1 rounded-full",
+                  "text-base font-medium px-2.5 py-1 rounded-full",
                   CONDITION_COLORS[listing.condition as string] ?? "bg-slate-700 text-slate-400"
                 )}>
                   {CONDITION_LABELS[listing.condition]}
                 </span>
                 {listing.card.rarity && (
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                  <span className="text-base font-medium px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
                     {listing.card.rarity}
                   </span>
                 )}
                 {listing.isFoil && (
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300">
+                  <span className="text-base font-medium px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300">
                     ✦ Foil
                   </span>
                 )}
                 {listing.isFirstEdition && (
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300">
+                  <span className="text-base font-medium px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300">
                     1st Edition
                   </span>
                 )}
@@ -785,37 +785,37 @@ function ListingDetailModal({
             <div className="bg-slate-800/50 rounded-xl p-3 space-y-1.5">
               {listing.askingValueOverride != null ? (
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xs text-slate-400">Asking price</span>
+                  <span className="text-base text-slate-400">Asking price</span>
                   <span className="text-xl font-bold text-teal-400">${listing.askingValueOverride.toFixed(2)}</span>
                 </div>
               ) : null}
               {listing.currentMarketValue != null && (
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xs text-slate-400">Market value</span>
+                  <span className="text-base text-slate-400">Market value</span>
                   <span className={cn(
                     "font-semibold",
-                    listing.askingValueOverride != null ? "text-sm text-slate-400" : "text-xl text-green-400"
+                    listing.askingValueOverride != null ? "text-base text-slate-400" : "text-xl text-green-400"
                   )}>
                     ${listing.currentMarketValue.toFixed(2)}
                   </span>
                 </div>
               )}
               {price == null && (
-                <p className="text-slate-400 text-sm">No price set</p>
+                <p className="text-slate-400 text-base">No price set</p>
               )}
             </div>
 
             {/* Description */}
             {listing.listingDescription && (
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Description</p>
-                <p className="text-sm text-slate-300 leading-relaxed">{listing.listingDescription}</p>
+                <p className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Description</p>
+                <p className="text-base text-slate-300 leading-relaxed">{listing.listingDescription}</p>
               </div>
             )}
 
             {/* Language */}
             {listing.language && listing.language !== "EN" && (
-              <div className="flex items-center gap-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2 text-base text-slate-400">
                 <Layers className="h-3.5 w-3.5" />
                 Language: <span className="text-white font-medium">{listing.language}</span>
               </div>
@@ -823,13 +823,13 @@ function ListingDetailModal({
 
             {/* Owner */}
             <div className="pt-3 border-t border-slate-800">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Listed by</p>
+              <p className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-2">Listed by</p>
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {listing.user.avatarUrl ? (
                     <img src={listing.user.avatarUrl} alt="" className="w-9 h-9 object-cover" />
                   ) : (
-                    <span className="text-sm font-bold text-slate-400">
+                    <span className="text-base font-bold text-slate-400">
                       {listing.user.username[0].toUpperCase()}
                     </span>
                   )}
@@ -838,15 +838,15 @@ function ListingDetailModal({
                   <Link
                     href={`/profile/${listing.user.username}`}
                     onClick={onClose}
-                    className="text-sm font-semibold text-white hover:text-green-400 transition-colors"
+                    className="text-base font-semibold text-white hover:text-green-400 transition-colors"
                   >
                     {listing.user.username}
                   </Link>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <Star className="h-3 w-3 text-yellow-400" />
-                    <span className="text-xs text-slate-400">{listing.user.reputationScore} rep</span>
+                    <span className="text-base text-slate-400">{listing.user.reputationScore} rep</span>
                     {listing.user.tier && TIER_STYLES[listing.user.tier] && (
-                      <span className={cn("text-xs font-bold px-1.5 py-0.5 rounded-full", TIER_STYLES[listing.user.tier])}>
+                      <span className={cn("text-base font-bold px-1.5 py-0.5 rounded-full", TIER_STYLES[listing.user.tier])}>
                         {listing.user.tier}
                       </span>
                     )}
@@ -876,7 +876,7 @@ function ListingDetailModal({
               Sign in to make an offer
             </Link>
           ) : (
-            <p className="text-center text-sm text-slate-400 py-2">This is your listing</p>
+            <p className="text-center text-base text-slate-400 py-2">This is your listing</p>
           )}
         </div>
       </div>

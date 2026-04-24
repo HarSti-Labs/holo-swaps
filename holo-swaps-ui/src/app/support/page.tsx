@@ -100,20 +100,20 @@ export default function SupportPage() {
               <CheckCircle className="h-8 w-8 text-green-400" />
             </div>
             <h1 className="text-2xl font-black text-white mb-2">Ticket Submitted</h1>
-            <p className="text-slate-400 text-sm mb-6">
+            <p className="text-slate-400 text-base mb-6">
               We've received your request and will respond to <span className="text-white font-medium">{email}</span> as soon as possible.
             </p>
             <div className="bg-slate-950/60 border border-slate-700 rounded-xl px-5 py-4 mb-6">
-              <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Your ticket number</p>
+              <p className="text-base text-slate-400 uppercase tracking-widest mb-1">Your ticket number</p>
               <p className="text-xl font-black text-white font-mono">{ticketNumber}</p>
-              <p className="text-xs text-slate-400 mt-1">Save this for your records</p>
+              <p className="text-base text-slate-400 mt-1">Save this for your records</p>
             </div>
             <div className="flex flex-col gap-2">
-              <Link href="/" className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-sm hover:from-blue-500 hover:to-purple-500 transition-all text-center">
+              <Link href="/" className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-base hover:from-blue-500 hover:to-purple-500 transition-all text-center">
                 Back to Home
               </Link>
               {user && (
-                <Link href="/dashboard" className="w-full py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-muted font-bold text-sm transition-colors text-center">
+                <Link href="/dashboard" className="w-full py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-muted font-bold text-base transition-colors text-center">
                   Go to Dashboard
                 </Link>
               )}
@@ -131,7 +131,7 @@ export default function SupportPage() {
 
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-5">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-base font-medium mb-5">
             <HeadphonesIcon size={16} />
             Support
           </div>
@@ -143,7 +143,7 @@ export default function SupportPage() {
 
         <div className="bg-slate-900/80 backdrop-blur-xl border-2 border-slate-700 rounded-3xl p-8 shadow-2xl">
           {error && (
-            <div className="mb-6 flex items-start gap-3 px-4 py-3 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-sm text-red-400">
+            <div className="mb-6 flex items-start gap-3 px-4 py-3 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-base text-red-400">
               <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
               {error}
             </div>
@@ -155,16 +155,16 @@ export default function SupportPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {user && (
                 <div>
-                  <label className="block text-sm font-bold text-white mb-2 flex items-center gap-1.5">
+                  <label className="block text-base font-bold text-white mb-2 flex items-center gap-1.5">
                     <User size={13} className="text-slate-400" /> Username
                   </label>
-                  <div className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/30 text-slate-400 text-sm select-none">
+                  <div className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/30 text-slate-400 text-base select-none">
                     @{user.username}
                   </div>
                 </div>
               )}
               <div className={user ? "" : "sm:col-span-2"}>
-                <label className="block text-sm font-bold text-white mb-2 flex items-center gap-1.5">
+                <label className="block text-base font-bold text-white mb-2 flex items-center gap-1.5">
                   <Mail size={13} className="text-slate-400" /> Your Email <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -173,14 +173,14 @@ export default function SupportPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
               </div>
             </div>
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-bold text-white mb-2">
+              <label className="block text-base font-bold text-white mb-2">
                 Category <span className="text-red-400">*</span>
               </label>
               <div className="relative">
@@ -188,7 +188,7 @@ export default function SupportPage() {
                   value={category}
                   onChange={(e) => { setCategory(e.target.value as CategoryValue); setTradeCode(""); }}
                   required
-                  className="w-full px-4 py-3 pr-10 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 pr-10 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none cursor-pointer"
                 >
                   <option value="" disabled>Select a category…</option>
                   {CATEGORIES.map((c) => (
@@ -198,14 +198,14 @@ export default function SupportPage() {
                 <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
               {selectedCategory?.description && (
-                <p className="text-xs text-slate-400 mt-2">{selectedCategory.description}</p>
+                <p className="text-base text-slate-400 mt-2">{selectedCategory.description}</p>
               )}
             </div>
 
             {/* Trade code — shown for trade-related categories */}
             {isTradeRelated && (
               <div>
-                <label className="block text-sm font-bold text-white mb-2 flex items-center gap-1.5">
+                <label className="block text-base font-bold text-white mb-2 flex items-center gap-1.5">
                   <Hash size={13} className="text-slate-400" /> Trade Code
                   <span className="text-slate-400 font-normal">(optional)</span>
                 </label>
@@ -215,9 +215,9 @@ export default function SupportPage() {
                   onChange={(e) => setTradeCode(e.target.value)}
                   placeholder="TRD-00142"
                   maxLength={20}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
-                <p className="text-xs text-slate-400 mt-2">
+                <p className="text-base text-slate-400 mt-2">
                   Find your trade code on the trade detail page — it starts with TRD-.
                 </p>
               </div>
@@ -225,7 +225,7 @@ export default function SupportPage() {
 
             {/* Urgency */}
             <div>
-              <label className="block text-sm font-bold text-white mb-3 flex items-center gap-1.5">
+              <label className="block text-base font-bold text-white mb-3 flex items-center gap-1.5">
                 <Zap size={13} className="text-slate-400" /> Urgency <span className="text-red-400">*</span>
               </label>
               <div className="grid grid-cols-3 gap-3">
@@ -235,14 +235,14 @@ export default function SupportPage() {
                     type="button"
                     onClick={() => setUrgency(u.value)}
                     className={cn(
-                      "flex flex-col items-center gap-1 px-3 py-3 rounded-xl border-2 text-sm font-bold transition-all",
+                      "flex flex-col items-center gap-1 px-3 py-3 rounded-xl border-2 text-base font-bold transition-all",
                       urgency === u.value
                         ? `${u.color} bg-slate-800`
                         : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-300"
                     )}
                   >
                     {u.label}
-                    <span className="text-xs font-normal text-slate-400 text-center leading-tight">{u.desc}</span>
+                    <span className="text-base font-normal text-slate-400 text-center leading-tight">{u.desc}</span>
                   </button>
                 ))}
               </div>
@@ -250,7 +250,7 @@ export default function SupportPage() {
 
             {/* Subject */}
             <div>
-              <label className="block text-sm font-bold text-white mb-2">
+              <label className="block text-base font-bold text-white mb-2">
                 Subject <span className="text-red-400">*</span>
               </label>
               <input
@@ -261,14 +261,14 @@ export default function SupportPage() {
                 minLength={5}
                 maxLength={120}
                 placeholder="Brief summary of your issue"
-                className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
               />
-              <p className="text-xs text-slate-400 mt-1.5 text-right">{subject.length}/120</p>
+              <p className="text-base text-slate-400 mt-1.5 text-right">{subject.length}/120</p>
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-bold text-white mb-2 flex items-center gap-1.5">
+              <label className="block text-base font-bold text-white mb-2 flex items-center gap-1.5">
                 <MessageSquare size={13} className="text-slate-400" /> Description <span className="text-red-400">*</span>
               </label>
               <textarea
@@ -285,14 +285,14 @@ export default function SupportPage() {
                     ? "Describe the incident in detail. Include the username(s) involved, what happened, and any evidence you have."
                     : "Please describe your issue in as much detail as possible."
                 }
-                className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 resize-none"
+                className="w-full px-4 py-3 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 resize-none"
               />
-              <p className="text-xs text-slate-400 mt-1.5 text-right">{description.length}/5000</p>
+              <p className="text-base text-slate-400 mt-1.5 text-right">{description.length}/5000</p>
             </div>
 
             {/* Browser info note (for bug reports) */}
             {category === "BUG_REPORT" && (
-              <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm text-blue-200">
+              <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-base text-blue-200">
                 <AlertTriangle size={14} className="text-blue-400 flex-shrink-0 mt-0.5" />
                 Your browser and OS information will be attached automatically to help us reproduce the bug.
               </div>
@@ -314,7 +314,7 @@ export default function SupportPage() {
             </button>
           </form>
 
-          <p className="text-center text-xs text-slate-400 mt-6">
+          <p className="text-center text-base text-slate-400 mt-6">
             Prefer to email directly?{" "}
             <a href="mailto:admin@holoswaps.com" className="text-blue-400 hover:text-blue-300 underline">
               admin@holoswaps.com

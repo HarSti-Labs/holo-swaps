@@ -136,7 +136,7 @@ export default function RegisterPage() {
 
         <div className="bg-slate-900/80 backdrop-blur-xl border-2 border-slate-700 rounded-3xl p-8 shadow-2xl">
           {errors.length > 0 && (
-            <div className="mb-6 px-4 py-3 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-sm text-red-400 space-y-1">
+            <div className="mb-6 px-4 py-3 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-base text-red-400 space-y-1">
               {errors.map((e, i) => <p key={i}>• {e}</p>)}
             </div>
           )}
@@ -144,7 +144,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-bold text-white mb-2">Email</label>
+              <label className="block text-base font-bold text-white mb-2">Email</label>
               <div className="relative">
                 <input
                   type="email"
@@ -152,14 +152,14 @@ export default function RegisterPage() {
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   required
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   {getValidationIcon(emailStatus)}
                 </div>
               </div>
               {emailMessage && (
-                <p className={`text-xs mt-2 ${emailStatus === "available" ? "text-green-400" : "text-red-400"}`}>
+                <p className={`text-base mt-2 ${emailStatus === "available" ? "text-green-400" : "text-red-400"}`}>
                   {emailMessage}
                 </p>
               )}
@@ -167,7 +167,7 @@ export default function RegisterPage() {
 
             {/* Username Field */}
             <div>
-              <label className="block text-sm font-bold text-white mb-2">Username</label>
+              <label className="block text-base font-bold text-white mb-2">Username</label>
               <div className="relative">
                 <input
                   type="text"
@@ -177,18 +177,18 @@ export default function RegisterPage() {
                   placeholder="ProfessorOak"
                   minLength={3}
                   maxLength={20}
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   {getValidationIcon(usernameStatus)}
                 </div>
               </div>
               {usernameMessage ? (
-                <p className={`text-xs mt-2 ${usernameStatus === "available" ? "text-green-400" : "text-red-400"}`}>
+                <p className={`text-base mt-2 ${usernameStatus === "available" ? "text-green-400" : "text-red-400"}`}>
                   {usernameMessage}
                 </p>
               ) : (
-                <p className="text-xs text-slate-400 mt-2">
+                <p className="text-base text-slate-400 mt-2">
                   3–20 characters, letters, numbers, underscores only
                 </p>
               )}
@@ -196,7 +196,7 @@ export default function RegisterPage() {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-bold text-white mb-2">Password</label>
+              <label className="block text-base font-bold text-white mb-2">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -205,7 +205,7 @@ export default function RegisterPage() {
                   required
                   placeholder="Min. 8 characters"
                   minLength={8}
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
                 <button
                   type="button"
@@ -219,7 +219,7 @@ export default function RegisterPage() {
 
             {/* Confirm Password Field */}
             <div>
-              <label className="block text-sm font-bold text-white mb-2">Confirm Password</label>
+              <label className="block text-base font-bold text-white mb-2">Confirm Password</label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
@@ -227,7 +227,7 @@ export default function RegisterPage() {
                   onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
                   required
                   placeholder="Re-enter your password"
-                  className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${
+                  className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${
                     passwordsMismatch
                       ? "border-red-500 focus:ring-red-500 focus:border-red-500"
                       : passwordsMatch
@@ -244,12 +244,12 @@ export default function RegisterPage() {
                 </button>
               </div>
               {passwordsMismatch && (
-                <p className="text-xs mt-2 text-red-400 flex items-center gap-1">
+                <p className="text-base mt-2 text-red-400 flex items-center gap-1">
                   <XCircle size={12} /> Passwords do not match
                 </p>
               )}
               {passwordsMatch && (
-                <p className="text-xs mt-2 text-green-400 flex items-center gap-1">
+                <p className="text-base mt-2 text-green-400 flex items-center gap-1">
                   <CheckCircle2 size={12} /> Passwords match
                 </p>
               )}
@@ -279,7 +279,7 @@ export default function RegisterPage() {
                     )}
                   </div>
                 </div>
-                <span className="text-sm text-slate-400 leading-snug">
+                <span className="text-base text-slate-400 leading-snug">
                   I agree to the{" "}
                   <Link href="/legal/tos" target="_blank" className="text-blue-400 hover:text-blue-300 font-medium underline">
                     Terms of Service
@@ -307,7 +307,7 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-slate-400 mt-6">
+          <p className="text-center text-base text-slate-400 mt-6">
             Already have an account?{" "}
             <Link href="/auth/login" className="text-blue-400 hover:text-blue-300 font-bold transition-colors">
               Sign in

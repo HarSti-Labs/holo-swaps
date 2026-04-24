@@ -76,7 +76,7 @@ export default function DashboardPage() {
                   <Icon size={18} className={color} />
                 </div>
                 <p className="font-display text-2xl font-bold">{value}</p>
-                <p className="text-sm text-muted-foreground mt-0.5">{label}</p>
+                <p className="text-base text-muted-foreground mt-0.5">{label}</p>
               </>
             );
             return href ? (
@@ -104,7 +104,7 @@ export default function DashboardPage() {
               </h2>
               <Link
                 href="/trades"
-                className="flex items-center gap-1 text-sm text-primary hover:underline"
+                className="flex items-center gap-1 text-base text-primary hover:underline"
               >
                 View all <ArrowRight size={14} />
               </Link>
@@ -123,12 +123,12 @@ export default function DashboardPage() {
               <div className="bg-card border border-border rounded-xl p-12 text-center">
                 <Repeat2 size={32} className="text-muted-foreground mx-auto mb-3" />
                 <p className="font-medium">No trades yet</p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-base text-muted-foreground mt-1">
                   Browse matches to start your first trade
                 </p>
                 <Link
                   href="/matches"
-                  className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
+                  className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-base font-medium"
                 >
                   Find matches
                 </Link>
@@ -175,8 +175,8 @@ export default function DashboardPage() {
                 >
                   <span className="text-2xl">{icon}</span>
                   <div>
-                    <p className="font-medium text-sm">{label}</p>
-                    <p className="text-xs text-muted-foreground">{description}</p>
+                    <p className="font-medium text-base">{label}</p>
+                    <p className="text-base text-muted-foreground">{description}</p>
                   </div>
                   <ArrowRight size={16} className="text-muted-foreground ml-auto" />
                 </Link>

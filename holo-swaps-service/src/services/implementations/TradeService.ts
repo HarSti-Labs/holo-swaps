@@ -389,7 +389,7 @@ export class TradeService implements ITradeService {
       }
     }
 
-    const PLATFORM_FEE_PERCENT = 0.025;
+    const PLATFORM_FEE_PERCENT = 0.10;
     const RETURN_SHIPPING_CENTS = 499; // $4.99 flat — covers return shipping back to trader
     const cashAmountCents = Math.round(trade.cashDifference * 100);
     const frontendUrl = config.frontend.url;
@@ -409,7 +409,7 @@ export class TradeService implements ITradeService {
       .filter((i) => !i.ownedByProposer)
       .reduce((sum, i) => sum + getItemValue(i), 0);
 
-    // Each party's fee = 2.5% of everything they receive:
+    // Each party's fee = 10% of everything they receive:
     // Proposer receives: receiver's cards + cash from receiver (if receiver is cash payer)
     const proposerReceiveValue =
       receiverItemsValue + (receiverIsCashPayer ? trade.cashDifference : 0);
@@ -1048,7 +1048,7 @@ export class TradeService implements ITradeService {
    * - Builds a human-readable reason for both parties
    * - Creates a Dispute record in UNDER_REVIEW
    * - Schedules return shipments for both sides
-   * - Cancels the Stripe trade PaymentIntent (cash-on-top + 2.5% fee — neither collected)
+   * - Cancels the Stripe trade PaymentIntent (cash-on-top + 10% fee — neither collected)
    * - Bills the at-fault party a flat $24 return shipping fee via Stripe Invoice
    * - Notifies both parties; at-fault party gets the invoice payment link
    */

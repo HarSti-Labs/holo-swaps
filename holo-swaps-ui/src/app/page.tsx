@@ -18,7 +18,7 @@ export default function HomePage() {
         </div>
 
         <div className="max-w-3xl mx-auto space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-base font-medium border border-primary/20">
             <ShieldCheck size={14} />
             Verified middleman service
           </div>
@@ -114,7 +114,7 @@ export default function HomePage() {
                   <Icon size={20} className="text-primary" />
                 </div>
                 <h3 className="font-display font-semibold">{title}</h3>
-                <p className="text-sm text-muted-foreground">{description}</p>
+                <p className="text-base text-muted-foreground">{description}</p>
               </div>
             ))}
           </div>

@@ -55,36 +55,36 @@ export default function LoginPage() {
           <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm text-green-400 font-medium">Account deleted successfully</p>
-              <p className="text-xs text-green-400/80 mt-1">Your account and all associated data have been permanently removed.</p>
+              <p className="text-base text-green-400 font-medium">Account deleted successfully</p>
+              <p className="text-base text-green-400/80 mt-1">Your account and all associated data have been permanently removed.</p>
             </div>
           </div>
         )}
 
         <div className="bg-slate-900/80 backdrop-blur-xl border-2 border-slate-700 rounded-3xl p-8 shadow-2xl">
           {error && (
-            <div className="mb-6 px-4 py-3 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-sm text-red-400">
+            <div className="mb-6 px-4 py-3 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-base text-red-400">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-bold text-white mb-2">Email or Username</label>
+              <label className="block text-base font-bold text-white mb-2">Email or Username</label>
               <input
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
                 placeholder="ProfessorOak"
-                className="w-full px-4 py-3.5 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                className="w-full px-4 py-3.5 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-bold text-white">Password</label>
-                <Link href="/auth/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                <label className="block text-base font-bold text-white">Password</label>
+                <Link href="/auth/forgot-password" className="text-base text-blue-400 hover:text-blue-300 transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                 />
                 <button
                   type="button"
@@ -121,7 +121,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-slate-400 mt-6">
+          <p className="text-center text-base text-slate-400 mt-6">
             Don't have an account?{" "}
             <Link href="/auth/register" className="text-blue-400 hover:text-blue-300 font-bold transition-colors">
               Sign up free

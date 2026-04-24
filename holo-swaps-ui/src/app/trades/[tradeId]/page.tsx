@@ -363,7 +363,7 @@ if (!user) {
               </p>
             </div>
             <div
-              className={`px-4 py-2 rounded-full text-sm font-medium border ${
+              className={`px-4 py-2 rounded-full text-base font-medium border ${
                 STATUS_COLORS[trade.status]
               }`}
             >
@@ -385,7 +385,7 @@ if (!user) {
           const currentIdx = steps.findIndex((s) => s.statuses.includes(trade.status));
           if (trade.status === "CANCELLED" || trade.status === "DISPUTED") {
             return (
-              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium ${trade.status === "DISPUTED" ? "bg-red-950/30 border-red-500/30 text-red-400" : "bg-slate-800/50 border-slate-700 text-slate-400"}`}>
+              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-base font-medium ${trade.status === "DISPUTED" ? "bg-red-950/30 border-red-500/30 text-red-400" : "bg-slate-800/50 border-slate-700 text-slate-400"}`}>
                 <AlertCircle size={14} />
                 {trade.status === "DISPUTED" ? "This trade is under dispute" : "This trade was cancelled"}
               </div>
@@ -397,14 +397,14 @@ if (!user) {
                 {steps.map((step, i) => (
                   <div key={step.label} className="flex items-center flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-base font-bold flex-shrink-0 ${
                         i < currentIdx ? "bg-green-500 text-white" :
                         i === currentIdx ? "bg-blue-500 text-white" :
                         "bg-slate-700 text-slate-400"
                       }`}>
                         {i < currentIdx ? <Check size={10} /> : i + 1}
                       </div>
-                      <span className={`text-xs font-medium hidden sm:block ${
+                      <span className={`text-base font-medium hidden sm:block ${
                         i === currentIdx ? "text-blue-400" : i < currentIdx ? "text-green-400" : "text-slate-400"
                       }`}>{step.label}</span>
                     </div>
@@ -421,7 +421,7 @@ if (!user) {
         {actionError && (
           <div className="flex items-start gap-3 bg-red-950/40 border border-red-500/30 rounded-xl p-4 mt-4">
             <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-300 flex-1">{actionError}</p>
+            <p className="text-base text-red-300 flex-1">{actionError}</p>
             <button onClick={() => setActionError(null)} className="text-slate-400 hover:text-white flex-shrink-0">
               <X size={14} />
             </button>
@@ -438,7 +438,7 @@ if (!user) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Your Cards */}
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-400 mb-3">
+                  <h3 className="text-base font-semibold text-slate-400 mb-3">
                     You're Trading
                   </h3>
                   <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
@@ -464,23 +464,23 @@ if (!user) {
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm truncate">
+                            <p className="font-semibold text-base truncate">
                               {card.card.name}
                             </p>
-                            <p className="text-xs text-slate-400 truncate">
+                            <p className="text-base text-slate-400 truncate">
                               {card.card.setName}
                             </p>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-base text-slate-400">
                               {CONDITION_LABELS[card.condition]}
                               {card.isFoil && " • Foil"}
                             </p>
                             {card.askingValueOverride != null ? (
                               <div className="mt-1">
-                                <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                                <span className="text-xs text-teal-500 ml-1">Owner price</span>
+                                <span className="text-base text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                                <span className="text-base text-teal-500 ml-1">Owner price</span>
                               </div>
                             ) : (
-                              <p className="text-xs text-green-400 mt-1">
+                              <p className="text-base text-green-400 mt-1">
                                 ${card.currentMarketValue?.toFixed(2) || "N/A"}
                               </p>
                             )}
@@ -493,7 +493,7 @@ if (!user) {
 
                 {/* Their Cards */}
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-400 mb-3">
+                  <h3 className="text-base font-semibold text-slate-400 mb-3">
                     You're Receiving
                   </h3>
                   <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
@@ -519,23 +519,23 @@ if (!user) {
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm truncate">
+                            <p className="font-semibold text-base truncate">
                               {card.card.name}
                             </p>
-                            <p className="text-xs text-slate-400 truncate">
+                            <p className="text-base text-slate-400 truncate">
                               {card.card.setName}
                             </p>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-base text-slate-400">
                               {CONDITION_LABELS[card.condition]}
                               {card.isFoil && " • Foil"}
                             </p>
                             {card.askingValueOverride != null ? (
                               <div className="mt-1">
-                                <span className="text-xs text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
-                                <span className="text-xs text-teal-500 ml-1">Owner price</span>
+                                <span className="text-base text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
+                                <span className="text-base text-teal-500 ml-1">Owner price</span>
                               </div>
                             ) : (
-                              <p className="text-xs text-green-400 mt-1">
+                              <p className="text-base text-green-400 mt-1">
                                 ${card.currentMarketValue?.toFixed(2) || "N/A"}
                               </p>
                             )}
@@ -568,40 +568,40 @@ if (!user) {
                   <div className="mt-6 pt-5 border-t border-slate-700 space-y-3">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-slate-800/50 rounded-lg p-3">
-                        <p className="text-xs text-slate-400 mb-1">You're offering</p>
+                        <p className="text-base text-slate-400 mb-1">You're offering</p>
                         <p className="text-lg font-bold text-white">${myMarketValue.toFixed(2)}</p>
                         {iPayCash && (
-                          <p className="text-xs text-amber-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash</p>
+                          <p className="text-base text-amber-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash</p>
                         )}
-                        <p className="text-xs text-slate-400 mt-1">{myItems.length} card{myItems.length !== 1 ? "s" : ""}</p>
+                        <p className="text-base text-slate-400 mt-1">{myItems.length} card{myItems.length !== 1 ? "s" : ""}</p>
                       </div>
                       <div className="bg-slate-800/50 rounded-lg p-3">
-                        <p className="text-xs text-slate-400 mb-1">You're receiving</p>
+                        <p className="text-base text-slate-400 mb-1">You're receiving</p>
                         <p className="text-lg font-bold text-white">${theirMarketValue.toFixed(2)}</p>
                         {theyPayCash && (
-                          <p className="text-xs text-green-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash from them</p>
+                          <p className="text-base text-green-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash from them</p>
                         )}
-                        <p className="text-xs text-slate-400 mt-1">{theirItems.length} card{theirItems.length !== 1 ? "s" : ""}</p>
+                        <p className="text-base text-slate-400 mt-1">{theirItems.length} card{theirItems.length !== 1 ? "s" : ""}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between px-1">
-                      <span className="text-sm text-slate-400">Trade Balance</span>
+                      <span className="text-base text-slate-400">Trade Balance</span>
                       {isEven ? (
-                        <span className="text-sm font-semibold text-green-400">Even trade</span>
+                        <span className="text-base font-semibold text-green-400">Even trade</span>
                       ) : netValue > 0 ? (
-                        <span className="text-sm font-semibold text-amber-400">You gain ${netValue.toFixed(2)} in value</span>
+                        <span className="text-base font-semibold text-amber-400">You gain ${netValue.toFixed(2)} in value</span>
                       ) : (
-                        <span className="text-sm font-semibold text-blue-400">They gain ${Math.abs(netValue).toFixed(2)} in value</span>
+                        <span className="text-base font-semibold text-blue-400">They gain ${Math.abs(netValue).toFixed(2)} in value</span>
                       )}
                     </div>
                     {/* Platform fee */}
                     <div className="flex items-center justify-between px-1 pt-2 border-t border-slate-700">
-                      <span className="text-sm text-slate-400">
-                        Your platform fee <span className="text-slate-400 text-xs">(2.5% of ${theirTotal.toFixed(2)} you receive)</span>
+                      <span className="text-base text-slate-400">
+                        Your platform fee <span className="text-slate-400 text-base">(2.5% of ${theirTotal.toFixed(2)} you receive)</span>
                       </span>
-                      <span className="text-sm font-semibold text-purple-400">${myFee.toFixed(2)}</span>
+                      <span className="text-base font-semibold text-purple-400">${myFee.toFixed(2)}</span>
                     </div>
-                    <p className="text-xs text-slate-400 px-1">
+                    <p className="text-base text-slate-400 px-1">
                       Each party pays 2.5% of the value they receive. Collected at completion.
                     </p>
                   </div>
@@ -622,37 +622,37 @@ if (!user) {
                       <div key={snap.id} className={`rounded-xl border p-4 ${snap.round === snapshots.length ? "border-blue-500/40 bg-blue-950/20" : "border-slate-700 bg-slate-800/30"}`}>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${snap.round === snapshots.length ? "bg-blue-500/20 text-blue-300" : "bg-slate-700 text-slate-400"}`}>
+                            <span className={`text-base font-bold px-2 py-0.5 rounded-full ${snap.round === snapshots.length ? "bg-blue-500/20 text-blue-300" : "bg-slate-700 text-slate-400"}`}>
                               {snap.label}
                             </span>
-                            <span className="text-xs text-slate-400">by {isMe ? "You" : snap.actionBy.username}</span>
+                            <span className="text-base text-slate-400">by {isMe ? "You" : snap.actionBy.username}</span>
                           </div>
-                          <span className="text-xs text-slate-400">{new Date(snap.createdAt).toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                          <span className="text-base text-slate-400">{new Date(snap.createdAt).toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <p className="text-xs text-slate-400 mb-1.5">{trade.proposer.username}'s cards</p>
+                            <p className="text-base text-slate-400 mb-1.5">{trade.proposer.username}'s cards</p>
                             <div className="space-y-1">
                               {proposerItems.map((item: any) => (
                                 <div key={item.id} className="flex items-center gap-2">
                                   {item.cardImageUrl && <img src={item.cardImageUrl} alt={item.cardName} className="w-7 h-9 object-cover rounded flex-shrink-0" />}
                                   <div className="min-w-0">
-                                    <p className="text-xs text-white truncate">{item.cardName}</p>
-                                    {item.valueAtTime != null && <p className="text-xs text-green-400">${item.valueAtTime.toFixed(2)}</p>}
+                                    <p className="text-base text-white truncate">{item.cardName}</p>
+                                    {item.valueAtTime != null && <p className="text-base text-green-400">${item.valueAtTime.toFixed(2)}</p>}
                                   </div>
                                 </div>
                               ))}
                             </div>
                           </div>
                           <div>
-                            <p className="text-xs text-slate-400 mb-1.5">{trade.receiver.username}'s cards</p>
+                            <p className="text-base text-slate-400 mb-1.5">{trade.receiver.username}'s cards</p>
                             <div className="space-y-1">
                               {receiverItems.map((item: any) => (
                                 <div key={item.id} className="flex items-center gap-2">
                                   {item.cardImageUrl && <img src={item.cardImageUrl} alt={item.cardName} className="w-7 h-9 object-cover rounded flex-shrink-0" />}
                                   <div className="min-w-0">
-                                    <p className="text-xs text-white truncate">{item.cardName}</p>
-                                    {item.valueAtTime != null && <p className="text-xs text-green-400">${item.valueAtTime.toFixed(2)}</p>}
+                                    <p className="text-base text-white truncate">{item.cardName}</p>
+                                    {item.valueAtTime != null && <p className="text-base text-green-400">${item.valueAtTime.toFixed(2)}</p>}
                                   </div>
                                 </div>
                               ))}
@@ -660,7 +660,7 @@ if (!user) {
                           </div>
                         </div>
                         {snap.cashDifference > 0 && (
-                          <p className="text-xs text-amber-400 mt-2">
+                          <p className="text-base text-amber-400 mt-2">
                             + ${snap.cashDifference.toFixed(2)} cash {snap.cashPayerId === trade.proposer.id ? `from ${trade.proposer.username}` : `from ${trade.receiver.username}`}
                           </p>
                         )}
@@ -734,8 +734,8 @@ if (!user) {
             <div className="bg-green-950/40 border border-green-500/30 rounded-xl p-4 flex items-start gap-3">
               <CheckCircle size={18} className="text-green-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-green-300">Payment successful!</p>
-                <p className="text-xs text-slate-400 mt-0.5">Your payment is held in escrow and will be released when the trade completes verification.</p>
+                <p className="text-base font-semibold text-green-300">Payment successful!</p>
+                <p className="text-base text-slate-400 mt-0.5">Your payment is held in escrow and will be released when the trade completes verification.</p>
               </div>
               <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-400 hover:text-white"><X size={14} /></button>
             </div>
@@ -744,8 +744,8 @@ if (!user) {
             <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
               <AlertCircle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-amber-300">Payment cancelled</p>
-                <p className="text-xs text-slate-400 mt-0.5">You can complete payment below whenever you're ready.</p>
+                <p className="text-base font-semibold text-amber-300">Payment cancelled</p>
+                <p className="text-base text-slate-400 mt-0.5">You can complete payment below whenever you're ready.</p>
               </div>
               <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-400 hover:text-white"><X size={14} /></button>
             </div>
@@ -785,20 +785,20 @@ if (!user) {
                     <div className="flex items-start gap-3 mb-4">
                       <CreditCard size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-semibold text-amber-300">Your payment is required</p>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-base font-semibold text-amber-300">Your payment is required</p>
+                        <p className="text-base text-slate-400 mt-1">
                           Platform fee: <span className="text-white">${myFee.toFixed(2)}</span>
                           {" "}+ return shipping: <span className="text-white">${RETURN_SHIPPING.toFixed(2)}</span>
                           {iCashPayer && <> + cash to {otherUser.username}: <span className="text-white">${trade.cashDifference.toFixed(2)}</span></>}
                           {" "}= <span className="text-white font-semibold">${myTotal.toFixed(2)} total</span>
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">Return shipping covers us mailing your new cards back to you after verification.</p>
+                        <p className="text-base text-slate-400 mt-1">Return shipping covers us mailing your new cards back to you after verification.</p>
                       </div>
                     </div>
                     <button
                       onClick={handleCompletePayment}
                       disabled={isLoadingCheckout}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-semibold transition-colors"
                     >
                       {isLoadingCheckout ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
                       {isLoadingCheckout ? "Loading..." : `Complete My Payment — $${myTotal.toFixed(2)}`}
@@ -808,8 +808,8 @@ if (!user) {
                   <div className="bg-green-950/30 border border-green-500/30 rounded-xl p-4 flex items-start gap-3">
                     <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-green-300">Your payment is complete</p>
-                      <p className="text-xs text-slate-400 mt-0.5">${myTotal.toFixed(2)} held in escrow — releases on trade completion.</p>
+                      <p className="text-base font-semibold text-green-300">Your payment is complete</p>
+                      <p className="text-base text-slate-400 mt-0.5">${myTotal.toFixed(2)} held in escrow — releases on trade completion.</p>
                     </div>
                   </div>
                 )}
@@ -818,12 +818,12 @@ if (!user) {
                 {!theyPaid ? (
                   <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex items-start gap-3">
                     <Clock size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-slate-400"><span className="text-slate-300 font-medium">{otherUser.username}</span> hasn't completed their payment yet. Shipping will unlock once both payments are confirmed.</p>
+                    <p className="text-base text-slate-400"><span className="text-slate-300 font-medium">{otherUser.username}</span> hasn't completed their payment yet. Shipping will unlock once both payments are confirmed.</p>
                   </div>
                 ) : (
                   <div className="bg-green-950/20 border border-green-500/20 rounded-xl p-4 flex items-start gap-3">
                     <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-slate-400"><span className="text-slate-300 font-medium">{otherUser.username}</span>'s payment is confirmed.</p>
+                    <p className="text-base text-slate-400"><span className="text-slate-300 font-medium">{otherUser.username}</span>'s payment is confirmed.</p>
                   </div>
                 )}
 
@@ -849,15 +849,15 @@ if (!user) {
                 {!bothPaid && (
                   <div className="flex items-start gap-3 bg-amber-950/30 border border-amber-500/20 rounded-lg p-4">
                     <AlertCircle size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-slate-300">Both parties must complete payment before shipping can begin.</p>
+                    <p className="text-base text-slate-300">Both parties must complete payment before shipping can begin.</p>
                   </div>
                 )}
 
                 {/* Shipping instructions + address */}
                 <div className={`bg-slate-800/50 rounded-lg p-4 ${!bothPaid ? "opacity-40 pointer-events-none select-none" : ""}`}>
-                  <p className="text-sm font-semibold text-white mb-1">Ship your cards to:</p>
-                  <pre className="text-sm text-slate-300 font-sans whitespace-pre-wrap">{VERIFICATION_ADDRESS}</pre>
-                  <ul className="mt-3 space-y-1 text-xs text-slate-400 list-disc list-inside">
+                  <p className="text-base font-semibold text-white mb-1">Ship your cards to:</p>
+                  <pre className="text-base text-slate-300 font-sans whitespace-pre-wrap">{VERIFICATION_ADDRESS}</pre>
+                  <ul className="mt-3 space-y-1 text-base text-slate-400 list-disc list-inside">
                     <li>Use a rigid top-loader or card sleeve inside a padded envelope</li>
                     <li>Include your trade code <span className="text-white font-mono">{trade.tradeCode}</span> on a slip inside</li>
                     <li>We recommend insuring cards over $50</li>
@@ -869,28 +869,28 @@ if (!user) {
                   <div className="flex items-start gap-3 bg-green-950/30 border border-green-500/30 rounded-lg p-4">
                     <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-green-300">Your tracking submitted</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{myShipment.carrier} · {myShipment.trackingNumber}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">Status: {myShipment.status}</p>
+                      <p className="text-base font-semibold text-green-300">Your tracking submitted</p>
+                      <p className="text-base text-slate-400 mt-0.5">{myShipment.carrier} · {myShipment.trackingNumber}</p>
+                      <p className="text-base text-slate-400 mt-0.5">Status: {myShipment.status}</p>
                     </div>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmitTracking} className="space-y-3">
                     <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/40 border border-amber-500/30">
                       <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-                      <p className="text-xs text-amber-300 leading-relaxed">
+                      <p className="text-base text-amber-300 leading-relaxed">
                         <span className="font-semibold">Ship with tracking only.</span> Packages sent without a tracking number are not covered by our dispute policy and cannot be verified.
                       </p>
                     </div>
-                    <p className="text-sm font-semibold text-white">Submit your tracking number</p>
-                    {trackingError && <p className="text-xs text-red-400">{trackingError}</p>}
+                    <p className="text-base font-semibold text-white">Submit your tracking number</p>
+                    {trackingError && <p className="text-base text-red-400">{trackingError}</p>}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Carrier</label>
+                        <label className="text-base text-slate-400 mb-1 block">Carrier</label>
                         <select
                           value={carrier}
                           onChange={(e) => setCarrier(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           {["USPS", "UPS", "FedEx", "DHL", "Other"].map((c) => (
                             <option key={c} value={c}>{c}</option>
@@ -898,19 +898,19 @@ if (!user) {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Tracking Number</label>
+                        <label className="text-base text-slate-400 mb-1 block">Tracking Number</label>
                         <input
                           type="text"
                           value={trackingNumber}
                           onChange={(e) => setTrackingNumber(e.target.value)}
                           placeholder="e.g. 9400111899..."
                           required
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                      <label className="flex items-center gap-2 text-base text-slate-300 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={isInsured}
@@ -926,14 +926,14 @@ if (!user) {
                           onChange={(e) => setInsuredValue(e.target.value)}
                           placeholder="Insured value ($)"
                           min="0"
-                          className="w-36 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-36 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       )}
                     </div>
                     <button
                       type="submit"
                       disabled={isSubmittingTracking || !trackingNumber.trim()}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
                     >
                       {isSubmittingTracking ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
                       Submit Tracking
@@ -945,11 +945,11 @@ if (!user) {
                 <div className={`flex items-start gap-3 rounded-lg p-3 ${theirShipment ? "bg-green-950/20 border border-green-500/20" : "bg-slate-800/40 border border-slate-700"}`}>
                   {theirShipment ? <CheckCircle size={15} className="text-green-400 mt-0.5 flex-shrink-0" /> : <Clock size={15} className="text-slate-400 mt-0.5 flex-shrink-0" />}
                   <div>
-                    <p className="text-xs font-semibold text-slate-300">{otherUser.username}'s shipment</p>
+                    <p className="text-base font-semibold text-slate-300">{otherUser.username}'s shipment</p>
                     {theirShipment ? (
-                      <p className="text-xs text-slate-400 mt-0.5">{theirShipment.carrier} · {theirShipment.trackingNumber} · <span className="text-slate-300">{theirShipment.status}</span></p>
+                      <p className="text-base text-slate-400 mt-0.5">{theirShipment.carrier} · {theirShipment.trackingNumber} · <span className="text-slate-300">{theirShipment.status}</span></p>
                     ) : (
-                      <p className="text-xs text-slate-400 mt-0.5">Waiting for them to submit tracking</p>
+                      <p className="text-base text-slate-400 mt-0.5">Waiting for them to submit tracking</p>
                     )}
                   </div>
                 </div>
@@ -960,15 +960,15 @@ if (!user) {
                   const alreadyConfirmed = inboundToMe?.status === "DELIVERED";
                   return (
                     <div className="border-t border-slate-700 pt-4">
-                      <p className="text-sm font-semibold text-white mb-1">Manual receipt confirmation</p>
-                      <p className="text-xs text-slate-400 mb-3">
+                      <p className="text-base font-semibold text-white mb-1">Manual receipt confirmation</p>
+                      <p className="text-base text-slate-400 mb-3">
                         If the carrier tracking doesn't update automatically, our team can manually confirm receipt.
                         Only use this if you work at the verification center.
                       </p>
                       <button
                         onClick={handleConfirmReceipt}
                         disabled={isConfirmingReceipt || alreadyConfirmed}
-                        className="flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-600 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-600 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
                       >
                         {isConfirmingReceipt ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
                         {alreadyConfirmed ? "Receipt Confirmed" : "Confirm Receipt (Admin)"}
@@ -988,14 +988,14 @@ if (!user) {
                 Leave a Review
               </h2>
               {reviewSubmitted ? (
-                <div className="flex items-center gap-2 text-green-400 text-sm">
+                <div className="flex items-center gap-2 text-green-400 text-base">
                   <CheckCircle size={16} />
                   Thanks! Your review has been submitted.
                 </div>
               ) : (
                 <form onSubmit={handleSubmitReview} className="space-y-4">
                   <div>
-                    <p className="text-sm text-slate-400 mb-2">How was your experience trading with <span className="text-white">{otherUser.username}</span>?</p>
+                    <p className="text-base text-slate-400 mb-2">How was your experience trading with <span className="text-white">{otherUser.username}</span>?</p>
                     <div className="flex gap-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -1008,7 +1008,7 @@ if (!user) {
                         </button>
                       ))}
                       {reviewRating > 0 && (
-                        <span className="text-sm text-slate-400 self-center ml-1">
+                        <span className="text-base text-slate-400 self-center ml-1">
                           {["", "Poor", "Fair", "Good", "Great", "Excellent"][reviewRating]}
                         </span>
                       )}
@@ -1020,12 +1020,12 @@ if (!user) {
                     placeholder="Share details about your experience (optional)"
                     rows={3}
                     maxLength={500}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                   <button
                     type="submit"
                     disabled={isSubmittingReview || reviewRating === 0}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
                   >
                     {isSubmittingReview ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
                     Submit Review
@@ -1039,8 +1039,8 @@ if (!user) {
           {canCancel && (
             <div className="lg:col-span-2 border border-red-500/30 bg-red-950/20 rounded-xl p-4 flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-red-400">Cancel this trade</p>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-base font-semibold text-red-400">Cancel this trade</p>
+                <p className="text-base text-slate-400 mt-0.5">
                   {trade.status === "ACCEPTED"
                     ? "Neither party has paid yet. Cancelling will unlock all cards and notify the other party."
                     : "This will cancel the trade and notify the other party."}
@@ -1049,7 +1049,7 @@ if (!user) {
               <button
                 onClick={handleCancel}
                 disabled={isCancelling}
-                className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
               >
                 {isCancelling ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Cancelling...</>
@@ -1069,7 +1069,7 @@ if (!user) {
                   <MessageSquare className="h-5 w-5 text-blue-400" />
                   <h3 className="font-semibold">Trade Chat</h3>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-base text-slate-400 mt-1">
                   Messages are only visible to you and {otherUser.username}
                 </p>
               </div>
@@ -1077,7 +1077,7 @@ if (!user) {
               {/* Messages List */}
               <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.length === 0 ? (
-                  <p className="text-center text-slate-400 text-sm py-8">
+                  <p className="text-center text-slate-400 text-base py-8">
                     No messages yet. Start the conversation!
                   </p>
                 ) : (
@@ -1097,9 +1097,9 @@ if (!user) {
                               : "bg-slate-800 text-slate-100"
                           }`}
                         >
-                          <p className="text-sm">{msg.body}</p>
+                          <p className="text-base">{msg.body}</p>
                           <p
-                            className={`text-xs mt-1 ${
+                            className={`text-base mt-1 ${
                               isMyMessage
                                 ? "text-blue-200"
                                 : "text-slate-400"

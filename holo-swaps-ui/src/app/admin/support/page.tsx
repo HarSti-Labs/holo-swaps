@@ -125,7 +125,7 @@ export default function AdminSupportPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Support Board</h1>
-              <p className="text-sm text-slate-400">
+              <p className="text-base text-slate-400">
                 {tabCounts.OPEN + tabCounts.IN_PROGRESS + tabCounts.RESOLVED} total tickets
               </p>
             </div>
@@ -137,7 +137,7 @@ export default function AdminSupportPage() {
           <select
             value={filterUrgency}
             onChange={(e) => { setFilterUrgency(e.target.value); setPage(1); }}
-            className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-900/50 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-900/50 text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All urgencies</option>
             <option value="URGENT">Urgent</option>
@@ -148,7 +148,7 @@ export default function AdminSupportPage() {
           <select
             value={filterCategory}
             onChange={(e) => { setFilterCategory(e.target.value); setPage(1); }}
-            className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-900/50 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-900/50 text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All categories</option>
             {CATEGORIES.map((c) => (
@@ -159,7 +159,7 @@ export default function AdminSupportPage() {
           {(filterUrgency || filterCategory) && (
             <button
               onClick={() => { setFilterUrgency(""); setFilterCategory(""); setPage(1); }}
-              className="px-3 py-2 rounded-lg border border-slate-700 text-sm text-slate-400 hover:text-white transition-colors"
+              className="px-3 py-2 rounded-lg border border-slate-700 text-base text-slate-400 hover:text-white transition-colors"
             >
               Clear filters
             </button>
@@ -173,7 +173,7 @@ export default function AdminSupportPage() {
               key={tab.key}
               onClick={() => handleTabChange(tab.key)}
               className={cn(
-                "flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors",
+                "flex items-center gap-2 px-6 py-3 text-base font-medium transition-colors",
                 activeTab === tab.key
                   ? tab.activeClass
                   : "text-slate-400 hover:text-slate-300"
@@ -181,7 +181,7 @@ export default function AdminSupportPage() {
             >
               {tab.label}
               <span className={cn(
-                "text-xs font-bold px-2 py-0.5 rounded-full",
+                "text-base font-bold px-2 py-0.5 rounded-full",
                 activeTab === tab.key
                   ? tab.key === "OPEN" ? "bg-blue-500/20 text-blue-300"
                     : tab.key === "IN_PROGRESS" ? "bg-orange-500/20 text-orange-300"
@@ -208,7 +208,7 @@ export default function AdminSupportPage() {
           ) : (
             <div className="divide-y divide-slate-800">
               {/* Table header */}
-              <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 text-base font-semibold text-slate-400 uppercase tracking-wider">
                 <span>Ticket</span>
                 <span>Category</span>
                 <span>Urgency</span>
@@ -229,16 +229,16 @@ export default function AdminSupportPage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="font-mono text-xs text-slate-400">{ticket.ticketNumber}</span>
+                        <span className="font-mono text-base text-slate-400">{ticket.ticketNumber}</span>
                         {ticket.messages.length > 0 && (
-                          <span className="flex items-center gap-1 text-xs text-slate-400">
+                          <span className="flex items-center gap-1 text-base text-slate-400">
                             <MessageSquare className="h-3 w-3" />
                             {ticket.messages.length}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm font-medium text-white truncate">{ticket.subject}</p>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                      <p className="text-base font-medium text-white truncate">{ticket.subject}</p>
+                      <div className="flex items-center gap-3 mt-1 text-base text-slate-400">
                         <span>{ticket.user ? `@${ticket.user.username}` : ticket.email}</span>
                         <span>·</span>
                         <span>{ticket.category.replace(/_/g, " ")}</span>
@@ -249,7 +249,7 @@ export default function AdminSupportPage() {
 
                     {/* Urgency badge */}
                     <span className={cn(
-                      "hidden md:inline-block text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0",
+                      "hidden md:inline-block text-base font-medium px-2 py-0.5 rounded-full flex-shrink-0",
                       ticket.urgency === "URGENT" ? "bg-red-500/10 text-red-400" :
                       ticket.urgency === "HIGH" ? "bg-orange-500/10 text-orange-400" :
                       "bg-slate-700/50 text-slate-400"
@@ -269,15 +269,15 @@ export default function AdminSupportPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 rounded-lg border border-slate-700 text-sm text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
+              className="px-4 py-2 rounded-lg border border-slate-700 text-base text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
             >
               Previous
             </button>
-            <span className="text-sm text-slate-400">Page {page} of {totalPages}</span>
+            <span className="text-base text-slate-400">Page {page} of {totalPages}</span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-4 py-2 rounded-lg border border-slate-700 text-sm text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
+              className="px-4 py-2 rounded-lg border border-slate-700 text-base text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
             >
               Next
             </button>

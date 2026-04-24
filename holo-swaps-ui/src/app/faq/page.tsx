@@ -94,7 +94,7 @@ export default function FAQPage() {
           <div className="absolute -top-20 -left-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
           <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-700" />
           <div className="relative z-10 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-base font-medium mb-6">
               <HelpCircle size={16} />
               Frequently Asked Questions
             </div>
@@ -126,7 +126,7 @@ export default function FAQPage() {
                         <span className="text-purple-400 mt-0.5 flex-shrink-0">Q.</span>
                         {faq.q}
                       </p>
-                      <p className="text-slate-400 text-sm leading-relaxed pl-5">{faq.a}</p>
+                      <p className="text-slate-400 text-base leading-relaxed pl-5">{faq.a}</p>
                     </div>
                   ))}
                 </div>

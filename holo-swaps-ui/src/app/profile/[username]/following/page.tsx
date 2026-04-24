@@ -88,13 +88,13 @@ export default function FollowingPage() {
                       <h3 className="font-semibold text-white text-lg">
                         {user.username}
                       </h3>
-                      <div className="flex items-center gap-4 text-sm text-slate-400 mt-1">
+                      <div className="flex items-center gap-4 text-base text-slate-400 mt-1">
                         <span>
                           {user.tradeCount || 0} {user.tradeCount === 1 ? "trade" : "trades"}
                         </span>
                         <span>⭐ {user.reputationScore?.toFixed(1) || "0.0"}</span>
                         {user.tier && (
-                          <span className="px-2 py-0.5 bg-slate-800 rounded text-xs uppercase">
+                          <span className="px-2 py-0.5 bg-slate-800 rounded text-base uppercase">
                             {user.tier}
                           </span>
                         )}

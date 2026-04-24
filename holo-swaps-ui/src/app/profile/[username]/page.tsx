@@ -198,7 +198,7 @@ export default function ProfilePage() {
                       <button
                         onClick={handleFollow}
                         disabled={isFollowLoading}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                           isFollowing
                             ? "bg-slate-700 hover:bg-slate-600 text-white"
                             : "bg-blue-600 hover:bg-blue-500 text-white"
@@ -229,7 +229,7 @@ export default function ProfilePage() {
                           <button
                             onClick={handleBlock}
                             disabled={isBlockLoading}
-                            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-left hover:bg-slate-700 transition-colors disabled:opacity-50"
+                            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-base text-left hover:bg-slate-700 transition-colors disabled:opacity-50"
                           >
                             {isBlocked ? (
                               <><Shield className="h-4 w-4 text-green-400" /><span className="text-green-400">Unblock user</span></>
@@ -239,7 +239,7 @@ export default function ProfilePage() {
                           </button>
                           <button
                             onClick={() => { setMoreMenuOpen(false); setShowReportModal(true); }}
-                            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-left hover:bg-slate-700 transition-colors"
+                            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-base text-left hover:bg-slate-700 transition-colors"
                           >
                             <Flag className="h-4 w-4 text-red-400" />
                             <span className="text-red-400">Report user</span>
@@ -252,7 +252,7 @@ export default function ProfilePage() {
 
                 {/* Blocked banner */}
                 {isBlocked && (
-                  <span className="text-xs text-orange-400 bg-orange-400/10 border border-orange-400/30 px-2.5 py-1 rounded-lg">
+                  <span className="text-base text-orange-400 bg-orange-400/10 border border-orange-400/30 px-2.5 py-1 rounded-lg">
                     You've blocked this user
                   </span>
                 )}
@@ -260,7 +260,7 @@ export default function ProfilePage() {
 
               {user.bio && <p className="text-slate-400 mb-4">{user.bio}</p>}
 
-              <div className="flex flex-wrap gap-4 text-sm text-slate-400">
+              <div className="flex flex-wrap gap-4 text-base text-slate-400">
                 {user.location && (
                   <div className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" />
@@ -291,14 +291,14 @@ export default function ProfilePage() {
                   <Star className="h-4 w-4 fill-yellow-400" />
                   <span className="text-xl font-bold">{user.reputationScore.toFixed(1)}</span>
                 </div>
-                <p className="text-xs text-slate-400">Reputation</p>
+                <p className="text-base text-slate-400">Reputation</p>
               </div>
               <div className="bg-slate-800/50 rounded-lg p-4 text-center min-w-[100px]">
                 <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
                   <TrendingUp className="h-4 w-4" />
                   <span className="text-xl font-bold">{user.tradeCount}</span>
                 </div>
-                <p className="text-xs text-slate-400">Trades</p>
+                <p className="text-base text-slate-400">Trades</p>
               </div>
             </div>
           </div>
@@ -311,14 +311,14 @@ export default function ProfilePage() {
               <Star className="h-4 w-4 fill-yellow-400" />
               <span className="text-xl font-bold">{user.reputationScore.toFixed(1)}</span>
             </div>
-            <p className="text-xs text-slate-400">Reputation</p>
+            <p className="text-base text-slate-400">Reputation</p>
           </div>
           <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 text-center">
             <div className="flex items-center justify-center gap-1 text-blue-400 mb-1">
               <TrendingUp className="h-4 w-4" />
               <span className="text-xl font-bold">{user.tradeCount}</span>
             </div>
-            <p className="text-xs text-slate-400">Trades</p>
+            <p className="text-base text-slate-400">Trades</p>
           </div>
         </div>
 
@@ -366,11 +366,11 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold mb-4">Trade Statistics</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <p className="text-slate-400 text-sm mb-1">Total Trades</p>
+                <p className="text-slate-400 text-base mb-1">Total Trades</p>
                 <p className="text-2xl font-bold">{user.tradeCount}</p>
               </div>
               <div>
-                <p className="text-slate-400 text-sm mb-1">Reputation Score</p>
+                <p className="text-slate-400 text-base mb-1">Reputation Score</p>
                 <p className="text-2xl font-bold flex items-center gap-2">
                   {user.reputationScore.toFixed(1)}
                   <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
@@ -378,7 +378,7 @@ export default function ProfilePage() {
               </div>
               {isOwnProfile && currentUser && (
                 <div>
-                  <p className="text-slate-400 text-sm mb-1">Account Status</p>
+                  <p className="text-slate-400 text-base mb-1">Account Status</p>
                   <p className="text-2xl font-bold">
                     {currentUser.isEmailVerified ? (
                       <span className="text-green-400">Verified</span>
@@ -392,7 +392,7 @@ export default function ProfilePage() {
 
             <div className="mt-8">
               <h3 className="text-lg font-semibold mb-4">Recent Reviews</h3>
-              <p className="text-slate-400 text-sm">No reviews yet</p>
+              <p className="text-slate-400 text-base">No reviews yet</p>
             </div>
           </div>
         )}
@@ -405,13 +405,13 @@ export default function ProfilePage() {
                 <Package className="h-5 w-5 text-blue-400" />
                 <h2 className="text-lg font-bold">{user.username}'s Collection</h2>
                 {!isLoadingCollection && (
-                  <span className="text-sm text-slate-400">({theirCollection.length} available)</span>
+                  <span className="text-base text-slate-400">({theirCollection.length} available)</span>
                 )}
               </div>
               {currentUser && (
                 <button
                   onClick={() => setIsTradeModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-green-700 hover:bg-green-600 text-white text-sm transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-green-700 hover:bg-green-600 text-white text-base transition-colors"
                 >
                   <ArrowLeftRight className="h-4 w-4" />
                   Propose Trade
@@ -447,15 +447,15 @@ export default function ProfilePage() {
                       </div>
                     )}
                     <div className="p-3">
-                      <p className="text-sm font-medium truncate">{item.card.name}</p>
-                      <p className="text-xs text-slate-400 truncate">{item.card.setName}</p>
+                      <p className="text-base font-medium truncate">{item.card.name}</p>
+                      <p className="text-base text-slate-400 truncate">{item.card.setName}</p>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs text-slate-400">{CONDITION_LABELS[item.condition]}</span>
+                        <span className="text-base text-slate-400">{CONDITION_LABELS[item.condition]}</span>
                         {item.isFoil && (
-                          <span className="text-xs text-yellow-400 font-medium">Foil</span>
+                          <span className="text-base text-yellow-400 font-medium">Foil</span>
                         )}
                       </div>
-                      <p className="text-sm font-semibold text-green-400 mt-1">
+                      <p className="text-base font-semibold text-green-400 mt-1">
                         {item.currentMarketValue != null
                           ? `$${item.currentMarketValue.toFixed(2)}`
                           : "N/A"}
@@ -478,7 +478,7 @@ export default function ProfilePage() {
               </div>
               <Link
                 href="/support"
-                className="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                className="flex items-center gap-1.5 text-base text-blue-400 hover:text-blue-300 transition-colors"
               >
                 New ticket
                 <ChevronRight className="h-4 w-4" />
@@ -489,7 +489,7 @@ export default function ProfilePage() {
               <div className="p-12 text-center">
                 <Headphones className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                 <p className="text-slate-400 mb-2">No support tickets yet</p>
-                <Link href="/support" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                <Link href="/support" className="text-base text-blue-400 hover:text-blue-300 transition-colors">
                   Submit a ticket →
                 </Link>
               </div>
@@ -517,23 +517,23 @@ export default function ProfilePage() {
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-mono text-xs text-slate-400">{ticket.ticketNumber}</span>
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${urgencyColor}`}>
+                          <span className="font-mono text-base text-slate-400">{ticket.ticketNumber}</span>
+                          <span className={`text-base font-medium px-2 py-0.5 rounded-full ${urgencyColor}`}>
                             {ticket.urgency}
                           </span>
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColors[ticket.status] ?? "text-slate-400"}`}>
+                          <span className={`text-base font-medium px-2 py-0.5 rounded-full ${statusColors[ticket.status] ?? "text-slate-400"}`}>
                             {ticket.status.replace("_", " ")}
                           </span>
-                          <span className="text-xs text-slate-400">
+                          <span className="text-base text-slate-400">
                             {ticket.category.replace(/_/g, " ")}
                           </span>
                         </div>
-                        <p className="text-sm font-medium text-white truncate">{ticket.subject}</p>
+                        <p className="text-base font-medium text-white truncate">{ticket.subject}</p>
                         {ticket.tradeCode && (
-                          <p className="text-xs text-slate-400 mt-0.5 font-mono">{ticket.tradeCode}</p>
+                          <p className="text-base text-slate-400 mt-0.5 font-mono">{ticket.tradeCode}</p>
                         )}
                       </div>
-                      <p className="text-xs text-slate-400 whitespace-nowrap flex-shrink-0">
+                      <p className="text-base text-slate-400 whitespace-nowrap flex-shrink-0">
                         {new Date(ticket.createdAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -551,14 +551,14 @@ export default function ProfilePage() {
 
       {/* Report Modal */}
       {showReportModal && user && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowReportModal(false)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-slate-700">
               <div>
                 <h2 className="text-base font-bold text-white flex items-center gap-2">
                   <Flag className="h-4 w-4 text-red-400" /> Report @{user.username}
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">Reports are reviewed by our admin team</p>
+                <p className="text-base text-slate-400 mt-0.5">Reports are reviewed by our admin team</p>
               </div>
               <button onClick={() => { setShowReportModal(false); setReportSent(false); setReportReason(""); setReportDetails(""); }} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
                 <X className="h-4 w-4" />
@@ -572,21 +572,21 @@ export default function ProfilePage() {
                     <Flag className="h-6 w-6 text-green-400" />
                   </div>
                   <p className="text-white font-semibold">Report submitted</p>
-                  <p className="text-sm text-slate-400 mt-1">Our team will review it shortly.</p>
-                  <button onClick={() => { setShowReportModal(false); setReportSent(false); setReportReason(""); setReportDetails(""); }} className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition-colors">
+                  <p className="text-base text-slate-400 mt-1">Our team will review it shortly.</p>
+                  <button onClick={() => { setShowReportModal(false); setReportSent(false); setReportReason(""); setReportDetails(""); }} className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-base font-medium transition-colors">
                     Close
                   </button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-slate-400 mb-1.5">Reason <span className="text-red-400">*</span></label>
+                    <label className="block text-base text-slate-400 mb-1.5">Reason <span className="text-red-400">*</span></label>
                     <div className="relative">
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none h-4 w-4" />
                       <select
                         value={reportReason}
                         onChange={(e) => setReportReason(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-red-500/50 pr-8"
+                        className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-base appearance-none focus:outline-none focus:ring-2 focus:ring-red-500/50 pr-8"
                       >
                         <option value="">Select a reason…</option>
                         <option value="Card condition misrepresented">Card condition misrepresented</option>
@@ -599,26 +599,26 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-1.5">Additional details <span className="text-slate-400">(optional)</span></label>
+                    <label className="block text-base text-slate-400 mb-1.5">Additional details <span className="text-slate-400">(optional)</span></label>
                     <textarea
                       value={reportDetails}
                       onChange={(e) => setReportDetails(e.target.value)}
                       placeholder="Describe what happened…"
                       rows={3}
                       maxLength={1000}
-                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 resize-none"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-base placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 resize-none"
                     />
                   </div>
                   <div className="flex gap-3 pt-1">
                     <button
                       onClick={handleReport}
                       disabled={!reportReason || isReporting}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-base font-semibold transition-colors"
                     >
                       {isReporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Flag className="h-4 w-4" />}
                       Submit Report
                     </button>
-                    <button onClick={() => setShowReportModal(false)} className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold transition-colors">
+                    <button onClick={() => setShowReportModal(false)} className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-base font-semibold transition-colors">
                       Cancel
                     </button>
                   </div>

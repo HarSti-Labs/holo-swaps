@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Title */}
         <div className="mb-12 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-base font-medium mb-6">
             Legal Document
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-4">Privacy Policy</h1>
@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
         <div className="space-y-10 text-slate-300 leading-relaxed">
 
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-6">
-            <p className="text-blue-200 text-sm">
+            <p className="text-blue-200 text-base">
               {COMPANY} ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use {PLATFORM} ("Platform"). Please read it carefully. If you disagree with the terms of this policy, please discontinue use of the Platform.
             </p>
           </div>
@@ -228,7 +228,7 @@ export default function PrivacyPolicyPage() {
 
           {/* Footer */}
           <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700 text-center">
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 text-base">
               By using HoloSwaps, you acknowledge that you have read and understood this Privacy Policy.
             </p>
           </div>

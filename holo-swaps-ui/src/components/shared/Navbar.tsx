@@ -70,7 +70,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <span className="text-white text-sm font-display font-black">H</span>
+            <span className="text-white text-base font-display font-black">H</span>
           </div>
           <span className="font-display font-bold text-lg tracking-tight">
             HoloSwaps
@@ -85,7 +85,7 @@ export function Navbar() {
               <Link
                 href="/admin/support"
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
                   pathname.startsWith("/admin/support")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -97,7 +97,7 @@ export function Navbar() {
               <Link
                 href="/admin/reports"
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
                   pathname.startsWith("/admin/reports")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -113,7 +113,7 @@ export function Navbar() {
               <Link
                 href="/cards"
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
                   pathname.startsWith("/cards")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -127,7 +127,7 @@ export function Navbar() {
               <Link
                 href="/listings"
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
                   pathname.startsWith("/listings")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -143,7 +143,7 @@ export function Navbar() {
                   key={href}
                   href={href}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
                     pathname.startsWith(href)
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -164,7 +164,7 @@ export function Navbar() {
             <button
               onClick={() => setHelpOpen((v) => !v)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
                 helpOpen
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -187,7 +187,7 @@ export function Navbar() {
                     <Icon size={16} className="text-muted-foreground group-hover:text-primary mt-0.5 flex-shrink-0 transition-colors" />
                     <div>
                       <p className="text-sm font-medium text-foreground">{label}</p>
-                      <p className="text-xs text-muted-foreground">{description}</p>
+                      <p className="text-sm text-muted-foreground">{description}</p>
                     </div>
                   </Link>
                 ))}
@@ -199,10 +199,10 @@ export function Navbar() {
             <>
               <Link
                 href={`/profile/${user.username}`}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted transition-colors"
+                className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors"
               >
                 <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary">
+                  <span className="text-sm font-bold text-primary">
                     {getInitials(user.username)}
                   </span>
                 </div>
@@ -210,14 +210,14 @@ export function Navbar() {
               </Link>
               <Link
                 href="/settings"
-                className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 <Settings size={16} />
                 Settings
               </Link>
               <button
                 onClick={handleLogout}
-                className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 <LogOut size={16} />
                 Sign out
@@ -259,7 +259,7 @@ export function Navbar() {
                 href="/admin/support"
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-base font-medium transition-colors",
                   pathname.startsWith("/admin/support") ? "bg-primary/10 text-primary" : "text-muted-foreground"
                 )}
               >
@@ -270,7 +270,7 @@ export function Navbar() {
                 href="/admin/reports"
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-base font-medium transition-colors",
                   pathname.startsWith("/admin/reports") ? "bg-primary/10 text-primary" : "text-muted-foreground"
                 )}
               >
@@ -284,7 +284,7 @@ export function Navbar() {
                 href="/cards"
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-base font-medium transition-colors",
                   pathname.startsWith("/cards") ? "bg-primary/10 text-primary" : "text-muted-foreground"
                 )}
               >
@@ -295,7 +295,7 @@ export function Navbar() {
                 href="/listings"
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-base font-medium transition-colors",
                   pathname.startsWith("/listings") ? "bg-primary/10 text-primary" : "text-muted-foreground"
                 )}
               >
@@ -313,7 +313,7 @@ export function Navbar() {
                   href={href}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-2 px-3 py-2.5 rounded-lg text-base font-medium transition-colors",
                     pathname.startsWith(href) ? "bg-primary/10 text-primary" : "text-muted-foreground"
                   )}
                 >
@@ -325,7 +325,7 @@ export function Navbar() {
                 href="/settings"
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-base font-medium transition-colors",
                   pathname === "/settings" ? "bg-primary/10 text-primary" : "text-muted-foreground"
                 )}
               >
@@ -334,7 +334,7 @@ export function Navbar() {
               </Link>
               <button
                 onClick={() => { handleLogout(); setMobileOpen(false); }}
-                className="flex w-full items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-muted-foreground"
+                className="flex w-full items-center gap-2 px-3 py-2.5 rounded-lg text-base text-muted-foreground"
               >
                 <LogOut size={16} />
                 Sign out
@@ -342,21 +342,21 @@ export function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm">Sign in</Link>
-              <Link href="/auth/register" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-primary">Get started</Link>
+              <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-base">Sign in</Link>
+              <Link href="/auth/register" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-base font-medium text-primary">Get started</Link>
             </>
           )}
 
           {/* Help section in mobile — hidden for admins */}
           {!user?.isAdmin && (
             <div className="pt-2 border-t border-border mt-2">
-              <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Help</p>
+              <p className="px-3 py-1 text-base font-semibold text-muted-foreground uppercase tracking-wider">Help</p>
               {helpLinks.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-muted-foreground transition-colors"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-base text-muted-foreground transition-colors"
                 >
                   <Icon size={16} />
                   {label}

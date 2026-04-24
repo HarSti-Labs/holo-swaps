@@ -233,7 +233,7 @@ export default function CardConditionGuidePage() {
           <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
           <div className="absolute -top-20 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700" />
           <div className="relative z-10 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-base font-medium mb-6">
               <ShieldCheck size={16} />
               Official HoloSwaps Grading Standard
             </div>
@@ -248,7 +248,7 @@ export default function CardConditionGuidePage() {
             </p>
             <div className="inline-flex items-start gap-3 px-5 py-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-left max-w-xl mx-auto">
               <AlertTriangle size={18} className="text-yellow-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-yellow-200 leading-relaxed">
+              <p className="text-base text-yellow-200 leading-relaxed">
                 Misrepresenting a card's condition — intentionally or otherwise — is grounds for dispute resolution, trade reversal, and potential account suspension. When in doubt, list the lower grade.
               </p>
             </div>
@@ -263,7 +263,7 @@ export default function CardConditionGuidePage() {
                 <a
                   key={c.key}
                   href={`#${c.key}`}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-bold transition-opacity hover:opacity-80 ${c.color.badge}`}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-base font-bold transition-opacity hover:opacity-80 ${c.color.badge}`}
                 >
                   <span className={`w-2 h-2 rounded-full ${c.color.dot}`} />
                   {c.label}
@@ -277,7 +277,7 @@ export default function CardConditionGuidePage() {
         <section className="py-12 px-4">
           <div className="container mx-auto max-w-4xl">
             <h2 className="text-2xl font-black text-white text-center mb-2">What We Evaluate</h2>
-            <p className="text-slate-400 text-center mb-8 text-sm">Every condition grade is determined by assessing all four of these areas together.</p>
+            <p className="text-slate-400 text-center mb-8 text-base">Every condition grade is determined by assessing all four of these areas together.</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: "Centering",    desc: "The ratio of border width on opposite sides, front and back.",             emoji: "⊞" },
@@ -287,8 +287,8 @@ export default function CardConditionGuidePage() {
               ].map((p) => (
                 <div key={p.label} className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 text-center">
                   <div className="text-3xl mb-2">{p.emoji}</div>
-                  <p className="text-white font-bold text-sm mb-1">{p.label}</p>
-                  <p className="text-slate-400 text-xs leading-relaxed">{p.desc}</p>
+                  <p className="text-white font-bold text-base mb-1">{p.label}</p>
+                  <p className="text-slate-400 text-base leading-relaxed">{p.desc}</p>
                 </div>
               ))}
             </div>
@@ -313,11 +313,11 @@ export default function CardConditionGuidePage() {
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h2 className="text-2xl font-black text-white">{c.label}</h2>
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${c.color.badge}`}>
+                        <span className={`px-2.5 py-0.5 rounded-full text-base font-bold border ${c.color.badge}`}>
                           Grade {conditions.length - index}
                         </span>
                       </div>
-                      <p className="text-slate-400 text-sm mt-0.5">{c.psa}</p>
+                      <p className="text-slate-400 text-base mt-0.5">{c.psa}</p>
                     </div>
                   </div>
                 </div>
@@ -330,10 +330,10 @@ export default function CardConditionGuidePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                     {Object.entries(c.criteria).map(([key, value]) => (
                       <div key={key} className="bg-slate-900/60 rounded-xl p-4">
-                        <p className={`text-xs font-black uppercase tracking-widest mb-1.5 ${c.color.text}`}>
+                        <p className={`text-base font-black uppercase tracking-widest mb-1.5 ${c.color.text}`}>
                           {key === "overall" ? "Overall" : key.charAt(0).toUpperCase() + key.slice(1)}
                         </p>
-                        <p className="text-slate-300 text-sm leading-relaxed">{value}</p>
+                        <p className="text-slate-300 text-base leading-relaxed">{value}</p>
                       </div>
                     ))}
                   </div>
@@ -341,23 +341,23 @@ export default function CardConditionGuidePage() {
                   {/* Allowed / Not allowed */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
                     <div className="bg-slate-900/40 rounded-xl p-4">
-                      <p className="text-xs font-black uppercase tracking-widest text-green-400 mb-3">Acceptable at this grade</p>
+                      <p className="text-base font-black uppercase tracking-widest text-green-400 mb-3">Acceptable at this grade</p>
                       <div className="space-y-2">
                         {c.allowed.map((item, i) => (
                           <div key={i} className="flex items-start gap-2">
                             <CheckCircle2 size={14} className="text-green-400 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-slate-300">{item}</p>
+                            <p className="text-base text-slate-300">{item}</p>
                           </div>
                         ))}
                       </div>
                     </div>
                     <div className="bg-slate-900/40 rounded-xl p-4">
-                      <p className="text-xs font-black uppercase tracking-widest text-red-400 mb-3">Not acceptable — lower the grade</p>
+                      <p className="text-base font-black uppercase tracking-widest text-red-400 mb-3">Not acceptable — lower the grade</p>
                       <div className="space-y-2">
                         {c.notAllowed.map((item, i) => (
                           <div key={i} className="flex items-start gap-2">
                             <XCircle size={14} className="text-red-400 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-slate-300">{item}</p>
+                            <p className="text-base text-slate-300">{item}</p>
                           </div>
                         ))}
                       </div>
@@ -367,7 +367,7 @@ export default function CardConditionGuidePage() {
                   {/* Legal note */}
                   <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
                     <Info size={15} className="text-blue-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-blue-200 leading-relaxed">{c.legalNote}</p>
+                    <p className="text-base text-blue-200 leading-relaxed">{c.legalNote}</p>
                   </div>
                 </div>
               </div>
@@ -389,13 +389,13 @@ export default function CardConditionGuidePage() {
                 {photographyTips.map((tip, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-5 h-5 rounded-md border-2 border-slate-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-slate-300 leading-relaxed">{tip}</p>
+                    <p className="text-base text-slate-300 leading-relaxed">{tip}</p>
                   </div>
                 ))}
               </div>
               <div className="mt-6 pt-5 border-t border-slate-700 flex items-start gap-3">
                 <AlertTriangle size={15} className="text-yellow-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-slate-400 leading-relaxed">
+                <p className="text-base text-slate-400 leading-relaxed">
                   If a dispute is opened and you have not provided adequate photos, HoloSwaps may rule in favour of the other party regardless of the card's actual condition. Photos are your evidence.
                 </p>
               </div>
@@ -417,12 +417,12 @@ export default function CardConditionGuidePage() {
                 { title: "Intentional fraud", body: "Account permanently banned. Relevant authorities may be notified depending on the value of the trade." },
               ].map((item) => (
                 <div key={item.title} className="bg-slate-900/60 border border-slate-700 rounded-xl p-5">
-                  <p className="font-bold text-white text-sm mb-2">{item.title}</p>
-                  <p className="text-slate-400 text-xs leading-relaxed">{item.body}</p>
+                  <p className="font-bold text-white text-base mb-2">{item.title}</p>
+                  <p className="text-slate-400 text-base leading-relaxed">{item.body}</p>
                 </div>
               ))}
             </div>
-            <p className="text-slate-400 text-sm mt-8">
+            <p className="text-slate-400 text-base mt-8">
               Questions about a condition ruling?{" "}
               <a href="mailto:admin@holoswaps.com" className="text-blue-400 hover:text-blue-300 underline">
                 admin@holoswaps.com
@@ -435,7 +435,7 @@ export default function CardConditionGuidePage() {
         <section className="py-16 px-4 border-t border-slate-800 text-center">
           <div className="max-w-xl mx-auto">
             <h2 className="text-2xl font-black text-white mb-3">Ready to list your cards?</h2>
-            <p className="text-slate-400 mb-6 text-sm">Use this guide every time you add a card to your collection. Your reputation depends on accurate grading.</p>
+            <p className="text-slate-400 mb-6 text-base">Use this guide every time you add a card to your collection. Your reputation depends on accurate grading.</p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/collection"

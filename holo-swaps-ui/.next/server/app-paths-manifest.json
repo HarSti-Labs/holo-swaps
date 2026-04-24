@@ -1,8 +1,7 @@
 {
-  "/collection/page": "app/collection/page.js",
   "/matches/page": "app/matches/page.js",
   "/listings/page": "app/listings/page.js",
-  "/how-it-works/page": "app/how-it-works/page.js",
-  "/faq/page": "app/faq/page.js",
-  "/card-condition-guide/page": "app/card-condition-guide/page.js"
+  "/cards/page": "app/cards/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/collection/page": "app/collection/page.js"
 }

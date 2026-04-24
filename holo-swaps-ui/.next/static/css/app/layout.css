@@ -3557,6 +3557,11 @@ video {
   line-height: 1.25rem;
 }
 
+.file\:text-base::file-selector-button {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
 .file\:font-medium::file-selector-button {
   font-weight: 500;
 }

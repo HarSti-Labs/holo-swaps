@@ -471,7 +471,7 @@ export default function SettingsPage() {
             {!isEditingProfile && (
               <button
                 onClick={() => setIsEditingProfile(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-base transition-colors"
               >
                 <Edit2 className="h-4 w-4" />
                 Edit Profile
@@ -482,7 +482,7 @@ export default function SettingsPage() {
           {isEditingProfile ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Username</label>
+                <label className="block text-base text-slate-400 mb-1">Username</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -504,7 +504,7 @@ export default function SettingsPage() {
                 </div>
                 {usernameAvailability.message && (
                   <p
-                    className={`text-sm mt-1 ${
+                    className={`text-base mt-1 ${
                       usernameAvailability.available === true
                         ? "text-green-400"
                         : "text-red-400"
@@ -515,7 +515,7 @@ export default function SettingsPage() {
                 )}
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Bio</label>
+                <label className="block text-base text-slate-400 mb-1">Bio</label>
                 <textarea
                   value={profileForm.bio}
                   onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
@@ -526,7 +526,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Location</label>
+                <label className="block text-base text-slate-400 mb-1">Location</label>
                 <input
                   type="text"
                   value={profileForm.location}
@@ -563,15 +563,15 @@ export default function SettingsPage() {
           ) : (
             <div className="space-y-3">
               <div>
-                <label className="text-sm text-slate-400">Username</label>
+                <label className="text-base text-slate-400">Username</label>
                 <p className="text-white font-medium">{user?.username}</p>
               </div>
               <div>
-                <label className="text-sm text-slate-400">Bio</label>
+                <label className="text-base text-slate-400">Bio</label>
                 <p className="text-white">{user?.bio || <span className="text-slate-400">No bio set</span>}</p>
               </div>
               <div>
-                <label className="text-sm text-slate-400">Location</label>
+                <label className="text-base text-slate-400">Location</label>
                 <p className="text-white">{user?.location || <span className="text-slate-400">No location set</span>}</p>
               </div>
             </div>
@@ -583,11 +583,11 @@ export default function SettingsPage() {
           <h2 className="text-xl font-semibold mb-4">Account</h2>
           <div className="space-y-3">
             <div>
-              <label className="text-sm text-slate-400">Email</label>
+              <label className="text-base text-slate-400">Email</label>
               <p className="text-white font-medium">{user?.email}</p>
             </div>
             <div>
-              <label className="text-sm text-slate-400">Email Status</label>
+              <label className="text-base text-slate-400">Email Status</label>
               <p className="text-white font-medium">
                 {user?.isEmailVerified ? (
                   <span className="text-green-400">✓ Verified</span>
@@ -602,7 +602,7 @@ export default function SettingsPage() {
         {/* Email Notifications Section */}
         <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-6">
           <h2 className="text-xl font-semibold mb-1">Email Notifications</h2>
-          <p className="text-sm text-slate-400 mb-4">Choose which trade events trigger an email notification.</p>
+          <p className="text-base text-slate-400 mb-4">Choose which trade events trigger an email notification.</p>
           <div className="space-y-3">
             {([
               { key: "emailOnTradeProposed", label: "New trade offer received" },
@@ -619,14 +619,14 @@ export default function SettingsPage() {
                   onChange={(e) => setEmailPrefs({ ...emailPrefs, [key]: e.target.checked })}
                   className="rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-sm text-slate-300">{label}</span>
+                <span className="text-base text-slate-300">{label}</span>
               </label>
             ))}
           </div>
           <button
             onClick={handleSaveEmailPrefs}
             disabled={isSavingEmailPrefs}
-            className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-sm font-medium transition-colors"
+            className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-base font-medium transition-colors"
           >
             {isSavingEmailPrefs ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>
@@ -643,7 +643,7 @@ export default function SettingsPage() {
           <div className="flex justify-between items-center mb-4">
             <div>
               <h2 className="text-xl font-semibold">Shipping Addresses</h2>
-              <p className="text-sm text-slate-400 mt-1">Required for trading - cards will be shipped to our verification center</p>
+              <p className="text-base text-slate-400 mt-1">Required for trading - cards will be shipped to our verification center</p>
             </div>
             {!showAddressForm && (
               <button
@@ -652,7 +652,7 @@ export default function SettingsPage() {
                   setShowAddressForm(true);
                   setEditingAddressId(null);
                 }}
-                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-base transition-colors"
               >
                 <Plus className="h-4 w-4" />
                 Add Address
@@ -665,17 +665,17 @@ export default function SettingsPage() {
               <h3 className="font-medium text-white">{editingAddressId ? "Edit Address" : "New Address"}</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Label (optional)</label>
+                  <label className="block text-base text-slate-400 mb-1">Label (optional)</label>
                   <input
                     type="text"
                     value={addressForm.label}
                     onChange={(e) => setAddressForm({ ...addressForm, label: e.target.value })}
                     placeholder="Home, Work, etc."
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Full Name *</label>
+                  <label className="block text-base text-slate-400 mb-1">Full Name *</label>
                   <input
                     type="text"
                     value={addressForm.fullName}
@@ -683,13 +683,13 @@ export default function SettingsPage() {
                       setAddressForm({ ...addressForm, fullName: e.target.value });
                       setAddressErrors({ ...addressErrors, fullName: undefined });
                     }}
-                    className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.fullName ? "border-red-500" : "border-slate-700"}`}
+                    className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.fullName ? "border-red-500" : "border-slate-700"}`}
                   />
-                  {addressErrors.fullName && <p className="text-red-400 text-xs mt-1">{addressErrors.fullName}</p>}
+                  {addressErrors.fullName && <p className="text-red-400 text-base mt-1">{addressErrors.fullName}</p>}
                 </div>
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Address Line 1 *</label>
+                <label className="block text-base text-slate-400 mb-1">Address Line 1 *</label>
                 <input
                   ref={line1Ref}
                   type="text"
@@ -700,22 +700,22 @@ export default function SettingsPage() {
                   }}
                   placeholder="Start typing your address…"
                   autoComplete="off"
-                  className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.line1 ? "border-red-500" : "border-slate-700"}`}
+                  className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.line1 ? "border-red-500" : "border-slate-700"}`}
                 />
-                {addressErrors.line1 && <p className="text-red-400 text-xs mt-1">{addressErrors.line1}</p>}
+                {addressErrors.line1 && <p className="text-red-400 text-base mt-1">{addressErrors.line1}</p>}
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">Address Line 2</label>
+                <label className="block text-base text-slate-400 mb-1">Address Line 2</label>
                 <input
                   type="text"
                   value={addressForm.line2}
                   onChange={(e) => setAddressForm({ ...addressForm, line2: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">City *</label>
+                  <label className="block text-base text-slate-400 mb-1">City *</label>
                   <input
                     type="text"
                     value={addressForm.city}
@@ -723,12 +723,12 @@ export default function SettingsPage() {
                       setAddressForm({ ...addressForm, city: e.target.value });
                       setAddressErrors({ ...addressErrors, city: undefined });
                     }}
-                    className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.city ? "border-red-500" : "border-slate-700"}`}
+                    className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.city ? "border-red-500" : "border-slate-700"}`}
                   />
-                  {addressErrors.city && <p className="text-red-400 text-xs mt-1">{addressErrors.city}</p>}
+                  {addressErrors.city && <p className="text-red-400 text-base mt-1">{addressErrors.city}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">State *</label>
+                  <label className="block text-base text-slate-400 mb-1">State *</label>
                   <div className="relative">
                     <select
                       value={addressForm.state}
@@ -736,7 +736,7 @@ export default function SettingsPage() {
                         setAddressForm({ ...addressForm, state: e.target.value });
                         setAddressErrors({ ...addressErrors, state: undefined });
                       }}
-                      className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8 ${addressErrors.state ? "border-red-500" : "border-slate-700"}`}
+                      className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8 ${addressErrors.state ? "border-red-500" : "border-slate-700"}`}
                     >
                       <option value="">Select state</option>
                       {US_STATES.map(({ abbr, name }) => (
@@ -747,10 +747,10 @@ export default function SettingsPage() {
                       <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </div>
                   </div>
-                  {addressErrors.state && <p className="text-red-400 text-xs mt-1">{addressErrors.state}</p>}
+                  {addressErrors.state && <p className="text-red-400 text-base mt-1">{addressErrors.state}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">ZIP Code *</label>
+                  <label className="block text-base text-slate-400 mb-1">ZIP Code *</label>
                   <input
                     type="text"
                     value={addressForm.postalCode}
@@ -762,9 +762,9 @@ export default function SettingsPage() {
                       setAddressErrors({ ...addressErrors, postalCode: undefined });
                     }}
                     placeholder="12345"
-                    className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.postalCode ? "border-red-500" : "border-slate-700"}`}
+                    className={`w-full px-3 py-2 bg-slate-900 border rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 ${addressErrors.postalCode ? "border-red-500" : "border-slate-700"}`}
                   />
-                  {addressErrors.postalCode && <p className="text-red-400 text-xs mt-1">{addressErrors.postalCode}</p>}
+                  {addressErrors.postalCode && <p className="text-red-400 text-base mt-1">{addressErrors.postalCode}</p>}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -775,13 +775,13 @@ export default function SettingsPage() {
                   onChange={(e) => setAddressForm({ ...addressForm, isDefault: e.target.checked })}
                   className="rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-2 focus:ring-blue-500"
                 />
-                <label htmlFor="isDefault" className="text-sm text-slate-300">Set as default address</label>
+                <label htmlFor="isDefault" className="text-base text-slate-300">Set as default address</label>
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={handleSaveAddress}
                   disabled={isSavingAddress}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-base font-medium transition-colors"
                 >
                   {isSavingAddress ? "Saving..." : editingAddressId ? "Update Address" : "Add Address"}
                 </button>
@@ -792,7 +792,7 @@ export default function SettingsPage() {
                     resetAddressForm();
                     setError("");
                   }}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-base font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -804,7 +804,7 @@ export default function SettingsPage() {
             <div className="text-center py-8 text-slate-400">
               <MapPin className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p className="font-medium">No addresses saved</p>
-              <p className="text-sm">Add a shipping address to start trading</p>
+              <p className="text-base">Add a shipping address to start trading</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -814,32 +814,32 @@ export default function SettingsPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         {address.label && (
-                          <span className="text-sm font-medium text-blue-400">{address.label}</span>
+                          <span className="text-base font-medium text-blue-400">{address.label}</span>
                         )}
                         {address.isDefault && (
-                          <span className="flex items-center gap-1 text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded-full">
+                          <span className="flex items-center gap-1 text-base bg-green-900/30 text-green-400 px-2 py-0.5 rounded-full">
                             <Check className="h-3 w-3" />
                             Default
                           </span>
                         )}
                       </div>
                       <p className="text-white font-medium">{address.fullName}</p>
-                      <p className="text-slate-300 text-sm">{address.line1}</p>
-                      {address.line2 && <p className="text-slate-300 text-sm">{address.line2}</p>}
-                      <p className="text-slate-300 text-sm">
+                      <p className="text-slate-300 text-base">{address.line1}</p>
+                      {address.line2 && <p className="text-slate-300 text-base">{address.line2}</p>}
+                      <p className="text-slate-300 text-base">
                         {address.city}, {address.state} {address.postalCode}
                       </p>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEditAddress(address)}
-                        className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-sm transition-colors"
+                        className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-base transition-colors"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteAddress(address.id)}
-                        className="px-3 py-1.5 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded text-sm transition-colors"
+                        className="px-3 py-1.5 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded text-base transition-colors"
                       >
                         Delete
                       </button>
@@ -854,15 +854,15 @@ export default function SettingsPage() {
         {/* Payments Section */}
         <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-6">
           <h2 className="text-xl font-semibold mb-1">Payments</h2>
-          <p className="text-sm text-slate-400 mb-5">Manage your payment method and payout account for trades.</p>
+          <p className="text-base text-slate-400 mb-5">Manage your payment method and payout account for trades.</p>
 
           {paymentsError && (
-            <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4 text-red-300 text-sm">
+            <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4 text-red-300 text-base">
               {paymentsError}
             </div>
           )}
           {paymentsSuccess && (
-            <div className="bg-green-900/20 border border-green-800 rounded-lg p-3 mb-4 text-green-300 text-sm flex items-center gap-2">
+            <div className="bg-green-900/20 border border-green-800 rounded-lg p-3 mb-4 text-green-300 text-base flex items-center gap-2">
               <BadgeCheck className="h-4 w-4 flex-shrink-0" />
               {paymentsSuccess}
             </div>
@@ -874,11 +874,11 @@ export default function SettingsPage() {
               <CreditCard className="h-5 w-5 text-slate-400 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="font-medium text-white">Payment Method</h3>
-                <p className="text-sm text-slate-400 mt-0.5">
+                <p className="text-base text-slate-400 mt-0.5">
                   Used to pay your 2.5% platform fee and any cash owed when your trade is accepted. Powered by Stripe — no card details are stored on Holo Swaps.
                 </p>
                 <div className="mt-2">
-                  <span className="inline-flex items-center gap-1.5 text-xs bg-green-900/30 text-green-400 border border-green-500/30 px-2.5 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1.5 text-base bg-green-900/30 text-green-400 border border-green-500/30 px-2.5 py-1 rounded-full">
                     <BadgeCheck className="h-3 w-3" />
                     Ready to pay via Stripe
                   </span>
@@ -894,21 +894,21 @@ export default function SettingsPage() {
                 <Wallet className="h-5 w-5 text-slate-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <h3 className="font-medium text-white">Bank Payout via Stripe</h3>
-                  <p className="text-sm text-slate-400 mt-0.5">
+                  <p className="text-base text-slate-400 mt-0.5">
                     Connect your bank account so Stripe can deposit any cash you receive from trades directly to you. This is not PayPal — it&apos;s Stripe, the same payment platform used by millions of businesses.
                   </p>
                   <div className="mt-2">
                     {user?.stripeAccountVerified ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs bg-green-900/30 text-green-400 border border-green-500/30 px-2.5 py-1 rounded-full">
+                      <span className="inline-flex items-center gap-1.5 text-base bg-green-900/30 text-green-400 border border-green-500/30 px-2.5 py-1 rounded-full">
                         <BadgeCheck className="h-3 w-3" />
                         Bank account connected
                       </span>
                     ) : user?.stripeAccountId ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs bg-amber-900/30 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full">
+                      <span className="inline-flex items-center gap-1.5 text-base bg-amber-900/30 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full">
                         Connected — verification pending
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-xs bg-slate-700/50 text-slate-400 border border-slate-600 px-2.5 py-1 rounded-full">
+                      <span className="inline-flex items-center gap-1.5 text-base bg-slate-700/50 text-slate-400 border border-slate-600 px-2.5 py-1 rounded-full">
                         Not connected
                       </span>
                     )}
@@ -919,7 +919,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleSetupConnect}
                   disabled={isSettingUpConnect}
-                  className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-base font-medium transition-colors"
                 >
                   {isSettingUpConnect ? (
                     <><Loader2 className="h-4 w-4 animate-spin" /> Redirecting...</>
@@ -960,7 +960,7 @@ export default function SettingsPage() {
               <p className="text-slate-300 font-medium">
                 Are you absolutely sure? This action cannot be undone.
               </p>
-              <p className="text-sm text-slate-400">
+              <p className="text-base text-slate-400">
                 Please enter your password to confirm account deletion.
               </p>
               <input
@@ -971,7 +971,7 @@ export default function SettingsPage() {
                 className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
               {error && (
-                <p className="text-sm text-red-400">{error}</p>
+                <p className="text-base text-red-400">{error}</p>
               )}
               <div className="flex gap-3">
                 <button

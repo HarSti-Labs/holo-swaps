@@ -11,7 +11,7 @@ export default function TermsOfServicePage() {
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Title */}
         <div className="mb-12 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-base font-medium mb-6">
             Legal Document
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-4">Terms of Service</h1>
@@ -27,7 +27,7 @@ export default function TermsOfServicePage() {
 
           {/* Intro box */}
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6">
-            <p className="text-yellow-200 font-medium text-sm">
+            <p className="text-yellow-200 font-medium text-base">
               PLEASE READ THESE TERMS OF SERVICE CAREFULLY BEFORE USING {PLATFORM.toUpperCase()}. BY CREATING AN ACCOUNT OR USING THIS PLATFORM IN ANY WAY, YOU AGREE TO BE LEGALLY BOUND BY THESE TERMS. IF YOU DO NOT AGREE, DO NOT USE THIS PLATFORM.
             </p>
           </div>
@@ -202,7 +202,7 @@ export default function TermsOfServicePage() {
 
           <Section title="10. Disclaimer of Warranties">
             <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700">
-              <p className="font-semibold text-white uppercase text-sm mb-3">Important — Please Read</p>
+              <p className="font-semibold text-white uppercase text-base mb-3">Important — Please Read</p>
               <p>
                 THE PLATFORM IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. {COMPANY.toUpperCase()} EXPRESSLY DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.
               </p>
@@ -378,7 +378,7 @@ export default function TermsOfServicePage() {
 
           {/* Footer notice */}
           <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700 text-center">
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 text-base">
               By using HoloSwaps, you acknowledge that you have read and understood these Terms of Service and agree to be bound by them.
             </p>
           </div>

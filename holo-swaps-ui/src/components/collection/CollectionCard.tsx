@@ -63,12 +63,12 @@ export function CollectionCard({
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {item.isFoil && (
-            <span className="text-xs bg-yellow-400/90 text-yellow-900 px-1.5 py-0.5 rounded font-medium">
+            <span className="text-base bg-yellow-400/90 text-yellow-900 px-1.5 py-0.5 rounded font-medium">
               Foil
             </span>
           )}
           {item.isFirstEdition && (
-            <span className="text-xs bg-purple-500/90 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-base bg-purple-500/90 text-white px-1.5 py-0.5 rounded font-medium">
               1st Ed
             </span>
           )}
@@ -96,23 +96,23 @@ export function CollectionCard({
 
       {/* Card info */}
       <div className="p-3">
-        <p className="font-display font-semibold text-sm leading-tight line-clamp-1">
+        <p className="font-display font-semibold text-base leading-tight line-clamp-1">
           {item.card.name}
         </p>
-        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+        <p className="text-base text-muted-foreground mt-0.5 line-clamp-1">
           {item.card.setName} · #{item.card.cardNumber}
         </p>
 
         <div className="flex items-center justify-between mt-2">
           <span
             className={cn(
-              "text-xs font-medium",
+              "text-base font-medium",
               getConditionColor(item.condition)
             )}
           >
             {getConditionLabel(item.condition)}
           </span>
-          <span className="text-sm font-semibold font-mono">
+          <span className="text-base font-semibold font-mono">
             {item.askingValueOverride
               ? formatCurrency(item.askingValueOverride)
               : item.currentMarketValue
@@ -129,7 +129,7 @@ export function CollectionCard({
                 e.stopPropagation();
                 onEdit?.(item);
               }}
-              className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-base text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <Pencil size={12} />
               Edit
@@ -139,7 +139,7 @@ export function CollectionCard({
                 e.stopPropagation();
                 onDelete?.(item);
               }}
-              className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+              className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-base text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
             >
               <Trash2 size={12} />
               Remove

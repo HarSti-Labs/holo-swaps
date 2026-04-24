@@ -53,8 +53,8 @@ export default function ResetPasswordPage() {
             <XCircle className="h-8 w-8 text-red-400" />
           </div>
           <h1 className="text-xl font-bold text-white mb-2">Invalid reset link</h1>
-          <p className="text-sm text-slate-400 mb-6">This link is missing a reset token. Please request a new one.</p>
-          <Link href="/auth/forgot-password" className="text-blue-400 hover:text-blue-300 font-bold text-sm transition-colors">
+          <p className="text-base text-slate-400 mb-6">This link is missing a reset token. Please request a new one.</p>
+          <Link href="/auth/forgot-password" className="text-blue-400 hover:text-blue-300 font-bold text-base transition-colors">
             Request a new reset link
           </Link>
         </div>
@@ -86,12 +86,12 @@ export default function ResetPasswordPage() {
                 <CheckCircle className="h-8 w-8 text-green-400" />
               </div>
               <h2 className="text-lg font-bold text-white mb-2">Password updated!</h2>
-              <p className="text-sm text-slate-400">Redirecting you to sign in...</p>
+              <p className="text-base text-slate-400">Redirecting you to sign in...</p>
             </div>
           ) : (
             <>
               {error && (
-                <div className="mb-6 px-4 py-3 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-sm text-red-400">
+                <div className="mb-6 px-4 py-3 bg-red-500/10 border-2 border-red-500/30 rounded-xl text-base text-red-400">
                   {error}
                   {error.includes("expired") && (
                     <div className="mt-2">
@@ -105,7 +105,7 @@ export default function ResetPasswordPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-bold text-white mb-2">New password</label>
+                  <label className="block text-base font-bold text-white mb-2">New password</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -114,7 +114,7 @@ export default function ResetPasswordPage() {
                       required
                       minLength={8}
                       placeholder="Min. 8 characters"
-                      className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                      className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
                     />
                     <button
                       type="button"
@@ -127,7 +127,7 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-white mb-2">Confirm new password</label>
+                  <label className="block text-base font-bold text-white mb-2">Confirm new password</label>
                   <div className="relative">
                     <input
                       type={showConfirm ? "text" : "password"}
@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       placeholder="Re-enter your password"
-                      className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${
+                      className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${
                         passwordsMismatch
                           ? "border-red-500 focus:ring-red-500 focus:border-red-500"
                           : passwordsMatch
@@ -152,12 +152,12 @@ export default function ResetPasswordPage() {
                     </button>
                   </div>
                   {passwordsMismatch && (
-                    <p className="text-xs mt-2 text-red-400 flex items-center gap-1">
+                    <p className="text-base mt-2 text-red-400 flex items-center gap-1">
                       <XCircle size={12} /> Passwords do not match
                     </p>
                   )}
                   {passwordsMatch && (
-                    <p className="text-xs mt-2 text-green-400 flex items-center gap-1">
+                    <p className="text-base mt-2 text-green-400 flex items-center gap-1">
                       <CheckCircle size={12} /> Passwords match
                     </p>
                   )}

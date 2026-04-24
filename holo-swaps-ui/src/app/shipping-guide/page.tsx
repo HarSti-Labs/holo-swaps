@@ -21,7 +21,7 @@ export default function ShippingGuidePage() {
           <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
           <div className="absolute -top-20 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700" />
           <div className="relative z-10 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-base font-medium mb-6">
               <Truck size={16} />
               Shipping Guide
             </div>
@@ -52,15 +52,15 @@ export default function ShippingGuidePage() {
                     <MapPin size={18} className="text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-400 mb-3">Send your cards to our verification center at the address below. Always include your trade code on a slip of paper inside the package.</p>
-                    <div className="bg-slate-800 rounded-lg px-5 py-4 font-mono text-slate-200 space-y-0.5 text-sm">
+                    <p className="text-base text-slate-400 mb-3">Send your cards to our verification center at the address below. Always include your trade code on a slip of paper inside the package.</p>
+                    <div className="bg-slate-800 rounded-lg px-5 py-4 font-mono text-slate-200 space-y-0.5 text-base">
                       <p className="font-bold text-white">{VERIFICATION_ADDRESS.line1}</p>
                       <p>{VERIFICATION_ADDRESS.line2}</p>
                       <p>{VERIFICATION_ADDRESS.poBox}</p>
                       <p>{VERIFICATION_ADDRESS.city}, {VERIFICATION_ADDRESS.state} {VERIFICATION_ADDRESS.zip}</p>
                       <p>United States</p>
                     </div>
-                    <p className="text-xs text-amber-400 mt-3 flex items-center gap-1.5">
+                    <p className="text-base text-amber-400 mt-3 flex items-center gap-1.5">
                       <AlertTriangle size={12} />
                       Your address is never shared with your trade partner — only used to ship your received cards back to you.
                     </p>
@@ -109,12 +109,12 @@ export default function ShippingGuidePage() {
                   },
                 ].map(({ step, title, body }) => (
                   <div key={step} className="bg-slate-900/60 border border-slate-700 rounded-xl p-5 flex gap-4">
-                    <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0 text-purple-400 font-black text-sm">
+                    <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0 text-purple-400 font-black text-base">
                       {step}
                     </div>
                     <div>
                       <p className="font-bold text-white mb-1">{title}</p>
-                      <p className="text-sm text-slate-400 leading-relaxed">{body}</p>
+                      <p className="text-base text-slate-400 leading-relaxed">{body}</p>
                     </div>
                   </div>
                 ))}
@@ -136,8 +136,8 @@ export default function ShippingGuidePage() {
                   <div key={carrier} className="flex items-start gap-3">
                     <ShieldCheck size={16} className="text-cyan-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-white">{carrier}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{note}</p>
+                      <p className="text-base font-semibold text-white">{carrier}</p>
+                      <p className="text-base text-slate-400 mt-0.5">{note}</p>
                     </div>
                   </div>
                 ))}
@@ -159,7 +159,7 @@ export default function ShippingGuidePage() {
                     "Don't ship to your trade partner directly — always ship to our verification center",
                     "Don't use regular paper envelopes for valuable cards — they offer zero protection",
                   ].map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm text-slate-400">
+                    <li key={item} className="flex items-start gap-2 text-base text-slate-400">
                       <AlertTriangle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
                       {item}
                     </li>
@@ -174,7 +174,7 @@ export default function ShippingGuidePage() {
         {/* Disclaimer */}
         <section className="py-6 px-4">
           <div className="container mx-auto max-w-3xl">
-            <p className="text-xs text-slate-400 text-center leading-relaxed">
+            <p className="text-base text-slate-400 text-center leading-relaxed">
               <span className="font-semibold text-slate-400">Disclaimer:</span> HoloSwaps is not liable for any card damage, loss, or deterioration resulting from improper packaging by the sender. It is the sender's sole responsibility to ensure cards are packaged securely and appropriately before shipment. By submitting a trade, you acknowledge and accept this responsibility.
             </p>
           </div>

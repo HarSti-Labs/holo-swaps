@@ -108,7 +108,7 @@ export default function TicketDetailPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-400 mb-4">{error || "Ticket not found"}</p>
-          <Link href="/" className="text-blue-400 hover:text-blue-300 text-sm">Go home</Link>
+          <Link href="/" className="text-blue-400 hover:text-blue-300 text-base">Go home</Link>
         </div>
       </div>
     );
@@ -124,7 +124,7 @@ export default function TicketDetailPage() {
         {/* Back link */}
         <Link
           href={backHref}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-base text-slate-400 hover:text-white transition-colors mb-6"
         >
           <ChevronLeft className="h-4 w-4" />
           {user?.isAdmin ? "Back to support board" : "Back to profile"}
@@ -135,24 +135,24 @@ export default function TicketDetailPage() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className="font-mono text-xs text-slate-400">{ticket.ticketNumber}</span>
-                <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full border", STATUS_STYLES[ticket.status])}>
+                <span className="font-mono text-base text-slate-400">{ticket.ticketNumber}</span>
+                <span className={cn("text-base font-medium px-2 py-0.5 rounded-full border", STATUS_STYLES[ticket.status])}>
                   {STATUS_LABELS[ticket.status]}
                 </span>
-                <span className={cn("text-xs font-medium", URGENCY_STYLES[ticket.urgency])}>
+                <span className={cn("text-base font-medium", URGENCY_STYLES[ticket.urgency])}>
                   {ticket.urgency}
                 </span>
-                <span className="text-xs text-slate-400">{ticket.category.replace(/_/g, " ")}</span>
+                <span className="text-base text-slate-400">{ticket.category.replace(/_/g, " ")}</span>
               </div>
               <h1 className="text-xl font-bold text-white mb-1">{ticket.subject}</h1>
               {ticket.user && (
-                <p className="text-sm text-slate-400">
+                <p className="text-base text-slate-400">
                   Submitted by <span className="text-white">@{ticket.user.username}</span>
                   {" · "}{new Date(ticket.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </p>
               )}
               {ticket.tradeCode && (
-                <p className="text-xs text-slate-400 font-mono mt-1">{ticket.tradeCode}</p>
+                <p className="text-base text-slate-400 font-mono mt-1">{ticket.tradeCode}</p>
               )}
             </div>
 
@@ -163,7 +163,7 @@ export default function TicketDetailPage() {
                   value={ticket.status}
                   onChange={(e) => handleStatusChange(e.target.value)}
                   disabled={isUpdatingStatus}
-                  className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
+                  className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer"
                 >
                   <option value="OPEN">Open</option>
                   <option value="IN_PROGRESS">In Progress</option>
@@ -176,8 +176,8 @@ export default function TicketDetailPage() {
 
         {/* Original description */}
         <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-4">
-          <p className="text-xs text-slate-400 uppercase tracking-wider mb-3">Original Message</p>
-          <p className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
+          <p className="text-base text-slate-400 uppercase tracking-wider mb-3">Original Message</p>
+          <p className="text-base text-slate-200 whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
         </div>
 
         {/* Message thread */}
@@ -194,7 +194,7 @@ export default function TicketDetailPage() {
         {canReply ? (
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
             {user?.isAdmin && (
-              <div className="flex items-center gap-1.5 text-xs text-blue-400 mb-3">
+              <div className="flex items-center gap-1.5 text-base text-blue-400 mb-3">
                 <Shield className="h-3.5 w-3.5" />
                 Replying as HoloSwaps Support — user will be notified by email
               </div>
@@ -207,13 +207,13 @@ export default function TicketDetailPage() {
               }}
               placeholder={user?.isAdmin ? "Write your reply to the user…" : "Write a reply…"}
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/50 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400 resize-none mb-3"
+              className="w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400 resize-none mb-3"
             />
             <div className="flex justify-end">
               <button
                 onClick={handleSend}
                 disabled={isSending || !reply.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-base font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 Send
@@ -221,7 +221,7 @@ export default function TicketDetailPage() {
             </div>
           </div>
         ) : (
-          <div className="text-center py-6 text-slate-400 text-sm border border-slate-800 rounded-xl bg-slate-900/30">
+          <div className="text-center py-6 text-slate-400 text-base border border-slate-800 rounded-xl bg-slate-900/30">
             This ticket has been resolved. If you need further help,{" "}
             <Link href="/support" className="text-blue-400 hover:text-blue-300">open a new ticket</Link>.
           </div>
@@ -236,7 +236,7 @@ function MessageBubble({ msg }: { msg: TicketMessage }) {
     <div className={cn("flex gap-3", msg.isAdminReply ? "flex-row-reverse" : "flex-row")}>
       {/* Avatar */}
       <div className={cn(
-        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold",
+        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-base font-bold",
         msg.isAdminReply
           ? "bg-blue-600 text-white"
           : "bg-slate-700 text-slate-200"
@@ -252,16 +252,16 @@ function MessageBubble({ msg }: { msg: TicketMessage }) {
           : "bg-slate-800 border border-slate-700 rounded-tl-sm"
       )}>
         <div className="flex items-center gap-2 mb-1">
-          <span className={cn("text-xs font-semibold", msg.isAdminReply ? "text-blue-300" : "text-slate-300")}>
+          <span className={cn("text-base font-semibold", msg.isAdminReply ? "text-blue-300" : "text-slate-300")}>
             {msg.isAdminReply ? "HoloSwaps Support" : `@${msg.author?.username ?? "User"}`}
           </span>
-          <span className="text-xs text-slate-400">
+          <span className="text-base text-slate-400">
             {new Date(msg.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             {" "}
             {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
           </span>
         </div>
-        <p className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{msg.body}</p>
+        <p className="text-base text-slate-200 whitespace-pre-wrap leading-relaxed">{msg.body}</p>
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ export interface IStripeService {
 
 export interface CreatePaymentIntentData {
   amount: number;              // cash-on-top in cents
-  platformFeeAmount: number;   // 2.5% platform fee in cents — deducted from the transfer
+  platformFeeAmount: number;   // 10% platform fee in cents — deducted from the transfer
   currency: string;
   customerId: string;
   destinationAccountId: string; // receiver's Stripe Connect account

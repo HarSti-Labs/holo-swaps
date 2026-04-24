@@ -26,18 +26,18 @@ export function EmailVerificationBanner() {
       <div className="flex items-start gap-3">
         <AlertCircle className="h-5 w-5 text-amber-400 mt-0.5 flex-shrink-0" />
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-amber-100">Verify Your Email</h3>
-          <p className="text-sm text-amber-200/80 mt-1">
+          <h3 className="text-base font-semibold text-amber-100">Verify Your Email</h3>
+          <p className="text-base text-amber-200/80 mt-1">
             Please check your inbox and click the verification link to activate your account.
           </p>
           {message && (
-            <p className="text-sm text-amber-300 mt-2">{message}</p>
+            <p className="text-base text-amber-300 mt-2">{message}</p>
           )}
         </div>
         <button
           onClick={handleResend}
           disabled={isResending}
-          className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-amber-800 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-amber-800 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
         >
           <Mail className="h-4 w-4" />
           {isResending ? "Sending..." : "Resend Email"}

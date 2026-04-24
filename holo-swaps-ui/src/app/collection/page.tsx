@@ -374,7 +374,7 @@ export default function MyCardsPage() {
         <div className="relative z-10 flex gap-1 mb-8 bg-slate-900/50 p-1 rounded-2xl w-fit">
           <button
             onClick={() => setActiveTab("collection")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-base transition-all ${
               activeTab === "collection"
                 ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30"
                 : "text-slate-400 hover:text-white"
@@ -382,13 +382,13 @@ export default function MyCardsPage() {
           >
             <BookMarked size={16} />
             Collection
-            <span className={`px-1.5 py-0.5 rounded-md text-xs font-bold ${activeTab === "collection" ? "bg-white/20" : "bg-slate-700"}`}>
+            <span className={`px-1.5 py-0.5 rounded-md text-base font-bold ${activeTab === "collection" ? "bg-white/20" : "bg-slate-700"}`}>
               {collection.length}
             </span>
           </button>
           <button
             onClick={() => setActiveTab("wants")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-base transition-all ${
               activeTab === "wants"
                 ? "bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-lg shadow-pink-500/30"
                 : "text-slate-400 hover:text-white"
@@ -396,7 +396,7 @@ export default function MyCardsPage() {
           >
             <Heart size={16} />
             Want List
-            <span className={`px-1.5 py-0.5 rounded-md text-xs font-bold ${activeTab === "wants" ? "bg-white/20" : "bg-slate-700"}`}>
+            <span className={`px-1.5 py-0.5 rounded-md text-base font-bold ${activeTab === "wants" ? "bg-white/20" : "bg-slate-700"}`}>
               {wants.length}
             </span>
           </button>
@@ -430,7 +430,7 @@ export default function MyCardsPage() {
                 </button>
                 <button
                   onClick={() => { setCollectionSelectMode(!collectionSelectMode); setSelectedCollectionIds(new Set()); }}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors text-sm font-bold ${
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors text-base font-bold ${
                     collectionSelectMode
                       ? "bg-blue-600/20 border-blue-500 text-blue-300"
                       : "bg-slate-800/50 border-transparent text-slate-400 hover:text-white"
@@ -452,7 +452,7 @@ export default function MyCardsPage() {
                 <Filter size={18} />
                 Filters
                 {activeFilterCount > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs font-bold flex items-center justify-center">
+                  <span className="w-5 h-5 rounded-full bg-blue-500 text-white text-base font-bold flex items-center justify-center">
                     {activeFilterCount}
                   </span>
                 )}
@@ -462,11 +462,11 @@ export default function MyCardsPage() {
             {/* Collection bulk action bar */}
             {collectionSelectMode && (
               <div className="mb-4 flex flex-wrap items-center gap-3 p-4 bg-slate-900/90 border-2 border-blue-500/50 rounded-2xl relative z-10">
-                <button onClick={toggleSelectAllCollection} className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors">
+                <button onClick={toggleSelectAllCollection} className="text-base font-bold text-blue-400 hover:text-blue-300 transition-colors">
                   {selectedCollectionIds.size === filteredCollection.length ? "Deselect All" : "Select All"}
                 </button>
                 <span className="text-slate-400">|</span>
-                <span className="text-sm text-slate-400">
+                <span className="text-base text-slate-400">
                   {selectedCollectionIds.size} selected
                 </span>
                 {selectedCollectionIds.size > 0 && (
@@ -475,7 +475,7 @@ export default function MyCardsPage() {
                     <button
                       onClick={() => bulkSetTradeCollection(true)}
                       disabled={isBulkCollectionLoading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600/20 border border-green-600/50 text-green-400 text-sm font-bold hover:bg-green-600/30 disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600/20 border border-green-600/50 text-green-400 text-base font-bold hover:bg-green-600/30 disabled:opacity-50 transition-colors"
                     >
                       <ArrowLeftRight size={14} />
                       Mark Available
@@ -483,7 +483,7 @@ export default function MyCardsPage() {
                     <button
                       onClick={() => bulkSetTradeCollection(false)}
                       disabled={isBulkCollectionLoading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700/50 border border-slate-600 text-slate-300 text-sm font-bold hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700/50 border border-slate-600 text-slate-300 text-base font-bold hover:bg-slate-700 disabled:opacity-50 transition-colors"
                     >
                       <ArrowLeftRight size={14} />
                       Mark Unavailable
@@ -491,14 +491,14 @@ export default function MyCardsPage() {
                     <button
                       onClick={bulkDeleteCollection}
                       disabled={isBulkCollectionLoading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 text-sm font-bold hover:bg-red-600/30 disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 text-base font-bold hover:bg-red-600/30 disabled:opacity-50 transition-colors"
                     >
                       <Trash2 size={14} />
                       Delete
                     </button>
                   </>
                 )}
-                <button onClick={exitCollectionSelect} className="ml-auto text-sm text-slate-400 hover:text-slate-300 transition-colors">
+                <button onClick={exitCollectionSelect} className="ml-auto text-base text-slate-400 hover:text-slate-300 transition-colors">
                   Cancel
                 </button>
               </div>
@@ -510,7 +510,7 @@ export default function MyCardsPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white">Filter Cards</h3>
                   {activeFilterCount > 0 && (
-                    <button onClick={clearFilters} className="flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300">
+                    <button onClick={clearFilters} className="flex items-center gap-1 text-base text-blue-400 hover:text-blue-300">
                       <X size={14} />
                       Clear all
                     </button>
@@ -518,23 +518,23 @@ export default function MyCardsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Quick Filters</p>
+                  <p className="text-base font-bold text-slate-400 uppercase tracking-wide mb-2">Quick Filters</p>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => setFilterTradeOnly(!filterTradeOnly)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 transition-colors ${filterTradeOnly ? "bg-green-500/20 text-green-300 border-green-500" : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"}`}
+                      className={`px-3 py-1.5 rounded-lg text-base font-bold border-2 transition-colors ${filterTradeOnly ? "bg-green-500/20 text-green-300 border-green-500" : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"}`}
                     >
                       Available for Trade
                     </button>
                     <button
                       onClick={() => setFilterFoil(filterFoil === true ? null : true)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 transition-colors ${filterFoil === true ? "bg-yellow-500/20 text-yellow-300 border-yellow-500" : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"}`}
+                      className={`px-3 py-1.5 rounded-lg text-base font-bold border-2 transition-colors ${filterFoil === true ? "bg-yellow-500/20 text-yellow-300 border-yellow-500" : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"}`}
                     >
                       Foil
                     </button>
                     <button
                       onClick={() => setFilterFirstEdition(filterFirstEdition === true ? null : true)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 transition-colors ${filterFirstEdition === true ? "bg-purple-500/20 text-purple-300 border-purple-500" : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"}`}
+                      className={`px-3 py-1.5 rounded-lg text-base font-bold border-2 transition-colors ${filterFirstEdition === true ? "bg-purple-500/20 text-purple-300 border-purple-500" : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"}`}
                     >
                       1st Edition
                     </button>
@@ -542,13 +542,13 @@ export default function MyCardsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Condition</p>
+                  <p className="text-base font-bold text-slate-400 uppercase tracking-wide mb-2">Condition</p>
                   <div className="flex flex-wrap gap-2">
                     {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([value, label]) => (
                       <button
                         key={value}
                         onClick={() => setFilterConditions((prev) => prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value])}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 transition-colors ${filterConditions.includes(value) ? "bg-blue-500/20 text-blue-300 border-blue-500" : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"}`}
+                        className={`px-3 py-1.5 rounded-lg text-base font-bold border-2 transition-colors ${filterConditions.includes(value) ? "bg-blue-500/20 text-blue-300 border-blue-500" : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"}`}
                       >
                         {label}
                       </button>
@@ -558,7 +558,7 @@ export default function MyCardsPage() {
 
                 {availableSets.length > 1 && (
                   <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Set</p>
+                    <p className="text-base font-bold text-slate-400 uppercase tracking-wide mb-2">Set</p>
                     <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1">
                       {availableSets.map((setName) => {
                         const owned = ownedUniquePerSet[setName]?.size ?? 0;
@@ -569,7 +569,7 @@ export default function MyCardsPage() {
                           <button
                             key={setName}
                             onClick={() => setFilterSet(isActive ? "" : setName)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 text-sm font-medium transition-colors ${
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 text-base font-medium transition-colors ${
                               isActive
                                 ? "border-blue-500 bg-blue-500/20 text-blue-300"
                                 : "border-slate-700 bg-slate-950/50 text-slate-300 hover:border-slate-500"
@@ -577,7 +577,7 @@ export default function MyCardsPage() {
                           >
                             {isComplete && <Trophy size={11} className="text-yellow-400 flex-shrink-0" />}
                             <span className="truncate max-w-[160px]">{setName}</span>
-                            <span className={`text-xs flex-shrink-0 ${isComplete ? "text-yellow-400 font-bold" : "text-slate-400"}`}>
+                            <span className={`text-base flex-shrink-0 ${isComplete ? "text-yellow-400 font-bold" : "text-slate-400"}`}>
                               {total !== null ? `${owned}/${total}` : `${owned}`}
                             </span>
                           </button>
@@ -600,10 +600,10 @@ export default function MyCardsPage() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       {isComplete && <Trophy size={16} className="text-yellow-400" />}
-                      <span className="font-semibold text-white text-sm">{filterSet}</span>
-                      {isComplete && <span className="text-xs font-bold text-yellow-400 bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-500/40">Complete Set!</span>}
+                      <span className="font-semibold text-white text-base">{filterSet}</span>
+                      {isComplete && <span className="text-base font-bold text-yellow-400 bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-500/40">Complete Set!</span>}
                     </div>
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-base font-bold text-white">
                       {total !== null ? `${owned} / ${total} cards` : `${owned} cards`}
                     </span>
                   </div>
@@ -616,7 +616,7 @@ export default function MyCardsPage() {
                     </div>
                   )}
                   {total !== null && !isComplete && (
-                    <p className="text-xs text-slate-400 mt-1.5">{pct}% complete · {total - owned} card{total - owned !== 1 ? "s" : ""} missing</p>
+                    <p className="text-base text-slate-400 mt-1.5">{pct}% complete · {total - owned} card{total - owned !== 1 ? "s" : ""} missing</p>
                   )}
                 </div>
               );
@@ -706,7 +706,7 @@ export default function MyCardsPage() {
                 </button>
                 <button
                   onClick={() => { setWantSelectMode(!wantSelectMode); setSelectedWantIds(new Set()); }}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors text-sm font-bold ${
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors text-base font-bold ${
                     wantSelectMode
                       ? "bg-pink-600/20 border-pink-500 text-pink-300"
                       : "bg-slate-800/50 border-transparent text-slate-400 hover:text-white"
@@ -728,7 +728,7 @@ export default function MyCardsPage() {
                 <Filter size={18} />
                 Filters
                 {wantActiveFilterCount > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-pink-500 text-white text-xs font-bold flex items-center justify-center">
+                  <span className="w-5 h-5 rounded-full bg-pink-500 text-white text-base font-bold flex items-center justify-center">
                     {wantActiveFilterCount}
                   </span>
                 )}
@@ -739,46 +739,46 @@ export default function MyCardsPage() {
             {wantSelectMode && (
               <div className="mb-4 p-4 bg-slate-900/90 border-2 border-pink-500/50 rounded-2xl relative z-10 space-y-3">
                 <div className="flex flex-wrap items-center gap-3">
-                  <button onClick={toggleSelectAllWants} className="text-sm font-bold text-pink-400 hover:text-pink-300 transition-colors">
+                  <button onClick={toggleSelectAllWants} className="text-base font-bold text-pink-400 hover:text-pink-300 transition-colors">
                     {selectedWantIds.size === filteredWants.length ? "Deselect All" : "Select All"}
                   </button>
                   <span className="text-slate-400">|</span>
-                  <span className="text-sm text-slate-400">{selectedWantIds.size} selected</span>
+                  <span className="text-base text-slate-400">{selectedWantIds.size} selected</span>
                   {selectedWantIds.size > 0 && (
                     <button
                       onClick={bulkDeleteWants}
                       disabled={isBulkWantLoading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 text-sm font-bold hover:bg-red-600/30 disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 text-base font-bold hover:bg-red-600/30 disabled:opacity-50 transition-colors"
                     >
                       <Trash2 size={14} />
                       Remove
                     </button>
                   )}
-                  <button onClick={exitWantSelect} className="ml-auto text-sm text-slate-400 hover:text-slate-300 transition-colors">
+                  <button onClick={exitWantSelect} className="ml-auto text-base text-slate-400 hover:text-slate-300 transition-colors">
                     Cancel
                   </button>
                 </div>
 
                 {selectedWantIds.size > 0 && (
                   <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-700/50">
-                    <span className="text-xs text-slate-400 self-center mr-1">Set priority:</span>
+                    <span className="text-base text-slate-400 self-center mr-1">Set priority:</span>
                     {(["HIGH", "MEDIUM", "LOW"] as WantPriority[]).map((p) => (
                       <button
                         key={p}
                         onClick={() => bulkUpdateWants({ priority: p })}
                         disabled={isBulkWantLoading}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold border-2 disabled:opacity-50 transition-colors ${PRIORITY_COLORS[p]}`}
+                        className={`px-3 py-1 rounded-lg text-base font-bold border-2 disabled:opacity-50 transition-colors ${PRIORITY_COLORS[p]}`}
                       >
                         {p}
                       </button>
                     ))}
                     <span className="text-slate-400 self-center mx-1">|</span>
-                    <span className="text-xs text-slate-400 self-center mr-1">Set max condition:</span>
+                    <span className="text-base text-slate-400 self-center mr-1">Set max condition:</span>
                     <select
                       onChange={(e) => e.target.value && bulkUpdateWants({ maxCondition: e.target.value as CardCondition })}
                       disabled={isBulkWantLoading}
                       defaultValue=""
-                      className="px-3 py-1 rounded-lg border-2 border-slate-700 bg-slate-950/50 text-white text-xs focus:border-pink-500 focus:outline-none disabled:opacity-50"
+                      className="px-3 py-1 rounded-lg border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:border-pink-500 focus:outline-none disabled:opacity-50"
                     >
                       <option value="" disabled>Pick condition…</option>
                       {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([v, l]) => (
@@ -796,7 +796,7 @@ export default function MyCardsPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white">Filter Want List</h3>
                   {wantActiveFilterCount > 0 && (
-                    <button onClick={clearWantFilters} className="flex items-center gap-1 text-sm text-pink-400 hover:text-pink-300">
+                    <button onClick={clearWantFilters} className="flex items-center gap-1 text-base text-pink-400 hover:text-pink-300">
                       <X size={14} />
                       Clear all
                     </button>
@@ -804,13 +804,13 @@ export default function MyCardsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Priority</p>
+                  <p className="text-base font-bold text-slate-400 uppercase tracking-wide mb-2">Priority</p>
                   <div className="flex flex-wrap gap-2">
                     {(["HIGH", "MEDIUM", "LOW"] as WantPriority[]).map((p) => (
                       <button
                         key={p}
                         onClick={() => setFilterWantPriorities((prev) => prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p])}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg text-base font-bold border-2 transition-colors ${
                           filterWantPriorities.includes(p)
                             ? PRIORITY_COLORS[p]
                             : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"
@@ -823,13 +823,13 @@ export default function MyCardsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Max Condition</p>
+                  <p className="text-base font-bold text-slate-400 uppercase tracking-wide mb-2">Max Condition</p>
                   <div className="flex flex-wrap gap-2">
                     {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([value, label]) => (
                       <button
                         key={value}
                         onClick={() => setFilterWantCondition(filterWantCondition === value ? "" : value)}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-bold border-2 transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg text-base font-bold border-2 transition-colors ${
                           filterWantCondition === value
                             ? "bg-pink-500/20 text-pink-300 border-pink-500"
                             : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-600"
@@ -843,7 +843,7 @@ export default function MyCardsPage() {
 
                 {availableWantSets.length > 1 && (
                   <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Set</p>
+                    <p className="text-base font-bold text-slate-400 uppercase tracking-wide mb-2">Set</p>
                     <select
                       value={filterWantSet}
                       onChange={(e) => setFilterWantSet(e.target.value)}
@@ -1000,20 +1000,20 @@ function CollectionCard({
                   </span>
                 )}
               </div>
-              <p className="text-sm text-slate-400">{item.card.setName}</p>
+              <p className="text-base text-slate-400">{item.card.setName}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Set Code</p>
-              <p className="text-sm text-white font-mono">{item.card.setCode}</p>
+              <p className="text-base text-slate-400 uppercase tracking-wide mb-1">Set Code</p>
+              <p className="text-base text-white font-mono">{item.card.setCode}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Condition</p>
+              <p className="text-base text-slate-400 uppercase tracking-wide mb-1">Condition</p>
               <span className="inline-block px-3 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
                 {CONDITION_LABELS[item.condition]}
               </span>
             </div>
             <div className="text-center">
-              <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Attributes</p>
+              <p className="text-base text-slate-400 uppercase tracking-wide mb-1">Attributes</p>
               <div className="flex justify-center gap-2">
                 {item.isFoil && <span className="px-2 py-1 rounded-lg bg-yellow-500/20 text-yellow-300 text-xs font-bold">FOIL</span>}
                 {item.isFirstEdition && <span className="px-2 py-1 rounded-lg bg-purple-500/20 text-purple-300 text-xs font-bold">1ST ED</span>}
@@ -1053,7 +1053,7 @@ function CollectionCard({
                   <Tag size={18} />
                 </button>
                 {item.isOpenListing && item.askingValueOverride != null && (
-                  <span className="text-xs font-semibold text-teal-400">${item.askingValueOverride.toFixed(2)}</span>
+                  <span className="text-base font-semibold text-teal-400">${item.askingValueOverride.toFixed(2)}</span>
                 )}
                 <button onClick={onEdit} className="p-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors">
                   <Edit2 size={18} />
@@ -1077,7 +1077,7 @@ function CollectionCard({
       {item.status === "IN_TRADE" && (
         <div className="absolute inset-0 z-30 bg-black/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-3xl">
           <Lock className="h-8 w-8 text-amber-400 mb-2" />
-          <span className="text-amber-400 text-xs font-bold">In Trade</span>
+          <span className="text-amber-400 text-base font-bold">In Trade</span>
         </div>
       )}
 
@@ -1103,13 +1103,13 @@ function CollectionCard({
               <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-500/40 via-purple-500/40 to-pink-500/40 flex items-center justify-center border-4 border-blue-400/40">
                 <span className="text-5xl">🃏</span>
               </div>
-              <p className="text-xs text-slate-400 font-semibold">No Image</p>
+              <p className="text-base text-slate-400 font-semibold">No Image</p>
             </div>
           )}
         </div>
         <div className="p-4 space-y-2 bg-gradient-to-b from-slate-900/90 to-slate-950/90">
           <h3 className="font-bold text-white line-clamp-2 min-h-[2.5rem]">{item.card.name}</h3>
-          <p className="text-xs text-slate-400">{item.card.setName}</p>
+          <p className="text-base text-slate-400">{item.card.setName}</p>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-2 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">{CONDITION_LABELS[item.condition]}</span>
             {item.isFoil && <span className="px-2 py-1 rounded-lg bg-yellow-500/20 text-yellow-300 text-xs font-bold">FOIL</span>}
@@ -1119,7 +1119,7 @@ function CollectionCard({
       </div>
       {!selectMode && (
         item.status === "IN_TRADE" ? (
-          <div className="border-t-2 border-amber-500/30 bg-amber-500/10 py-2 text-center text-xs font-bold text-amber-400 flex items-center justify-center gap-1.5">
+          <div className="border-t-2 border-amber-500/30 bg-amber-500/10 py-2 text-center text-base font-bold text-amber-400 flex items-center justify-center gap-1.5">
             <Lock size={11} />
             In Active Trade
           </div>
@@ -1128,7 +1128,7 @@ function CollectionCard({
             <button
               onClick={onToggleTrade}
               title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
-              className={`flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold transition-colors ${
+              className={`flex-1 py-2 flex items-center justify-center gap-1.5 text-base font-bold transition-colors ${
                 item.status === "AVAILABLE"
                   ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
                   : "bg-slate-900/90 text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
@@ -1140,7 +1140,7 @@ function CollectionCard({
             <button
               onClick={onToggleListing}
               title={item.isOpenListing ? "Remove from listings" : "List publicly for offers"}
-              className={`flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold border-l-2 border-slate-700/50 transition-colors ${
+              className={`flex-1 py-2 flex items-center justify-center gap-1.5 text-base font-bold border-l-2 border-slate-700/50 transition-colors ${
                 item.isOpenListing
                   ? "bg-teal-500/20 text-teal-400 hover:bg-teal-500/30"
                   : "bg-slate-900/90 text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
@@ -1198,25 +1198,25 @@ function WantCard({ want, viewMode, onEdit, onRemove, selectMode = false, select
               <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-500/40 via-purple-500/40 to-blue-500/40 flex items-center justify-center border-4 border-pink-400/40">
                 <span className="text-5xl">🃏</span>
               </div>
-              <p className="text-xs text-slate-400 font-semibold">No Image</p>
+              <p className="text-base text-slate-400 font-semibold">No Image</p>
             </div>
           )}
         </div>
         <div onClick={!selectMode ? onEdit : undefined} className={`p-4 space-y-2 bg-gradient-to-b from-slate-900/90 to-slate-950/90 ${!selectMode ? "cursor-pointer" : ""}`}>
           <h3 className="font-bold text-white line-clamp-2 min-h-[2.5rem]">{want.card.name}</h3>
-          <p className="text-xs text-slate-400">{want.card.setName}</p>
+          <p className="text-base text-slate-400">{want.card.setName}</p>
           <span className="inline-block px-2 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
             Max: {CONDITION_LABELS[want.maxCondition]}
           </span>
-          {want.notes && <p className="text-xs text-slate-400 truncate">{want.notes}</p>}
+          {want.notes && <p className="text-base text-slate-400 truncate">{want.notes}</p>}
         </div>
         {!selectMode && (
           <div className="flex border-t-2 border-slate-700/50">
-            <button onClick={onEdit} className="flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold bg-slate-900/90 text-pink-400 hover:bg-pink-600/20 transition-colors">
+            <button onClick={onEdit} className="flex-1 py-2 flex items-center justify-center gap-1.5 text-base font-bold bg-slate-900/90 text-pink-400 hover:bg-pink-600/20 transition-colors">
               <Edit2 size={12} />
               Edit
             </button>
-            <button onClick={onRemove} className="flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold bg-slate-900/90 text-red-400 hover:bg-red-600/20 border-l-2 border-slate-700/50 transition-colors">
+            <button onClick={onRemove} className="flex-1 py-2 flex items-center justify-center gap-1.5 text-base font-bold bg-slate-900/90 text-red-400 hover:bg-red-600/20 border-l-2 border-slate-700/50 transition-colors">
               <Trash2 size={12} />
               Remove
             </button>
@@ -1250,8 +1250,8 @@ function WantCard({ want, viewMode, onEdit, onRemove, selectMode = false, select
 
           <div className="min-w-0">
             <h3 className="font-bold text-white truncate">{want.card.name}</h3>
-            <p className="text-sm text-slate-400">{want.card.setName} · #{want.card.cardNumber}</p>
-            {want.notes && <p className="text-xs text-slate-400 mt-1 truncate">{want.notes}</p>}
+            <p className="text-base text-slate-400">{want.card.setName} · #{want.card.cardNumber}</p>
+            {want.notes && <p className="text-base text-slate-400 mt-1 truncate">{want.notes}</p>}
           </div>
         </div>
 
@@ -1310,13 +1310,13 @@ function EditWantDialog({
   const [notes, setNotes] = useState(want.notes ?? "");
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700">
           <div>
             <h2 className="text-lg font-bold text-white">Edit Want</h2>
-            <p className="text-sm text-slate-400 mt-0.5">{want.card.name} · {want.card.setName}</p>
+            <p className="text-base text-slate-400 mt-0.5">{want.card.name} · {want.card.setName}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
             <X className="h-5 w-5" />
@@ -1326,13 +1326,13 @@ function EditWantDialog({
         {/* Body */}
         <div className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Priority</label>
+            <label className="block text-base font-medium text-slate-300 mb-2">Priority</label>
             <div className="flex gap-2">
               {(["HIGH", "MEDIUM", "LOW"] as WantPriority[]).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPriority(p)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-colors ${
+                  className={`flex-1 py-2 rounded-lg text-base font-semibold border transition-colors ${
                     priority === p ? PRIORITY_COLORS[p] : "bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500"
                   }`}
                 >
@@ -1343,7 +1343,7 @@ function EditWantDialog({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Max Acceptable Condition</label>
+            <label className="block text-base font-medium text-slate-300 mb-2">Max Acceptable Condition</label>
             <select
               value={maxCondition}
               onChange={(e) => setMaxCondition(e.target.value as CardCondition)}
@@ -1356,7 +1356,7 @@ function EditWantDialog({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
+            <label className="block text-base font-medium text-slate-300 mb-2">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -1418,8 +1418,8 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700 flex-shrink-0">
           <h2 className="text-lg font-bold text-white">Add Card to Collection</h2>
@@ -1451,8 +1451,8 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
                     className="text-left bg-slate-800/50 rounded-xl p-3 hover:bg-slate-800 transition-colors border border-slate-700 hover:border-blue-500/60"
                   >
                     <div className="aspect-[2/3] bg-gradient-to-br from-blue-950 to-purple-950 rounded-lg mb-2" />
-                    <p className="font-semibold text-white text-sm line-clamp-2">{card.name}</p>
-                    <p className="text-xs text-slate-400">{card.setName}</p>
+                    <p className="font-semibold text-white text-base line-clamp-2">{card.name}</p>
+                    <p className="text-base text-slate-400">{card.setName}</p>
                   </button>
                 ))}
               </div>
@@ -1461,13 +1461,13 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
 
           {step === "details" && selectedCard && (
             <div className="space-y-4">
-              <button onClick={() => setStep("search")} className="text-sm text-blue-400 hover:text-blue-300 transition-colors">← Back to search</button>
+              <button onClick={() => setStep("search")} className="text-base text-blue-400 hover:text-blue-300 transition-colors">← Back to search</button>
               <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
                 <p className="font-semibold text-white">{selectedCard.name}</p>
-                <p className="text-sm text-slate-400">{selectedCard.setName}</p>
+                <p className="text-base text-slate-400">{selectedCard.setName}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Condition</label>
+                <label className="block text-base font-medium text-slate-300 mb-2">Condition</label>
                 <select
                   value={condition}
                   onChange={(e) => setCondition(e.target.value as CardCondition)}
@@ -1478,10 +1478,10 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
               </div>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" id="foil" checked={isFoil} onChange={(e) => setIsFoil(e.target.checked)} className="w-4 h-4 rounded border border-slate-700 bg-slate-800 text-blue-600" />
-                <span className="text-sm text-slate-300">Foil / Holo</span>
+                <span className="text-base text-slate-300">Foil / Holo</span>
               </label>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Quantity</label>
+                <label className="block text-base font-medium text-slate-300 mb-2">Quantity</label>
                 <div className="flex items-center gap-2">
                   <button type="button" onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 transition-colors flex items-center justify-center">−</button>
                   <input
@@ -1550,14 +1550,14 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700 flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-white">Add to Want List</h2>
             {step === "details" && selectedCard && (
-              <button onClick={() => setStep("search")} className="text-sm text-pink-400 hover:text-pink-300 mt-0.5">← Back to search</button>
+              <button onClick={() => setStep("search")} className="text-base text-pink-400 hover:text-pink-300 mt-0.5">← Back to search</button>
             )}
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
@@ -1576,7 +1576,7 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
                   placeholder="Search for a card..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-base"
                   autoFocus
                 />
               </div>
@@ -1588,8 +1588,8 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
                     className="text-left bg-slate-800/50 rounded-lg p-3 hover:bg-slate-800 transition-colors border border-slate-700 hover:border-pink-500/50"
                   >
                     <div className="aspect-[2/3] bg-slate-700 rounded mb-2" />
-                    <p className="font-semibold text-white text-sm line-clamp-2">{card.name}</p>
-                    <p className="text-xs text-slate-400">{card.setName}</p>
+                    <p className="font-semibold text-white text-base line-clamp-2">{card.name}</p>
+                    <p className="text-base text-slate-400">{card.setName}</p>
                   </button>
                 ))}
               </div>
@@ -1601,17 +1601,17 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
               <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-white">{selectedCard.name}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{selectedCard.setName}</p>
+                  <p className="text-base text-slate-400 mt-0.5">{selectedCard.setName}</p>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Priority</label>
+                <label className="block text-base font-medium text-slate-300 mb-1.5">Priority</label>
                 <div className="flex gap-2">
                   {(["HIGH", "MEDIUM", "LOW"] as WantPriority[]).map((p) => (
                     <button
                       key={p}
                       onClick={() => setPriority(p)}
-                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+                      className={`flex-1 py-2.5 rounded-lg text-base font-medium border transition-colors ${
                         priority === p
                           ? p === "HIGH" ? "bg-red-500/20 border-red-500 text-red-300"
                             : p === "MEDIUM" ? "bg-yellow-500/20 border-yellow-500 text-yellow-300"
@@ -1625,29 +1625,29 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Max Acceptable Condition</label>
-                <p className="text-xs text-slate-400 mb-1.5">The worst condition you'd accept for this card</p>
+                <label className="block text-base font-medium text-slate-300 mb-1.5">Max Acceptable Condition</label>
+                <p className="text-base text-slate-400 mb-1.5">The worst condition you'd accept for this card</p>
                 <select
                   value={maxCondition}
                   onChange={(e) => setMaxCondition(e.target.value as CardCondition)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm"
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-base"
                 >
                   {Object.entries(CONDITION_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
+                <label className="block text-base font-medium text-slate-300 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Any specific details (e.g. 1st edition only, English version)..."
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm resize-none"
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-base resize-none"
                   rows={3}
                   maxLength={500}
                 />
               </div>
               {error && (
-                <div className="px-4 py-3 rounded-lg bg-red-900/20 border border-red-800/50 text-red-400 text-sm">
+                <div className="px-4 py-3 rounded-lg bg-red-900/20 border border-red-800/50 text-red-400 text-base">
                   {error}
                 </div>
               )}
@@ -1658,11 +1658,11 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
         {/* Footer */}
         {step === "details" && selectedCard && (
           <div className="flex gap-3 p-5 border-t border-slate-700 flex-shrink-0">
-            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 text-white font-semibold hover:bg-slate-700 transition-colors text-sm">Cancel</button>
+            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 text-white font-semibold hover:bg-slate-700 transition-colors text-base">Cancel</button>
             <button
               onClick={() => { setError(null); addMutation.mutate(); }}
               disabled={addMutation.isPending}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-semibold transition-colors disabled:opacity-50 text-sm"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-semibold transition-colors disabled:opacity-50 text-base"
             >
               {addMutation.isPending ? "Adding..." : "Add to Want List"}
             </button>
@@ -1712,7 +1712,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
         <div className="flex items-center justify-between p-5 border-b border-slate-700 flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-white">Edit Card</h2>
-            <p className="text-sm text-slate-400 mt-0.5">{item.card.name} · {item.card.setName}</p>
+            <p className="text-base text-slate-400 mt-0.5">{item.card.name} · {item.card.setName}</p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
             <X className="h-5 w-5" />
@@ -1722,7 +1722,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {item.status === "IN_TRADE" && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm">
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-base">
               <Lock size={16} />
               <span>This card is currently in an active trade. Only quantity can be updated.</span>
             </div>
@@ -1730,18 +1730,18 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
 
           {confirmDelete && (
             <div className="p-4 rounded-lg bg-red-900/20 border border-red-800/50">
-              <p className="text-sm text-red-300 font-medium mb-3">Remove &quot;{item.card.name}&quot; from your collection?</p>
+              <p className="text-base text-red-300 font-medium mb-3">Remove &quot;{item.card.name}&quot; from your collection?</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setConfirmDelete(false)}
-                  className="flex-1 px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors text-sm font-medium"
+                  className="flex-1 px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors text-base font-medium"
                 >
                   Keep it
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate()}
                   disabled={deleteMutation.isPending}
-                  className="flex-1 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors text-sm font-medium disabled:opacity-50"
+                  className="flex-1 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors text-base font-medium disabled:opacity-50"
                 >
                   {deleteMutation.isPending ? "Removing..." : "Yes, remove"}
                 </button>
@@ -1750,12 +1750,12 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Condition</label>
+            <label className="block text-base font-medium text-slate-300 mb-1.5">Condition</label>
             <select
               value={condition}
               onChange={(e) => setCondition(e.target.value as CardCondition)}
               disabled={item.status === "IN_TRADE"}
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {Object.entries(CONDITION_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
@@ -1764,21 +1764,21 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <input type="checkbox" id="edit-foil" checked={isFoil} onChange={(e) => setIsFoil(e.target.checked)} disabled={item.status === "IN_TRADE"} className="w-4 h-4 rounded border border-slate-700" />
-              <label htmlFor="edit-foil" className="text-sm text-slate-300">Foil / Holo</label>
+              <label htmlFor="edit-foil" className="text-base text-slate-300">Foil / Holo</label>
             </div>
             <div className="flex items-center gap-3">
               <input type="checkbox" id="edit-first-edition" checked={isFirstEdition} onChange={(e) => setIsFirstEdition(e.target.checked)} disabled={item.status === "IN_TRADE"} className="w-4 h-4 rounded border border-slate-700" />
-              <label htmlFor="edit-first-edition" className="text-sm text-slate-300">1st Edition</label>
+              <label htmlFor="edit-first-edition" className="text-base text-slate-300">1st Edition</label>
             </div>
             <div className="flex items-center gap-3">
               <input type="checkbox" id="edit-trade" checked={availableForTrade} onChange={(e) => setAvailableForTrade(e.target.checked)} disabled={item.status === "IN_TRADE"} className="w-4 h-4 rounded border border-slate-700" />
-              <label htmlFor="edit-trade" className="text-sm text-slate-300">Available for Trade</label>
+              <label htmlFor="edit-trade" className="text-base text-slate-300">Available for Trade</label>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Quantity</label>
-            <p className="text-xs text-slate-400 mb-2">How many identical copies of this card you own</p>
+            <label className="block text-base font-medium text-slate-300 mb-1.5">Quantity</label>
+            <p className="text-base text-slate-400 mb-2">How many identical copies of this card you own</p>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -1793,7 +1793,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
                 max={99}
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, Math.min(99, parseInt(e.target.value) || 1)))}
-                className="w-16 text-center px-2 py-2 rounded-lg border border-slate-700 bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-16 text-center px-2 py-2 rounded-lg border border-slate-700 bg-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               />
               <button
                 type="button"
@@ -1806,13 +1806,13 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
+            <label className="block text-base font-medium text-slate-300 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any notes about this card..."
               disabled={item.status === "IN_TRADE"}
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base resize-none disabled:opacity-40 disabled:cursor-not-allowed"
               rows={3}
               maxLength={500}
             />
@@ -1824,13 +1824,13 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
           <button
             onClick={() => setConfirmDelete(true)}
             disabled={deleteMutation.isPending}
-            className="px-4 py-2 border border-red-500/60 text-red-400 hover:bg-red-500/10 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5"
+            className="px-4 py-2 border border-red-500/60 text-red-400 hover:bg-red-500/10 rounded-lg text-base font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5"
           >
             <Trash2 size={14} />
             Remove
           </button>
           <div className="flex items-center gap-3">
-            <button onClick={onClose} className="px-4 py-2 text-slate-400 hover:text-white transition-colors text-sm">Cancel</button>
+            <button onClick={onClose} className="px-4 py-2 text-slate-400 hover:text-white transition-colors text-base">Cancel</button>
             <button
               onClick={() => {
                 if (item.status === "IN_TRADE") {
@@ -1840,7 +1840,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
                 }
               }}
               disabled={updateMutation.isPending}
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+              className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium text-base transition-colors"
             >
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </button>

@@ -105,7 +105,7 @@ function CardItem({
               <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-br from-blue-500/40 via-purple-500/40 to-pink-500/40 flex items-center justify-center border-2 border-blue-400/40 group-hover:border-blue-400/80 transition-all duration-500">
                 <span className="text-3xl">✨</span>
               </div>
-              <p className="text-xs text-slate-400 font-bold">No Image</p>
+              <p className="text-base text-slate-400 font-bold">No Image</p>
             </div>
           </div>
         )}
@@ -143,7 +143,7 @@ function CardItem({
 
       {/* Info */}
       <div className="p-3 space-y-1.5">
-        <h3 className="font-black text-sm text-white line-clamp-2 leading-tight min-h-[2.5rem] group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:to-purple-400 group-hover:bg-clip-text transition-all duration-300">
+        <h3 className="font-black text-base text-white line-clamp-2 leading-tight min-h-[2.5rem] group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:to-purple-400 group-hover:bg-clip-text transition-all duration-300">
           {card.name}
         </h3>
         <div className="flex items-center gap-1.5 text-xs flex-wrap">
@@ -154,7 +154,7 @@ function CardItem({
             <span className="text-slate-400 font-mono font-bold">#{card.cardNumber}</span>
           )}
         </div>
-        <p className="text-xs text-slate-400 line-clamp-1 font-semibold">{card.setName}</p>
+        <p className="text-base text-slate-400 line-clamp-1 font-semibold">{card.setName}</p>
         {card.rarity && (
           <span
             className={`inline-block px-2.5 py-1 rounded-xl text-xs font-black uppercase tracking-widest bg-gradient-to-r ${getRarityColor(card.rarity)}`}
@@ -243,8 +243,8 @@ function BulkAddModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700">
           <div>
@@ -252,7 +252,7 @@ function BulkAddModal({
               {isWants ? <Heart className="h-5 w-5 text-pink-400" /> : <Plus className="h-5 w-5 text-blue-400" />}
               {isWants ? "Add to Want List" : "Add to Collection"}
             </h2>
-            <p className="text-sm text-slate-400 mt-0.5">
+            <p className="text-base text-slate-400 mt-0.5">
               {cards.length} card{cards.length !== 1 ? "s" : ""} selected
             </p>
           </div>
@@ -271,15 +271,15 @@ function BulkAddModal({
               {/* Selected cards list */}
               <div className="bg-slate-800/50 rounded-xl p-3 max-h-36 overflow-y-auto space-y-1">
                 {cards.map((c) => (
-                  <div key={c.id} className="flex items-center gap-2 text-sm">
+                  <div key={c.id} className="flex items-center gap-2 text-base">
                     <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isWants ? "bg-pink-400" : "bg-blue-400"}`} />
                     <span className="text-slate-200 truncate">{c.name}</span>
-                    <span className="text-slate-400 text-xs flex-shrink-0">{c.setCode}</span>
+                    <span className="text-slate-400 text-base flex-shrink-0">{c.setCode}</span>
                   </div>
                 ))}
               </div>
 
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">
+              <p className="text-base text-slate-400 font-medium uppercase tracking-wide">
                 Apply to all selected cards
               </p>
 
@@ -287,13 +287,13 @@ function BulkAddModal({
                 /* Wants fields */
                 <>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-1">Max acceptable condition</label>
+                    <label className="block text-base text-slate-400 mb-1">Max acceptable condition</label>
                     <div className="relative">
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none h-4 w-4" />
                       <select
                         value={maxCondition}
                         onChange={(e) => setMaxCondition(e.target.value as CardCondition)}
-                        className={`w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 ${accentClass} appearance-none pr-8`}
+                        className={`w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-base focus:outline-none focus:ring-2 ${accentClass} appearance-none pr-8`}
                       >
                         {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([v, l]) => (
                           <option key={v} value={v}>{l} or better</option>
@@ -302,13 +302,13 @@ function BulkAddModal({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-1">Priority</label>
+                    <label className="block text-base text-slate-400 mb-1">Priority</label>
                     <div className="relative">
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none h-4 w-4" />
                       <select
                         value={priority}
                         onChange={(e) => setPriority(e.target.value as WantPriority)}
-                        className={`w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 ${accentClass} appearance-none pr-8`}
+                        className={`w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-base focus:outline-none focus:ring-2 ${accentClass} appearance-none pr-8`}
                       >
                         {(Object.entries(PRIORITY_LABELS) as [WantPriority, string][]).map(([v, l]) => (
                           <option key={v} value={v}>{l}</option>
@@ -321,13 +321,13 @@ function BulkAddModal({
                 /* Collection fields */
                 <>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-1">Condition</label>
+                    <label className="block text-base text-slate-400 mb-1">Condition</label>
                     <div className="relative">
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none h-4 w-4" />
                       <select
                         value={condition}
                         onChange={(e) => setCondition(e.target.value as CardCondition)}
-                        className={`w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 ${accentClass} appearance-none pr-8`}
+                        className={`w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-base focus:outline-none focus:ring-2 ${accentClass} appearance-none pr-8`}
                       >
                         {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([v, l]) => (
                           <option key={v} value={v}>{l}</option>
@@ -350,12 +350,12 @@ function BulkAddModal({
                         >
                           {checked && <Check className="h-3 w-3 text-white" />}
                         </div>
-                        <span className="text-sm text-slate-300">{label}</span>
+                        <span className="text-base text-slate-300">{label}</span>
                       </label>
                     ))}
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-1.5">Quantity per card</label>
+                    <label className="block text-base text-slate-400 mb-1.5">Quantity per card</label>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -371,7 +371,7 @@ function BulkAddModal({
                         max={99}
                         value={quantity}
                         onChange={(e) => setQuantity(Math.min(99, Math.max(1, parseInt(e.target.value) || 1)))}
-                        className="w-14 text-center px-2 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-14 text-center px-2 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <button
                         type="button"
@@ -381,7 +381,7 @@ function BulkAddModal({
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
-                      <span className="text-xs text-slate-400">copies each</span>
+                      <span className="text-base text-slate-400">copies each</span>
                     </div>
                   </div>
                 </>
@@ -390,7 +390,7 @@ function BulkAddModal({
               {/* Progress bar (while adding) */}
               {isAdding && (
                 <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs text-slate-400">
+                  <div className="flex justify-between text-base text-slate-400">
                     <span>Adding cards…</span>
                     <span>{progress} / {cards.length}</span>
                   </div>
@@ -424,9 +424,9 @@ function BulkAddModal({
                     {cards.length - errors.length} of {cards.length} cards added
                   </p>
                   <div className="text-left bg-red-900/20 border border-red-800/50 rounded-lg p-3">
-                    <p className="text-xs text-red-400 font-medium mb-1">Failed to add:</p>
+                    <p className="text-base text-red-400 font-medium mb-1">Failed to add:</p>
                     {errors.map((name) => (
-                      <p key={name} className="text-xs text-slate-400 truncate">• {name}</p>
+                      <p key={name} className="text-base text-slate-400 truncate">• {name}</p>
                     ))}
                   </div>
                 </>
@@ -442,7 +442,7 @@ function BulkAddModal({
               <button
                 onClick={handleAdd}
                 disabled={isAdding}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl font-semibold text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl font-semibold text-base transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                   isWants ? "bg-pink-600 hover:bg-pink-500" : "bg-blue-600 hover:bg-blue-500"
                 }`}
               >
@@ -457,7 +457,7 @@ function BulkAddModal({
               <button
                 onClick={onClose}
                 disabled={isAdding}
-                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-colors"
+                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white rounded-xl font-semibold text-base transition-colors"
               >
                 Cancel
               </button>
@@ -465,7 +465,7 @@ function BulkAddModal({
           ) : (
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-sm transition-colors"
+              className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-base transition-colors"
             >
               Done
             </button>
@@ -504,7 +504,7 @@ function TradersPanel({
       <div className="flex flex-col items-center justify-center h-full text-center py-20 px-6">
         <Users className="h-16 w-16 text-slate-700 mb-4" />
         <h3 className="text-base font-semibold text-slate-400 mb-2">Select a card</h3>
-        <p className="text-sm text-slate-400">
+        <p className="text-base text-slate-400">
           Click any card to see which traders have it available
         </p>
       </div>
@@ -526,10 +526,10 @@ function TradersPanel({
           </div>
         )}
         <div className="min-w-0">
-          <p className="font-bold text-white text-sm truncate">{card.name}</p>
-          <p className="text-xs text-slate-400 truncate">{card.setName}</p>
+          <p className="font-bold text-white text-base truncate">{card.name}</p>
+          <p className="text-base text-slate-400 truncate">{card.setName}</p>
           {card.rarity && (
-            <span className={`inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold uppercase bg-gradient-to-r ${getRarityColor(card.rarity)}`}>
+            <span className={`inline-block mt-1 px-2 py-0.5 rounded-md text-base font-bold uppercase bg-gradient-to-r ${getRarityColor(card.rarity)}`}>
               {card.rarity}
             </span>
           )}
@@ -539,7 +539,7 @@ function TradersPanel({
       <div className="px-4 py-2.5 border-b border-slate-800/60 bg-slate-900/40">
         <div className="flex items-center gap-2">
           <Users className="h-3.5 w-3.5 text-green-400" />
-          <span className="text-xs font-semibold text-slate-300">
+          <span className="text-base font-semibold text-slate-300">
             {isLoading ? "Loading…" : `${totalHolders} trader${totalHolders !== 1 ? "s" : ""} available`}
           </span>
         </div>
@@ -553,8 +553,8 @@ function TradersPanel({
         ) : holders.length === 0 ? (
           <div className="text-center py-10 px-4">
             <Package className="h-10 w-10 text-slate-700 mx-auto mb-3" />
-            <p className="text-slate-400 text-sm font-medium">No traders yet</p>
-            <p className="text-xs text-slate-400 mt-1">Nobody has this card available for trade right now.</p>
+            <p className="text-slate-400 text-base font-medium">No traders yet</p>
+            <p className="text-base text-slate-400 mt-1">Nobody has this card available for trade right now.</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-800/60">
@@ -564,15 +564,15 @@ function TradersPanel({
                 <div key={holder.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800/40 transition-colors">
                   <Link href={`/profile/${holder.user.username}`}>
                     <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 hover:border-blue-400 transition-colors">
-                      <span className="text-xs font-bold text-blue-300">{getInitials(holder.user.username)}</span>
+                      <span className="text-base font-bold text-blue-300">{getInitials(holder.user.username)}</span>
                     </div>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/profile/${holder.user.username}`} className="text-sm font-semibold text-white hover:text-blue-400 transition-colors truncate block">
+                    <Link href={`/profile/${holder.user.username}`} className="text-base font-semibold text-white hover:text-blue-400 transition-colors truncate block">
                       {holder.user.username}
                     </Link>
                     <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                      <span className="text-xs text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
+                      <span className="text-base text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
                         {CONDITION_LABELS[holder.condition as keyof typeof CONDITION_LABELS] ?? holder.condition}
                       </span>
                       {holder.isFoil && <span className="text-xs text-yellow-400 bg-yellow-400/10 px-1.5 py-0.5 rounded">Foil</span>}
@@ -580,9 +580,9 @@ function TradersPanel({
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                    {price != null && <span className="text-xs font-semibold text-green-400">${price.toFixed(2)}</span>}
+                    {price != null && <span className="text-base font-semibold text-green-400">${price.toFixed(2)}</span>}
                     {holder.user.id !== currentUserId && (
-                      <button onClick={() => onProposeTrade(holder)} className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-medium transition-colors">
+                      <button onClick={() => onProposeTrade(holder)} className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-base font-medium transition-colors">
                         <ArrowLeftRight className="h-3 w-3" />
                         Trade
                       </button>
@@ -600,7 +600,7 @@ function TradersPanel({
           <button onClick={() => setHoldersPage((p) => Math.max(1, p - 1))} disabled={holdersPage === 1} className="p-1.5 rounded-lg hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <span className="text-xs text-slate-400">{holdersPage} / {totalPages}</span>
+          <span className="text-base text-slate-400">{holdersPage} / {totalPages}</span>
           <button onClick={() => setHoldersPage((p) => Math.min(totalPages, p + 1))} disabled={holdersPage === totalPages} className="p-1.5 rounded-lg hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -645,8 +645,8 @@ function MultiCardTradersPanel({
     return (
       <div className="flex flex-col items-center justify-center h-full text-center py-16 px-6">
         <Layers className="h-12 w-12 text-slate-700 mb-3" />
-        <p className="text-sm font-semibold text-slate-400">Select cards to see traders</p>
-        <p className="text-xs text-slate-400 mt-1">Check cards in the grid to view who has them</p>
+        <p className="text-base font-semibold text-slate-400">Select cards to see traders</p>
+        <p className="text-base text-slate-400 mt-1">Check cards in the grid to view who has them</p>
       </div>
     );
   }
@@ -660,7 +660,7 @@ function MultiCardTradersPanel({
           <select
             value={cardFilter}
             onChange={(e) => setCardFilter(e.target.value)}
-            className="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="">All selected cards ({cards.length})</option>
             {cards.map((c) => (
@@ -675,7 +675,7 @@ function MultiCardTradersPanel({
           <select
             value={conditionFilter}
             onChange={(e) => setConditionFilter(e.target.value)}
-            className="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="">Any condition</option>
             {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([v, l]) => (
@@ -712,14 +712,14 @@ function MultiCardTradersPanel({
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white truncate leading-tight">{card.name}</p>
-                  <p className="text-xs text-slate-400 truncate">{card.setCode} {card.cardNumber ? `#${card.cardNumber}` : ""}</p>
+                  <p className="text-base font-bold text-white truncate leading-tight">{card.name}</p>
+                  <p className="text-base text-slate-400 truncate">{card.setCode} {card.cardNumber ? `#${card.cardNumber}` : ""}</p>
                 </div>
                 <div className="flex-shrink-0 text-right">
                   {query?.isLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />
                   ) : (
-                    <span className={`text-xs font-bold ${holders.length > 0 ? "text-green-400" : "text-slate-400"}`}>
+                    <span className={`text-base font-bold ${holders.length > 0 ? "text-green-400" : "text-slate-400"}`}>
                       {holders.length}{conditionFilter ? "" : totalRaw > 15 ? "+" : ""}
                     </span>
                   )}
@@ -732,7 +732,7 @@ function MultiCardTradersPanel({
                   <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
                 </div>
               ) : holders.length === 0 ? (
-                <p className="text-xs text-slate-400 italic px-4 py-2.5">
+                <p className="text-base text-slate-400 italic px-4 py-2.5">
                   {conditionFilter ? "No traders match this condition" : "No traders available"}
                 </p>
               ) : (
@@ -743,15 +743,15 @@ function MultiCardTradersPanel({
                       <div key={holder.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-800/40 transition-colors">
                         <Link href={`/profile/${holder.user.username}`}>
                           <div className="w-7 h-7 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 hover:border-blue-400 transition-colors">
-                            <span className="text-xs font-bold text-blue-300">{getInitials(holder.user.username)}</span>
+                            <span className="text-base font-bold text-blue-300">{getInitials(holder.user.username)}</span>
                           </div>
                         </Link>
                         <div className="flex-1 min-w-0">
-                          <Link href={`/profile/${holder.user.username}`} className="text-xs font-semibold text-white hover:text-blue-400 transition-colors truncate block">
+                          <Link href={`/profile/${holder.user.username}`} className="text-base font-semibold text-white hover:text-blue-400 transition-colors truncate block">
                             {holder.user.username}
                           </Link>
                           <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                            <span className="text-xs text-slate-400 bg-slate-800 px-1 py-0.5 rounded">
+                            <span className="text-base text-slate-400 bg-slate-800 px-1 py-0.5 rounded">
                               {CONDITION_LABELS[holder.condition as keyof typeof CONDITION_LABELS] ?? holder.condition}
                             </span>
                             {holder.isFoil && <span className="text-xs text-yellow-400">Foil</span>}
@@ -759,11 +759,11 @@ function MultiCardTradersPanel({
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                          {price != null && <span className="text-xs font-semibold text-green-400">${price.toFixed(2)}</span>}
+                          {price != null && <span className="text-base font-semibold text-green-400">${price.toFixed(2)}</span>}
                           {holder.user.id !== currentUserId && (
                             <button
                               onClick={() => onProposeTrade(holder)}
-                              className="flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-medium transition-colors"
+                              className="flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-base font-medium transition-colors"
                             >
                               <ArrowLeftRight className="h-2.5 w-2.5" />
                               Trade
@@ -947,7 +947,7 @@ export default function CardsPage() {
                   <>
                     {/* Toolbar row */}
                     <div className="flex items-center justify-between mb-4 gap-3">
-                      <p className="text-xs text-slate-400">
+                      <p className="text-base text-slate-400">
                         {data.total} card{data.total !== 1 ? "s" : ""} found
                         {!isSelectMode && " — click one to see traders"}
                       </p>
@@ -956,7 +956,7 @@ export default function CardsPage() {
                           <>
                             <button
                               onClick={selectAll}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition-colors"
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-base font-medium transition-colors"
                             >
                               <CheckSquare className="h-3.5 w-3.5" />
                               Select all
@@ -964,14 +964,14 @@ export default function CardsPage() {
                             <button
                               onClick={() => setCheckedCards(new Map())}
                               disabled={checkedCount === 0}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 rounded-lg text-xs font-medium transition-colors"
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 rounded-lg text-base font-medium transition-colors"
                             >
                               <Square className="h-3.5 w-3.5" />
                               Clear
                             </button>
                             <button
                               onClick={exitSelectMode}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition-colors"
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-base font-medium transition-colors"
                             >
                               <X className="h-3.5 w-3.5" />
                               Exit
@@ -980,7 +980,7 @@ export default function CardsPage() {
                         ) : (
                           <button
                             onClick={() => { setIsSelectMode(true); setSelectedCard(null); }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white rounded-lg text-base font-medium transition-colors"
                           >
                             <Layers className="h-3.5 w-3.5" />
                             Select multiple
@@ -1016,17 +1016,17 @@ export default function CardsPage() {
                     {/* Pagination */}
                     {data.totalPages > 1 && (
                       <div className="mt-8 flex items-center justify-center gap-2">
-                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="flex items-center gap-1 px-4 py-2 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm">
+                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="flex items-center gap-1 px-4 py-2 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-base">
                           <ChevronLeft size={16} /> Previous
                         </button>
-                        <span className="text-sm text-slate-400 px-2">{page} / {data.totalPages}</span>
-                        <button onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))} disabled={page === data.totalPages} className="flex items-center gap-1 px-4 py-2 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm">
+                        <span className="text-base text-slate-400 px-2">{page} / {data.totalPages}</span>
+                        <button onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))} disabled={page === data.totalPages} className="flex items-center gap-1 px-4 py-2 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-base">
                           Next <ChevronRight size={16} />
                         </button>
                       </div>
                     )}
 
-                    <div className="mt-4 text-center text-sm text-muted-foreground">
+                    <div className="mt-4 text-center text-base text-muted-foreground">
                       Showing {(page - 1) * limit + 1}–{Math.min(page * limit, data.total)} of {data.total} cards
                     </div>
                   </>
@@ -1039,7 +1039,7 @@ export default function CardsPage() {
           <div className="lg:w-80 xl:w-96 flex-shrink-0">
             <div className="lg:sticky lg:top-20 bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden flex flex-col" style={{ minHeight: "420px", maxHeight: "calc(100vh - 6rem)" }}>
               <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/80">
-                <h2 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                <h2 className="text-base font-semibold text-slate-300 flex items-center gap-2">
                   <Users className="h-4 w-4 text-green-400" />
                   Available Traders
                 </h2>
@@ -1063,20 +1063,20 @@ export default function CardsPage() {
               {/* Selection actions */}
               {isSelectMode && checkedCount > 0 && (
                 <div className="border-t border-slate-800 p-4 space-y-2.5 bg-slate-900/80">
-                  <p className="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                  <p className="text-base font-semibold text-slate-300 flex items-center gap-2">
                     <Layers className="h-3.5 w-3.5 text-blue-400" />
                     {checkedCount} card{checkedCount !== 1 ? "s" : ""} selected
                   </p>
                   <button
                     onClick={() => { setBulkMode("collection"); setShowBulkModal(true); }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-base font-semibold transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                     Add to Collection
                   </button>
                   <button
                     onClick={() => { setBulkMode("wants"); setShowBulkModal(true); }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-pink-600 hover:bg-pink-500 text-white rounded-xl text-sm font-semibold transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-pink-600 hover:bg-pink-500 text-white rounded-xl text-base font-semibold transition-colors"
                   >
                     <Heart className="h-4 w-4" />
                     Add to Want List

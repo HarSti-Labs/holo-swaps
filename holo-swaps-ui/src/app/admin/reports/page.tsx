@@ -76,7 +76,7 @@ export default function AdminReportsPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">User Reports</h1>
-              <p className="text-sm text-slate-400">
+              <p className="text-base text-slate-400">
                 {pendingCount} pending · {total} total
               </p>
             </div>
@@ -84,7 +84,7 @@ export default function AdminReportsPage() {
 
           <button
             onClick={() => setShowResolved((v) => !v)}
-            className="px-3 py-2 rounded-lg border border-slate-700 text-sm text-slate-400 hover:text-white transition-colors"
+            className="px-3 py-2 rounded-lg border border-slate-700 text-base text-slate-400 hover:text-white transition-colors"
           >
             {showResolved ? "Hide resolved" : "Show resolved"}
           </button>
@@ -106,7 +106,7 @@ export default function AdminReportsPage() {
           ) : (
             <div className="divide-y divide-slate-800">
               {/* Table header */}
-              <div className="hidden md:grid grid-cols-[1fr_1fr_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <div className="hidden md:grid grid-cols-[1fr_1fr_auto_auto] gap-4 px-6 py-3 text-base font-semibold text-slate-400 uppercase tracking-wider">
                 <span>Reported User</span>
                 <span>Reporter</span>
                 <span>Reason</span>
@@ -134,8 +134,8 @@ export default function AdminReportsPage() {
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-white">@{report.reported.username}</p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-base font-medium text-white">@{report.reported.username}</p>
+                        <p className="text-base text-slate-400">
                           {new Date(report.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </p>
                       </div>
@@ -151,14 +151,14 @@ export default function AdminReportsPage() {
                         )}
                       </div>
                       <div>
-                        <p className="text-sm text-slate-300">@{report.reporter.username}</p>
-                        <p className="text-xs text-slate-400">Reporter</p>
+                        <p className="text-base text-slate-300">@{report.reporter.username}</p>
+                        <p className="text-base text-slate-400">Reporter</p>
                       </div>
                     </div>
 
                     {/* Reason */}
                     <div>
-                      <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400">
+                      <span className="inline-block text-base font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400">
                         {REASON_LABELS[report.reason] ?? report.reason}
                       </span>
                     </div>
@@ -166,17 +166,17 @@ export default function AdminReportsPage() {
                     {/* Status */}
                     <div className="flex md:justify-end">
                       {report.isResolved ? (
-                        <span className="flex items-center gap-1.5 text-xs text-green-400">
+                        <span className="flex items-center gap-1.5 text-base text-green-400">
                           <CheckCircle className="h-3.5 w-3.5" /> Resolved
                         </span>
                       ) : (
-                        <span className="text-xs text-amber-400 font-medium">Pending</span>
+                        <span className="text-base text-amber-400 font-medium">Pending</span>
                       )}
                     </div>
                   </div>
 
                   {report.details && (
-                    <p className="mt-2 text-xs text-slate-400 line-clamp-1 pl-11">{report.details}</p>
+                    <p className="mt-2 text-base text-slate-400 line-clamp-1 pl-11">{report.details}</p>
                   )}
                 </Link>
               ))}
@@ -190,15 +190,15 @@ export default function AdminReportsPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 rounded-lg border border-slate-700 text-sm text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
+              className="px-4 py-2 rounded-lg border border-slate-700 text-base text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
             >
               Previous
             </button>
-            <span className="text-sm text-slate-400">Page {page} of {totalPages}</span>
+            <span className="text-base text-slate-400">Page {page} of {totalPages}</span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-4 py-2 rounded-lg border border-slate-700 text-sm text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
+              className="px-4 py-2 rounded-lg border border-slate-700 text-base text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
             >
               Next
             </button>

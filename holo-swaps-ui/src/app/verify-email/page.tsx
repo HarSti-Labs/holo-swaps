@@ -81,7 +81,7 @@ export default function VerifyEmailPage() {
           </h1>
 
           {/* Message */}
-          <p className={`text-sm mb-6 ${
+          <p className={`text-base mb-6 ${
             status === "success" ? "text-green-400" :
             status === "error" ? "text-red-400" :
             "text-slate-400"
@@ -107,7 +107,7 @@ export default function VerifyEmailPage() {
               >
                 Sign In
               </Link>
-              <p className="text-xs text-slate-400">
+              <p className="text-base text-slate-400">
                 You can request a new verification email from your dashboard after signing in.
               </p>
             </div>
