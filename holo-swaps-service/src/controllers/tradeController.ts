@@ -11,13 +11,16 @@ const stripeService = new StripeService();
 
 const proposeTradeSchema = z.object({
   receiverId: z.string().uuid(),
-  proposerCollectionItemIds: z.array(z.string().uuid()).min(1),
+  proposerCollectionItemIds: z.array(z.string().uuid()).min(0),
   receiverCollectionItemIds: z.array(z.string().uuid()).min(1),
   // Either side can sweeten the deal — both optional, always >= 0
   proposerCashAdd: z.number().min(0).optional(),
   receiverCashAdd: z.number().min(0).optional(),
   message: z.string().max(500).optional(),
-});
+}).refine(
+  (d) => d.proposerCollectionItemIds.length > 0 || (d.proposerCashAdd ?? 0) > 0,
+  { message: "You must offer at least one card or some cash" }
+);
 
 const counterOfferSchema = z.object({
   proposerCollectionItemIds: z.array(z.string().uuid()).optional(),

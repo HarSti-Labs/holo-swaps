@@ -129,7 +129,7 @@ export function TradeProposalModal({
   const theirFee = theirReceiveTotal * PLATFORM_FEE_RATE;
 
   const handleSubmit = async () => {
-    if (myCards.length === 0 || theirCards.length === 0) return;
+    if (theirCards.length === 0 || (myCards.length === 0 && cashAddNumber <= 0)) return;
 
     setIsSubmitting(true);
     try {
@@ -544,7 +544,7 @@ export function TradeProposalModal({
             </button>
             <button
               onClick={handleSubmit}
-              disabled={myCards.length === 0 || theirCards.length === 0 || isSubmitting || !hasAddress}
+              disabled={theirCards.length === 0 || (myCards.length === 0 && cashAddNumber <= 0) || isSubmitting || !hasAddress}
               className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
             >
               {isSubmitting ? (

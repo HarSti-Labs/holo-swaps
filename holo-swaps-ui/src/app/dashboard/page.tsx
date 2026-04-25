@@ -111,7 +111,7 @@ export default function DashboardPage() {
             </div>
 
             {isLoading ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
@@ -134,7 +134,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-4">
                 {trades.map((trade) => (
                   <TradeCard key={trade.id} trade={trade} />
                 ))}

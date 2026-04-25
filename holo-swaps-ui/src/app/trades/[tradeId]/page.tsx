@@ -72,6 +72,7 @@ export default function TradeDetailPage() {
   const [isAccepting, setIsAccepting] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [showCounterModal, setShowCounterModal] = useState(false);
 
   const [actionError, setActionError] = useState<string | null>(null);
@@ -225,12 +226,10 @@ export default function TradeDetailPage() {
     }
   };
 
-  const handleCancel = async () => {
-    const msg = trade.status === "ACCEPTED"
-      ? "Are you sure? This trade has already been accepted by both parties. Cancelling will unlock both parties' cards."
-      : "Are you sure you want to cancel this trade?";
-    if (!confirm(msg)) return;
+  const handleCancel = () => setShowCancelModal(true);
 
+  const confirmCancel = async () => {
+    setShowCancelModal(false);
     setActionError(null);
     setIsCancelling(true);
     try {
@@ -549,7 +548,7 @@ if (!user) {
 
               {/* Trade Summary — always aligned at the bottom */}
               {(() => {
-                const PLATFORM_FEE_RATE = 0.025;
+                const PLATFORM_FEE_RATE = 0.10;
                 const getItemValue = (item: typeof trade.items[0]) => {
                   const c = (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
                   return (c?.askingValueOverride ?? c?.currentMarketValue ?? 0) as number;
@@ -562,7 +561,7 @@ if (!user) {
                 const theirTotal = theirMarketValue + (theyPayCash ? trade.cashDifference : 0);
                 const netValue = theirTotal - myTotal;
                 const isEven = Math.abs(netValue) < 0.5;
-                // Each party pays 2.5% of the value they RECEIVE (receiver pays model)
+                // Each party pays 10% of the value they RECEIVE (receiver pays model)
                 const myFee = theirTotal * PLATFORM_FEE_RATE;
                 return (
                   <div className="mt-6 pt-5 border-t border-slate-700 space-y-3">
@@ -597,13 +596,10 @@ if (!user) {
                     {/* Platform fee */}
                     <div className="flex items-center justify-between px-1 pt-2 border-t border-slate-700">
                       <span className="text-base text-slate-400">
-                        Your platform fee <span className="text-slate-400 text-base">(2.5% of ${theirTotal.toFixed(2)} you receive)</span>
+                        Your platform fee <span className="text-slate-400 text-base">(10% of ${theirTotal.toFixed(2)} you receive)</span>
                       </span>
                       <span className="text-base font-semibold text-purple-400">${myFee.toFixed(2)}</span>
                     </div>
-                    <p className="text-base text-slate-400 px-1">
-                      Each party pays 2.5% of the value they receive. Collected at completion.
-                    </p>
                   </div>
                 );
               })()}
@@ -753,7 +749,7 @@ if (!user) {
 
           {/* ── Per-party payment section (ACCEPTED) ── */}
           {trade.status === "ACCEPTED" && (() => {
-            const PLATFORM_FEE_RATE = 0.025;
+            const PLATFORM_FEE_RATE = 0.10;
             const myIsProposer = trade.proposer.id === user.id;
             const iCashPayer = trade.cashPayerId === user.id;
             const theyAreCashPayer = trade.cashPayerId === otherUser.id;
@@ -1158,6 +1154,47 @@ if (!user) {
           currentUserId={user.id}
           onSuccess={loadTrade}
         />
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && trade && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowCancelModal(false)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
+                </div>
+                <h2 className="text-lg font-bold text-white">Cancel Trade</h2>
+              </div>
+              <button onClick={() => setShowCancelModal(false)} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-5">
+              <p className="text-base text-slate-300">
+                {trade.status === "ACCEPTED"
+                  ? "This trade has already been accepted by both parties. Cancelling will unlock both parties' cards and notify them."
+                  : "Are you sure you want to cancel this trade? The other party will be notified."}
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-700">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="px-4 py-2 rounded-lg text-base text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                Keep Trade
+              </button>
+              <button
+                onClick={confirmCancel}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-base font-medium transition-colors"
+              >
+                <X className="h-4 w-4" />
+                Yes, Cancel Trade
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

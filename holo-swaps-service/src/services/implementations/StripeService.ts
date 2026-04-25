@@ -28,6 +28,7 @@ export class StripeService implements IStripeService {
     const account = await this.stripe.accounts.create({
       type: "express",
       email,
+      business_type: "individual",
       metadata: { userId },
       capabilities: {
         transfers: { requested: true },

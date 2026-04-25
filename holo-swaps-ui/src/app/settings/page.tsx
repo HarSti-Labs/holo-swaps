@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { authApi } from "@/lib/api/auth";
-import { Trash2, AlertTriangle, Edit2, Plus, MapPin, Check, Loader2, CheckCircle, XCircle, CreditCard, Wallet, ExternalLink, BadgeCheck } from "lucide-react";
+import { Trash2, AlertTriangle, Edit2, Plus, MapPin, Check, Loader2, CheckCircle, XCircle, CreditCard, Wallet, ExternalLink, BadgeCheck, X, Info } from "lucide-react";
 import { api } from "@/lib/api/client";
 
 const US_STATES = [
@@ -219,9 +219,12 @@ export default function SettingsPage() {
     }
   };
 
+  const [showConnectGuide, setShowConnectGuide] = useState(false);
+
   const handleSetupConnect = async () => {
     setIsSettingUpConnect(true);
     setPaymentsError("");
+    setShowConnectGuide(false);
     try {
       const res = await api.post("/stripe/connect");
       window.location.href = res.data.data.onboardingUrl;
@@ -917,7 +920,7 @@ export default function SettingsPage() {
               </div>
               {!user?.stripeAccountVerified && (
                 <button
-                  onClick={handleSetupConnect}
+                  onClick={() => setShowConnectGuide(true)}
                   disabled={isSettingUpConnect}
                   className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-base font-medium transition-colors"
                 >
@@ -998,6 +1001,96 @@ export default function SettingsPage() {
           )}
         </div>
       </main>
+
+      {/* Stripe Connect Guide Modal */}
+      {showConnectGuide && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowConnectGuide(false)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <Wallet className="h-5 w-5 text-blue-400" />
+                </div>
+                <h2 className="text-lg font-bold text-white">Before You Connect</h2>
+              </div>
+              <button onClick={() => setShowConnectGuide(false)} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 space-y-4">
+              <p className="text-base text-slate-300">
+                You'll be redirected to Stripe to set up your payout account. Here's exactly what to enter on each screen:
+              </p>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    step: "1",
+                    title: "Account Type",
+                    body: "Select Individual — you're a person trading cards, not a business.",
+                  },
+                  {
+                    step: "2",
+                    title: "Personal Details",
+                    body: "Enter your legal name, date of birth, home address, and the last 4 digits of your SSN. This is required by law for anyone receiving payouts.",
+                  },
+                  {
+                    step: "3",
+                    title: "Professional Details",
+                    body: 'Industry: select "Arts, Entertainment & Recreation" or "Other". Website: enter holoswaps.com. Product description: "Peer-to-peer trading card exchange".',
+                  },
+                  {
+                    step: "4",
+                    title: "Bank Account",
+                    body: "Enter your personal checking account routing and account number. This is where cash from trades will be deposited.",
+                  },
+                  {
+                    step: "5",
+                    title: "Review & Submit",
+                    body: 'Double-check everything looks correct, then click "Submit". Verification usually takes a few minutes.',
+                  },
+                ].map(({ step, title, body }) => (
+                  <div key={step} className="flex gap-3">
+                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">{step}</span>
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-white">{title}</p>
+                      <p className="text-base text-slate-400 mt-0.5">{body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-start gap-2 bg-blue-950/30 border border-blue-500/20 rounded-lg p-3">
+                <Info className="h-4 w-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                <p className="text-base text-blue-300">Your information is handled entirely by Stripe — HoloSwaps never sees your bank details or SSN.</p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-700">
+              <button onClick={() => setShowConnectGuide(false)} className="px-4 py-2 rounded-lg text-base text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={handleSetupConnect}
+                disabled={isSettingUpConnect}
+                className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-lg text-base font-medium transition-colors"
+              >
+                {isSettingUpConnect ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Redirecting...</>
+                ) : (
+                  <><ExternalLink className="h-4 w-4" /> Continue to Stripe</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
