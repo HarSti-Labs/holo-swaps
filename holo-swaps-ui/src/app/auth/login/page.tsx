@@ -22,7 +22,7 @@ export default function LoginPage() {
     try {
       await login(identifier, password);
       const { user } = useAuthStore.getState();
-      router.push(user?.isAdmin ? "/admin/support" : "/dashboard");
+      router.push(user?.isAdmin ? "/admin/trades" : "/dashboard");
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||

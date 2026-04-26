@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { User } from "@/types";
 import { authApi } from "@/lib/api/auth";
+import { AxiosError } from "axios";
 
 interface AuthState {
   user: User | null;
@@ -55,9 +56,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const user = await authApi.me();
       set({ user, token, isAuthenticated: true });
-    } catch {
-      localStorage.removeItem("auth_token");
-      set({ user: null, token: null, isAuthenticated: false });
+    } catch (error) {
+      // Only log out if the token is actually invalid (401) — not on network errors or server issues
+      if ((error as AxiosError)?.response?.status === 401) {
+        localStorage.removeItem("auth_token");
+        set({ user: null, token: null, isAuthenticated: false });
+      }
     } finally {
       set({ isLoading: false });
     }

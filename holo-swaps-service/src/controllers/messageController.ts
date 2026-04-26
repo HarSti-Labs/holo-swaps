@@ -22,7 +22,8 @@ export const getMessages = async (
   const trade = await prisma.trade.findUnique({ where: { id: req.params.tradeId } });
   if (!trade) throw ApiError.notFound("Trade not found");
 
-  if (trade.proposerId !== req.user!.id && trade.receiverId !== req.user!.id) {
+  const isParticipant = trade.proposerId === req.user!.id || trade.receiverId === req.user!.id;
+  if (!isParticipant && !req.user!.isAdmin) {
     throw ApiError.forbidden();
   }
 
@@ -53,7 +54,9 @@ export const sendMessage = async (
   const trade = await prisma.trade.findUnique({ where: { id: req.params.tradeId } });
   if (!trade) throw ApiError.notFound("Trade not found");
 
-  if (trade.proposerId !== req.user!.id && trade.receiverId !== req.user!.id) {
+  const isParticipant = trade.proposerId === req.user!.id || trade.receiverId === req.user!.id;
+  const isAdmin = req.user!.isAdmin;
+  if (!isParticipant && !isAdmin) {
     throw ApiError.forbidden();
   }
 
@@ -74,19 +77,28 @@ export const sendMessage = async (
     include: { sender: { select: selectSafeUser } },
   });
 
-  // Fire-and-forget: notify the other party
-  const recipientId = trade.proposerId === req.user!.id ? trade.receiverId : trade.proposerId;
-  prisma.user.findUnique({ where: { id: recipientId }, select: { email: true, username: true, emailOnTradeMessage: true } }).then((recipient) => {
-    if (recipient?.emailOnTradeMessage) {
-      const tradeUrl = `${config.frontend.url}/trades/${trade.id}`;
-      emailService.sendTradeMessageEmail(
-        recipient.email,
-        recipient.username,
-        req.user!.username,
-        trade.tradeCode,
-        parsed.data.body,
-        tradeUrl
-      );
+  // Fire-and-forget: notify recipients
+  // Admin messages go to BOTH parties; regular messages go to the other party only
+  const recipientIds = isAdmin
+    ? [trade.proposerId, trade.receiverId]
+    : [trade.proposerId === req.user!.id ? trade.receiverId : trade.proposerId];
+
+  const tradeUrl = `${config.frontend.url}/trades/${trade.id}`;
+  prisma.user.findMany({
+    where: { id: { in: recipientIds } },
+    select: { id: true, email: true, username: true, emailOnTradeMessage: true },
+  }).then((recipients) => {
+    for (const recipient of recipients) {
+      if (recipient.emailOnTradeMessage) {
+        emailService.sendTradeMessageEmail(
+          recipient.email,
+          recipient.username,
+          isAdmin ? "HoloSwaps Support" : req.user!.username,
+          trade.tradeCode,
+          parsed.data.body,
+          tradeUrl
+        );
+      }
     }
   }).catch(() => {});
 

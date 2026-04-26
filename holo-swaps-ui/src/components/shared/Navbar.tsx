@@ -83,6 +83,18 @@ export function Navbar() {
             /* Admin nav */
             <>
               <Link
+                href="/admin/trades"
+                className={cn(
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  pathname.startsWith("/admin/trades")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <Truck size={16} />
+                Trades
+              </Link>
+              <Link
                 href="/admin/support"
                 className={cn(
                   "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
@@ -255,6 +267,17 @@ export function Navbar() {
         <div className="md:hidden border-t border-border bg-card px-4 py-3 space-y-1">
           {user?.isAdmin ? (
             <>
+              <Link
+                href="/admin/trades"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-base font-medium transition-colors",
+                  pathname.startsWith("/admin/trades") ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                )}
+              >
+                <Truck size={16} />
+                Trades
+              </Link>
               <Link
                 href="/admin/support"
                 onClick={() => setMobileOpen(false)}

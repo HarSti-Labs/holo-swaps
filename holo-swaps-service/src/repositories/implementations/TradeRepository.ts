@@ -39,27 +39,26 @@ export class TradeRepository implements ITradeRepository {
 
   async findByUserId(
     userId: string,
-    params: PaginationParams
+    params: PaginationParams & { status?: TradeStatus }
   ): Promise<PaginatedResult<Trade>> {
     const page = params.page || 1;
     const limit = params.limit || 10;
     const skip = (page - 1) * limit;
 
+    const where = {
+      OR: [{ proposerId: userId }, { receiverId: userId }],
+      ...(params.status ? { status: params.status } : {}),
+    };
+
     const [data, total] = await prisma.$transaction([
       prisma.trade.findMany({
-        where: {
-          OR: [{ proposerId: userId }, { receiverId: userId }],
-        },
+        where,
         include: tradeInclude,
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
       }),
-      prisma.trade.count({
-        where: {
-          OR: [{ proposerId: userId }, { receiverId: userId }],
-        },
-      }),
+      prisma.trade.count({ where }),
     ]);
 
     return {

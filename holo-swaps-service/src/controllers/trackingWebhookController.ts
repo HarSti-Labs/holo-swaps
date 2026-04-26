@@ -2,8 +2,11 @@ import { Request, Response } from "express";
 import { TradeStatus, NotificationType } from "@prisma/client";
 import { prisma } from "@/config/prisma";
 import { TrackingService } from "@/services/implementations/TrackingService";
+import { TradeService } from "@/services/implementations/TradeService";
 import { NotificationService } from "@/services/implementations/NotificationService";
 import { logger } from "@/utils/logger";
+
+const tradeService = new TradeService();
 
 const trackingService = new TrackingService();
 const notificationService = new NotificationService();
@@ -92,17 +95,54 @@ async function handleDelivery(shipmentId: string, tradeId: string): Promise<void
     data: { status: "DELIVERED", deliveredAt: new Date() },
   });
 
-  const trade = await prisma.trade.findUnique({ where: { id: tradeId } });
+  const trade = await prisma.trade.findUnique({
+    where: { id: tradeId },
+    include: { items: true },
+  });
   if (!trade) return;
 
-  // Determine which party's package this was (senderId = who shipped it)
-  const isProposerPackage = shipment.senderId === trade.proposerId;
+  // ── OUTBOUND delivery: card has arrived with recipient → auto-complete trade ──
+  if (shipment.direction === "OUTBOUND") {
+    // How many outbound shipments are needed?
+    // One per party who is actually receiving cards.
+    const proposerReceivesCards = (trade as any).items.some((i: any) => !i.ownedByProposer);
+    const receiverReceivesCards = (trade as any).items.some((i: any) => i.ownedByProposer);
+    const requiredOutbound = (proposerReceivesCards ? 1 : 0) + (receiverReceivesCards ? 1 : 0);
 
-  // Advance trade status
+    const deliveredOutbound = await prisma.shipment.count({
+      where: { tradeId, direction: "OUTBOUND", status: "DELIVERED" },
+    });
+
+    if (deliveredOutbound >= requiredOutbound && trade.status === TradeStatus.VERIFIED) {
+      logger.info("All outbound deliveries confirmed — auto-completing trade", { tradeId });
+      // completeTrade captures payments, transfers ownership, notifies both parties
+      await tradeService.completeTrade(tradeId, "system");
+    } else {
+      // Notify the recipient their card has arrived
+      await notificationService.notify({
+        userId: shipment.receiverId,
+        type: NotificationType.SHIPMENT_UPDATED,
+        title: "Your card has been delivered!",
+        body: `Your verified card from trade ${trade.tradeCode} has been delivered. Enjoy!`,
+        data: { tradeId, tradeCode: trade.tradeCode },
+      });
+    }
+    return;
+  }
+
+  // ── INBOUND delivery: card arrived at verification center ──
+  const isProposerPackage = shipment.senderId === trade.proposerId;
+  const proposerHasCards = (trade as any).items.some((i: any) => i.ownedByProposer);
+  const receiverHasCards = (trade as any).items.some((i: any) => !i.ownedByProposer);
+  const otherHasCards = isProposerPackage ? receiverHasCards : proposerHasCards;
+
   let nextStatus: TradeStatus | null = null;
 
   if (trade.status === TradeStatus.BOTH_SHIPPED) {
-    nextStatus = isProposerPackage ? TradeStatus.A_RECEIVED : TradeStatus.B_RECEIVED;
+    // If the other party has no cards, this single delivery means we have everything
+    nextStatus = otherHasCards
+      ? (isProposerPackage ? TradeStatus.A_RECEIVED : TradeStatus.B_RECEIVED)
+      : TradeStatus.BOTH_RECEIVED;
   } else if (trade.status === TradeStatus.A_RECEIVED && !isProposerPackage) {
     nextStatus = TradeStatus.BOTH_RECEIVED;
   } else if (trade.status === TradeStatus.B_RECEIVED && isProposerPackage) {
@@ -110,7 +150,7 @@ async function handleDelivery(shipmentId: string, tradeId: string): Promise<void
   }
 
   if (!nextStatus) {
-    logger.info("No status transition needed for delivery", {
+    logger.info("No status transition needed for inbound delivery", {
       tradeId,
       currentStatus: trade.status,
       isProposerPackage,
@@ -123,19 +163,18 @@ async function handleDelivery(shipmentId: string, tradeId: string): Promise<void
     data: { status: nextStatus },
   });
 
-  logger.info("Trade auto-advanced on delivery", {
+  logger.info("Trade auto-advanced on inbound delivery", {
     tradeId,
     tradeCode: trade.tradeCode,
     from: trade.status,
     to: nextStatus,
   });
 
-  // Notify both parties when both cards are received so they know verification is next
   if (nextStatus === TradeStatus.BOTH_RECEIVED) {
     await notificationService.notifyMany([trade.proposerId, trade.receiverId], {
       type: NotificationType.SHIPMENT_UPDATED,
       title: "Both packages received",
-      body: `Both cards for trade ${trade.tradeCode} have arrived. Our team will verify them shortly.`,
+      body: `Both cards for trade ${trade.tradeCode} have arrived at our verification center. Our team will inspect them shortly.`,
       data: { tradeId, tradeCode: trade.tradeCode },
     });
   }

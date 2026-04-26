@@ -228,52 +228,79 @@ export class TradeService implements ITradeService {
     }
 
     const isProposer = userId === trade.proposerId;
+    const otherId = isProposer ? trade.receiverId : trade.proposerId;
 
-    // The countering user sets their own side's card list and cash
+    const tradeItems = trade.items as any[];
+
+    // ── MY SIDE ──────────────────────────────────────────────────────────────
     const newMyItemIds = isProposer ? data.proposerCollectionItemIds : data.receiverCollectionItemIds;
     const myCashAdd = isProposer ? (data.proposerCashAdd ?? 0) : (data.receiverCashAdd ?? 0);
 
-    // Current items for my side
-    const tradeItems = trade.items as any[];
     const currentMyItems = tradeItems.filter((i) => i.ownedByProposer === isProposer);
     const currentMyItemIds = currentMyItems.map((i: any) => i.collectionItemId as string);
 
-    let toRemoveIds: string[] = [];
-    let toAddIds: string[] = [];
-    let newMarketValue = isProposer ? trade.proposerMarketValue : trade.receiverMarketValue;
+    let toRemoveMyIds: string[] = [];
+    let toAddMyIds: string[] = [];
+    let newMyMarketValue = isProposer ? trade.proposerMarketValue : trade.receiverMarketValue;
 
     if (newMyItemIds && newMyItemIds.length > 0) {
-      if (newMyItemIds.length === 0) {
-        throw ApiError.badRequest("You must include at least one card on your side");
-      }
+      toRemoveMyIds = currentMyItemIds.filter((id) => !newMyItemIds.includes(id));
+      toAddMyIds = newMyItemIds.filter((id) => !currentMyItemIds.includes(id));
 
-      toRemoveIds = currentMyItemIds.filter((id) => !newMyItemIds.includes(id));
-      toAddIds = newMyItemIds.filter((id) => !currentMyItemIds.includes(id));
-
-      // Validate new cards belong to user and are available
-      if (toAddIds.length > 0) {
+      if (toAddMyIds.length > 0) {
         const validNewItems = await prisma.userCollection.findMany({
-          where: { id: { in: toAddIds }, userId, status: CardStatus.AVAILABLE },
+          where: { id: { in: toAddMyIds }, userId, status: CardStatus.AVAILABLE },
         });
-        if (validNewItems.length !== toAddIds.length) {
+        if (validNewItems.length !== toAddMyIds.length) {
           throw ApiError.badRequest("One or more of your cards are not available for trade");
         }
       }
 
-      // Recalculate market value from the full new item set
       const allMyNewItems = await prisma.userCollection.findMany({
         where: { id: { in: newMyItemIds } },
         select: { currentMarketValue: true },
       });
-      newMarketValue = allMyNewItems.reduce((sum, i) => sum + (i.currentMarketValue ?? 0), 0);
+      newMyMarketValue = allMyNewItems.reduce((sum, i) => sum + (i.currentMarketValue ?? 0), 0);
     }
 
-    // The counter offer replaces cash terms: countering user sets their own cash,
-    // other side's cash is cleared to 0 (they can counter again if they want to add cash)
+    // ── THEIR SIDE ───────────────────────────────────────────────────────────
+    const newOtherItemIds = isProposer ? data.receiverCollectionItemIds : data.proposerCollectionItemIds;
+
+    const currentOtherItems = tradeItems.filter((i) => i.ownedByProposer !== isProposer);
+    const currentOtherItemIds = currentOtherItems.map((i: any) => i.collectionItemId as string);
+
+    let toRemoveOtherIds: string[] = [];
+    let toAddOtherIds: string[] = [];
+    let newOtherMarketValue = isProposer ? trade.receiverMarketValue : trade.proposerMarketValue;
+
+    if (newOtherItemIds && newOtherItemIds.length > 0) {
+      toRemoveOtherIds = currentOtherItemIds.filter((id) => !newOtherItemIds.includes(id));
+      toAddOtherIds = newOtherItemIds.filter((id) => !currentOtherItemIds.includes(id));
+
+      if (toAddOtherIds.length > 0) {
+        const validOtherItems = await prisma.userCollection.findMany({
+          where: { id: { in: toAddOtherIds }, userId: otherId, status: CardStatus.AVAILABLE },
+        });
+        if (validOtherItems.length !== toAddOtherIds.length) {
+          throw ApiError.badRequest("One or more of the other party's cards are not available for trade");
+        }
+      }
+
+      const allOtherNewItems = await prisma.userCollection.findMany({
+        where: { id: { in: newOtherItemIds } },
+        select: { currentMarketValue: true },
+      });
+      newOtherMarketValue = allOtherNewItems.reduce((sum, i) => sum + (i.currentMarketValue ?? 0), 0);
+    }
+
+    // ── CASH ─────────────────────────────────────────────────────────────────
     const proposerCashAdd = isProposer ? myCashAdd : 0;
     const receiverCashAdd = isProposer ? 0 : myCashAdd;
     const netCash = proposerCashAdd - receiverCashAdd;
     const cashPayerId = netCash > 0 ? trade.proposerId : netCash < 0 ? trade.receiverId : undefined;
+
+    const newProposerMarketValue = isProposer ? newMyMarketValue : newOtherMarketValue;
+    const newReceiverMarketValue = isProposer ? newOtherMarketValue : newMyMarketValue;
 
     await prisma.$transaction(async (tx) => {
       await tx.tradeOffer.create({
@@ -292,39 +319,68 @@ export class TradeService implements ITradeService {
           cashPayerId: cashPayerId ?? null,
           status: TradeStatus.COUNTERED,
           lastActionById: userId,
-          proposerMarketValue: isProposer ? newMarketValue : trade.proposerMarketValue,
-          receiverMarketValue: isProposer ? trade.receiverMarketValue : newMarketValue,
+          proposerMarketValue: newProposerMarketValue,
+          receiverMarketValue: newReceiverMarketValue,
         },
       });
 
+      // Process MY SIDE changes
       if (newMyItemIds && newMyItemIds.length > 0) {
-        // Unlock and delete removed items
-        if (toRemoveIds.length > 0) {
+        if (toRemoveMyIds.length > 0) {
           await tx.userCollection.updateMany({
-            where: { id: { in: toRemoveIds } },
+            where: { id: { in: toRemoveMyIds } },
             data: { status: CardStatus.AVAILABLE, lockedByTradeId: null },
           });
           await tx.tradeItem.deleteMany({
-            where: { tradeId, collectionItemId: { in: toRemoveIds } },
+            where: { tradeId, collectionItemId: { in: toRemoveMyIds } },
           });
         }
-
-        // Lock and create new items
-        if (toAddIds.length > 0) {
+        if (toAddMyIds.length > 0) {
           const newItemValues = await tx.userCollection.findMany({
-            where: { id: { in: toAddIds } },
+            where: { id: { in: toAddMyIds } },
             select: { id: true, currentMarketValue: true },
           });
           await tx.userCollection.updateMany({
-            where: { id: { in: toAddIds } },
+            where: { id: { in: toAddMyIds } },
             data: { status: CardStatus.IN_TRADE, lockedByTradeId: tradeId },
           });
           await tx.tradeItem.createMany({
-            data: toAddIds.map((id) => ({
+            data: toAddMyIds.map((id) => ({
               tradeId,
               collectionItemId: id,
               ownedByProposer: isProposer,
               valueAtTimeOfTrade: newItemValues.find((i) => i.id === id)?.currentMarketValue,
+            })),
+          });
+        }
+      }
+
+      // Process THEIR SIDE changes
+      if (newOtherItemIds && newOtherItemIds.length > 0) {
+        if (toRemoveOtherIds.length > 0) {
+          await tx.userCollection.updateMany({
+            where: { id: { in: toRemoveOtherIds } },
+            data: { status: CardStatus.AVAILABLE, lockedByTradeId: null },
+          });
+          await tx.tradeItem.deleteMany({
+            where: { tradeId, collectionItemId: { in: toRemoveOtherIds } },
+          });
+        }
+        if (toAddOtherIds.length > 0) {
+          const newOtherItemValues = await tx.userCollection.findMany({
+            where: { id: { in: toAddOtherIds } },
+            select: { id: true, currentMarketValue: true },
+          });
+          await tx.userCollection.updateMany({
+            where: { id: { in: toAddOtherIds } },
+            data: { status: CardStatus.IN_TRADE, lockedByTradeId: tradeId },
+          });
+          await tx.tradeItem.createMany({
+            data: toAddOtherIds.map((id) => ({
+              tradeId,
+              collectionItemId: id,
+              ownedByProposer: !isProposer,
+              valueAtTimeOfTrade: newOtherItemValues.find((i) => i.id === id)?.currentMarketValue,
             })),
           });
         }
@@ -338,7 +394,6 @@ export class TradeService implements ITradeService {
     await this.createTradeSnapshot(tradeId, userId, `Counter #${counterRound}`);
 
     // Notify the other party
-    const otherId = userId === trade.proposerId ? trade.receiverId : trade.proposerId;
     const actor = await prisma.user.findUnique({ where: { id: userId } });
     const other = await prisma.user.findUnique({ where: { id: otherId } });
     await this.notificationService.notify({
@@ -443,15 +498,11 @@ export class TradeService implements ITradeService {
       );
     }
 
-    // Proposer's session:
-    //   - Always includes their platform fee
-    //   - If proposer is the cash payer, also includes the cash amount
-    //   - application_fee_amount = proposerFee (platform keeps this)
-    //   - transfer_data = cashAmount goes to receiver (Stripe sends amount - fee to destination)
-    const proposerSessionAmount = proposerFeeCents + RETURN_SHIPPING_CENTS + (proposerIsCashPayer ? cashAmountCents : 0);
     const proposerSession = await this.stripeService.createCheckoutSession({
-      amount: proposerSessionAmount,
-      platformFeeAmount: proposerFeeCents,
+      platformFeeCents: proposerFeeCents,
+      shippingCents: RETURN_SHIPPING_CENTS,
+      cashCents: proposerIsCashPayer ? cashAmountCents : 0,
+      cashRecipientUsername: proposerIsCashPayer ? (receiver.username ?? null) : null,
       currency: "usd",
       customerId: proposer.stripeCustomerId!,
       destinationAccountId: proposerIsCashPayer ? (receiver.stripeAccountId ?? null) : null,
@@ -459,20 +510,13 @@ export class TradeService implements ITradeService {
       tradeCode: trade.tradeCode,
       successUrl: `${frontendUrl}/trades/${trade.id}?payment=success&party=proposer`,
       cancelUrl: `${frontendUrl}/trades/${trade.id}?payment=cancelled`,
-      description: [
-        `$${(proposerFeeCents / 100).toFixed(2)} platform fee`,
-        `$${(RETURN_SHIPPING_CENTS / 100).toFixed(2)} return shipping`,
-        proposerIsCashPayer && `$${trade.cashDifference.toFixed(2)} cash to ${receiver.username}`,
-      ].filter(Boolean).join(" + "),
     });
 
-    // Receiver's session:
-    //   - Always includes their platform fee + return shipping
-    //   - If receiver is the cash payer, also includes the cash amount
-    const receiverSessionAmount = receiverFeeCents + RETURN_SHIPPING_CENTS + (receiverIsCashPayer ? cashAmountCents : 0);
     const receiverSession = await this.stripeService.createCheckoutSession({
-      amount: receiverSessionAmount,
-      platformFeeAmount: receiverFeeCents,
+      platformFeeCents: receiverFeeCents,
+      shippingCents: RETURN_SHIPPING_CENTS,
+      cashCents: receiverIsCashPayer ? cashAmountCents : 0,
+      cashRecipientUsername: receiverIsCashPayer ? (proposer.username ?? null) : null,
       currency: "usd",
       customerId: receiver.stripeCustomerId!,
       destinationAccountId: receiverIsCashPayer ? (proposer.stripeAccountId ?? null) : null,
@@ -480,11 +524,6 @@ export class TradeService implements ITradeService {
       tradeCode: trade.tradeCode,
       successUrl: `${frontendUrl}/trades/${trade.id}?payment=success&party=receiver`,
       cancelUrl: `${frontendUrl}/trades/${trade.id}?payment=cancelled`,
-      description: [
-        `$${(receiverFeeCents / 100).toFixed(2)} platform fee`,
-        `$${(RETURN_SHIPPING_CENTS / 100).toFixed(2)} return shipping`,
-        receiverIsCashPayer && `$${trade.cashDifference.toFixed(2)} cash to ${proposer.username}`,
-      ].filter(Boolean).join(" + "),
     });
 
     await prisma.trade.update({
@@ -813,12 +852,17 @@ export class TradeService implements ITradeService {
       data: { tradeId, tradeCode: trade.tradeCode },
     });
 
-    // Both parties submitted → BOTH_SHIPPED
+    // Advance to BOTH_SHIPPED when every party that actually has cards has submitted tracking.
+    // A cash-only party (0 items on their side) never needs to ship.
+    const proposerHasCards = (trade as any).items.some((i: any) => i.ownedByProposer);
+    const receiverHasCards = (trade as any).items.some((i: any) => !i.ownedByProposer);
+    const requiredShipments = (proposerHasCards ? 1 : 0) + (receiverHasCards ? 1 : 0);
+
     const inboundCount = await prisma.shipment.count({
       where: { tradeId, direction: "INBOUND" },
     });
 
-    if (inboundCount >= 2) {
+    if (inboundCount >= requiredShipments) {
       return this.tradeRepository.updateStatus(tradeId, TradeStatus.BOTH_SHIPPED);
     }
 
@@ -880,7 +924,8 @@ export class TradeService implements ITradeService {
     if (!trade) throw ApiError.notFound("Trade not found");
 
     if (trade.proposerId !== userId && trade.receiverId !== userId) {
-      throw ApiError.forbidden("You are not part of this trade");
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { isAdmin: true } });
+      if (!user?.isAdmin) throw ApiError.forbidden("You are not part of this trade");
     }
 
     return trade;
@@ -985,6 +1030,44 @@ export class TradeService implements ITradeService {
       .sort((a, b) => b.matchScore - a.matchScore);
   }
 
+  async adminConfirmShipmentReceived(tradeId: string, senderId: string): Promise<Trade> {
+    const trade = await this.tradeRepository.findById(tradeId);
+    if (!trade) throw ApiError.notFound("Trade not found");
+
+    const receiptStatuses: TradeStatus[] = [TradeStatus.ACCEPTED, TradeStatus.BOTH_SHIPPED, TradeStatus.A_RECEIVED, TradeStatus.B_RECEIVED];
+    if (!receiptStatuses.includes(trade.status)) {
+      throw ApiError.badRequest("Trade is not in a shippable state");
+    }
+
+    // Mark the specific sender's inbound shipment as delivered
+    await prisma.shipment.updateMany({
+      where: { tradeId, senderId, direction: "INBOUND" },
+      data: { status: "DELIVERED", deliveredAt: new Date() },
+    });
+
+    const isProposer = senderId === trade.proposerId;
+    const proposerHasCards = (trade as any).items.some((i: any) => i.ownedByProposer);
+    const receiverHasCards = (trade as any).items.some((i: any) => !i.ownedByProposer);
+    // If the OTHER party has no cards to ship, receiving this one shipment means we have everything
+    const otherHasCards = isProposer ? receiverHasCards : proposerHasCards;
+    let nextStatus: TradeStatus;
+
+    if (trade.status === TradeStatus.BOTH_SHIPPED || trade.status === TradeStatus.ACCEPTED) {
+      nextStatus = otherHasCards
+        ? (isProposer ? TradeStatus.A_RECEIVED : TradeStatus.B_RECEIVED)
+        : TradeStatus.BOTH_RECEIVED;
+    } else if (
+      (trade.status === TradeStatus.A_RECEIVED && !isProposer) ||
+      (trade.status === TradeStatus.B_RECEIVED && isProposer)
+    ) {
+      nextStatus = TradeStatus.BOTH_RECEIVED;
+    } else {
+      return this.tradeRepository.findById(tradeId) as Promise<Trade>;
+    }
+
+    return this.tradeRepository.updateStatus(tradeId, nextStatus);
+  }
+
   // ─── Admin methods ────────────────────────────────────────────────────────
 
   async verifyCards(tradeId: string, adminId: string, data: VerifyCardsData): Promise<Trade> {
@@ -1032,12 +1115,31 @@ export class TradeService implements ITradeService {
       return this.handleVerificationFailure(trade, adminId, data);
     }
 
-    // All verifications passed — move to VERIFIED
-    if (verifications.length >= 2) {
+    // All verifications passed — move to VERIFIED.
+    // Use actual item count so cash-only trades (one party has 0 items) advance after verifying just the cards that exist.
+    const totalItems = await prisma.tradeItem.count({ where: { tradeId } });
+    if (verifications.length >= totalItems) {
       return this.tradeRepository.updateStatus(tradeId, TradeStatus.VERIFIED);
     }
 
     return this.tradeRepository.findById(tradeId) as Promise<Trade>;
+  }
+
+  /**
+   * Admin escape hatch: force a trade to BOTH_RECEIVED or VERIFIED, skipping normal
+   * preconditions. Used to unstick trades with bad/legacy data (e.g. cash-only trades
+   * created before the cash-only shipping fix).
+   */
+  async adminForceStatus(tradeId: string, targetStatus: TradeStatus.BOTH_RECEIVED | TradeStatus.VERIFIED): Promise<Trade> {
+    const trade = await this.tradeRepository.findById(tradeId);
+    if (!trade) throw ApiError.notFound("Trade not found");
+
+    const terminal: TradeStatus[] = [TradeStatus.COMPLETED, TradeStatus.CANCELLED];
+    if (terminal.includes(trade.status)) {
+      throw ApiError.badRequest("Cannot override a completed or cancelled trade");
+    }
+
+    return this.tradeRepository.updateStatus(tradeId, targetStatus);
   }
 
   // Flat fee charged to the at-fault party to cover both return shipments ($24 = 2 × ~$12 labels)
@@ -1121,20 +1223,15 @@ export class TradeService implements ITradeService {
       });
     });
 
-    // Cancel the trade PaymentIntent — releases the hold, nothing is charged
-    if (trade.stripePaymentIntentId) {
+    // Cancel both held PaymentIntents — releases the holds, nothing is charged
+    const proposerIntentId = (trade as any).stripeProposerIntentId as string | null;
+    const receiverIntentId = (trade as any).stripeReceiverIntentId as string | null;
+    for (const intentId of [proposerIntentId, receiverIntentId].filter(Boolean)) {
       try {
-        await this.stripeService.cancelPaymentIntent(trade.stripePaymentIntentId);
-        logger.info("PaymentIntent cancelled on verification failure", {
-          tradeId,
-          paymentIntentId: trade.stripePaymentIntentId,
-        });
+        await this.stripeService.cancelPaymentIntent(intentId!);
+        logger.info("PaymentIntent cancelled on verification failure", { tradeId, paymentIntentId: intentId });
       } catch (err) {
-        logger.error("Failed to cancel PaymentIntent — manual action needed", {
-          tradeId,
-          paymentIntentId: trade.stripePaymentIntentId,
-          err,
-        });
+        logger.error("Failed to cancel PaymentIntent — manual action needed", { tradeId, paymentIntentId: intentId, err });
       }
     }
 
@@ -1211,9 +1308,21 @@ export class TradeService implements ITradeService {
       throw ApiError.badRequest("Trade must be verified before completion");
     }
 
-    if (trade.stripePaymentIntentId) {
-      await this.stripeService.capturePaymentIntent(trade.stripePaymentIntentId);
-    }
+    // Capture both parties' held payments — this is when money actually moves.
+    // We swallow already-captured / no-op errors so a re-try or test-mode quirk
+    // never blocks the trade from completing.
+    const proposerIntentId = (trade as any).stripeProposerIntentId as string | null;
+    const receiverIntentId = (trade as any).stripeReceiverIntentId as string | null;
+    const captureOrSkip = async (intentId: string | null) => {
+      if (!intentId) return;
+      try {
+        await this.stripeService.capturePaymentIntent(intentId);
+      } catch (err: any) {
+        // "already captured" is not fatal — log and continue
+        logger.warn("Payment capture skipped", { intentId, reason: err?.message });
+      }
+    };
+    await Promise.all([captureOrSkip(proposerIntentId), captureOrSkip(receiverIntentId)]);
 
     // Fetch trade items for ownership transfer
     const tradeItems = await prisma.tradeItem.findMany({ where: { tradeId } });
@@ -1270,6 +1379,19 @@ export class TradeService implements ITradeService {
       body: `Your trade (${trade.tradeCode}) has been completed. Leave a review for your trade partner.`,
       data: { tradeId, tradeCode: trade.tradeCode },
     });
+
+    // Email both parties — fire-and-forget
+    const [proposer, receiver] = await Promise.all([
+      prisma.user.findUnique({ where: { id: trade.proposerId }, select: { email: true, username: true } }),
+      prisma.user.findUnique({ where: { id: trade.receiverId }, select: { email: true, username: true } }),
+    ]);
+    const tradeUrl = `${config.frontend.url}/trades/${tradeId}`;
+    if (proposer?.email) {
+      this.emailService.sendTradeCompletedEmail(proposer.email, proposer.username, receiver?.username ?? "your trade partner", trade.tradeCode, tradeUrl);
+    }
+    if (receiver?.email) {
+      this.emailService.sendTradeCompletedEmail(receiver.email, receiver.username, proposer?.username ?? "your trade partner", trade.tradeCode, tradeUrl);
+    }
 
     logger.info("Trade completed", { tradeId, tradeCode: trade.tradeCode, adminId });
 
@@ -1353,11 +1475,13 @@ export class TradeService implements ITradeService {
     const trade = await this.tradeRepository.findById(tradeId);
     if (!trade) throw ApiError.notFound("Trade not found");
 
-    if (trade.stripePaymentIntentId) {
+    const proposerIntentId = (trade as any).stripeProposerIntentId as string | null;
+    const receiverIntentId = (trade as any).stripeReceiverIntentId as string | null;
+    for (const intentId of [proposerIntentId, receiverIntentId].filter(Boolean)) {
       try {
-        await this.stripeService.refundPayment(trade.stripePaymentIntentId);
+        await this.stripeService.refundPayment(intentId!);
       } catch {
-        logger.warn("Could not refund payment for disputed trade", { tradeId });
+        logger.warn("Could not refund payment for disputed trade", { tradeId, paymentIntentId: intentId });
       }
     }
 

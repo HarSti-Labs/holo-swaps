@@ -91,6 +91,7 @@ router.get("/trades", async (req: Request, res: Response) => {
         proposer: { select: selectSafeUser },
         receiver: { select: selectSafeUser },
         dispute: true,
+        shipments: true,
       },
       skip,
       take: limit,

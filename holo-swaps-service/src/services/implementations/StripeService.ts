@@ -132,41 +132,63 @@ export class StripeService implements IStripeService {
   }
 
   async createCheckoutSession(data: {
-    amount: number;
-    platformFeeAmount: number;
+    platformFeeCents: number;  // 10% of value received
+    shippingCents: number;     // flat $4.99
+    cashCents: number;         // cash owed to other party (0 if none)
+    cashRecipientUsername: string | null;
     currency: string;
     customerId: string;
-    destinationAccountId: string | null; // null = fee-only trade, no peer-to-peer transfer
+    destinationAccountId: string | null; // null = no peer-to-peer transfer
     tradeId: string;
     tradeCode: string;
     successUrl: string;
     cancelUrl: string;
-    description: string;
   }): Promise<Stripe.Checkout.Session> {
+    const totalCents = data.platformFeeCents + data.shippingCents + data.cashCents;
+    // Platform keeps: fee + shipping. Transfer to connected account = cashCents only.
+    const applicationFeeCents = data.platformFeeCents + data.shippingCents;
+
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      {
+        price_data: {
+          currency: data.currency,
+          product_data: { name: "Platform fee (10% of trade value)" },
+          unit_amount: Math.round(data.platformFeeCents),
+        },
+        quantity: 1,
+      },
+      {
+        price_data: {
+          currency: data.currency,
+          product_data: { name: "Shipping & handling" },
+          unit_amount: Math.round(data.shippingCents),
+        },
+        quantity: 1,
+      },
+    ];
+
+    if (data.cashCents > 0 && data.cashRecipientUsername) {
+      lineItems.push({
+        price_data: {
+          currency: data.currency,
+          product_data: { name: `Cash payment to ${data.cashRecipientUsername}` },
+          unit_amount: Math.round(data.cashCents),
+        },
+        quantity: 1,
+      });
+    }
+
     return this.stripe.checkout.sessions.create({
       mode: "payment",
       customer: data.customerId,
-      line_items: [
-        {
-          price_data: {
-            currency: data.currency,
-            product_data: {
-              name: `Trade ${data.tradeCode}`,
-              description: data.description,
-            },
-            unit_amount: Math.round(data.amount),
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       payment_intent_data: {
         capture_method: "manual",
-        // Only set transfer when there is a cash component going to the other party
         ...(data.destinationAccountId && {
-          application_fee_amount: Math.round(data.platformFeeAmount),
+          application_fee_amount: Math.round(applicationFeeCents),
           transfer_data: { destination: data.destinationAccountId },
         }),
-        metadata: { tradeId: data.tradeId, platformFeeAmount: data.platformFeeAmount },
+        metadata: { tradeId: data.tradeId, platformFeeCents: data.platformFeeCents, shippingCents: data.shippingCents },
       },
       success_url: data.successUrl,
       cancel_url: data.cancelUrl,

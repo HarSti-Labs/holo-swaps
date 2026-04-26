@@ -42,6 +42,21 @@ const STATUS_LABELS: Record<TradeStatus, string> = {
   CANCELLED: "Cancelled",
 };
 
+// Human-readable shipment status labels shown to users
+const INBOUND_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Awaiting shipment",
+  SHIPPED: "In transit to HoloSwaps",
+  IN_TRANSIT: "In transit to HoloSwaps",
+  DELIVERED: "Received by HoloSwaps",
+};
+
+const OUTBOUND_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Being prepared",
+  SHIPPED: "Dispatched by HoloSwaps",
+  IN_TRANSIT: "On its way to you",
+  DELIVERED: "Delivered to you",
+};
+
 const STATUS_COLORS: Record<TradeStatus, string> = {
   PROPOSED: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
   COUNTERED: "bg-orange-500/20 text-orange-400 border-orange-500/30",
@@ -116,9 +131,13 @@ export default function TradeDetailPage() {
     if (user) {
       loadTrade();
       loadMessages();
-      // Poll for new messages every 5 seconds
-      const interval = setInterval(loadMessages, 5000);
-      return () => clearInterval(interval);
+      // Poll messages every 5 s; poll trade status every 10 s so stepper/verification updates live
+      const msgInterval = setInterval(loadMessages, 5000);
+      const tradeInterval = setInterval(refreshTrade, 10000);
+      return () => {
+        clearInterval(msgInterval);
+        clearInterval(tradeInterval);
+      };
     }
   }, [user, tradeId]);
 
@@ -170,6 +189,20 @@ export default function TradeDetailPage() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Silent background refresh — only updates state when status actually changes,
+  // so React never re-renders the page unless something meaningful happened.
+  const refreshTrade = async () => {
+    try {
+      const data = await tradesApi.getById(tradeId);
+      setTrade((prev) => {
+        if (!prev || prev.status !== data.status) return data;
+        return prev; // same status → bail out, no re-render
+      });
+    } catch {
+      // silent — don't redirect on background poll errors
     }
   };
 
@@ -257,6 +290,23 @@ const handleSubmitTracking = async (e: React.FormEvent) => {
       await loadTrade();
     } catch (err: any) {
       setTrackingError(err.response?.data?.message || "Failed to submit tracking");
+    } finally {
+      setIsSubmittingTracking(false);
+    }
+  };
+
+  const handleMarkShippedNoTracking = async () => {
+    setTrackingError(null);
+    setIsSubmittingTracking(true);
+    try {
+      await tradesApi.submitTracking(tradeId, {
+        trackingNumber: "",
+        carrier: "",
+        isInsured: false,
+      });
+      await loadTrade();
+    } catch (err: any) {
+      setTrackingError(err.response?.data?.message || "Failed to mark as shipped");
     } finally {
       setIsSubmittingTracking(false);
     }
@@ -427,7 +477,7 @@ if (!user) {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 items-start lg:items-stretch">
           {/* Trade Details - Left Side */}
           <div className="lg:col-span-2 space-y-6">
             {/* Cards Being Traded */}
@@ -445,6 +495,7 @@ if (!user) {
                       const card =
                         (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
                       if (!card) return null;
+                      const verification = (trade as any).verifications?.find((v: any) => v.collectionItemId === card.id);
 
                       return (
                         <div
@@ -483,6 +534,12 @@ if (!user) {
                                 ${card.currentMarketValue?.toFixed(2) || "N/A"}
                               </p>
                             )}
+                            {verification && (
+                              <div className="mt-1.5 flex items-center gap-1.5 text-base text-green-400">
+                                <ShieldCheck size={13} />
+                                Verified by HoloSwaps
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -500,6 +557,7 @@ if (!user) {
                       const card =
                         (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
                       if (!card) return null;
+                      const verification = (trade as any).verifications?.find((v: any) => v.collectionItemId === card.id);
 
                       return (
                         <div
@@ -537,6 +595,12 @@ if (!user) {
                               <p className="text-base text-green-400 mt-1">
                                 ${card.currentMarketValue?.toFixed(2) || "N/A"}
                               </p>
+                            )}
+                            {verification && (
+                              <div className="mt-1.5 flex items-center gap-1.5 text-base text-green-400">
+                                <ShieldCheck size={13} />
+                                Verified by HoloSwaps
+                              </div>
                             )}
                           </div>
                         </div>
@@ -567,20 +631,32 @@ if (!user) {
                   <div className="mt-6 pt-5 border-t border-slate-700 space-y-3">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-slate-800/50 rounded-lg p-3">
-                        <p className="text-base text-slate-400 mb-1">You're offering</p>
-                        <p className="text-lg font-bold text-white">${myMarketValue.toFixed(2)}</p>
-                        {iPayCash && (
-                          <p className="text-base text-amber-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash</p>
-                        )}
-                        <p className="text-base text-slate-400 mt-1">{myItems.length} card{myItems.length !== 1 ? "s" : ""}</p>
+                        <p className="text-base text-slate-400 mb-2">You're offering</p>
+                        <div className="space-y-1">
+                          {myItems.map((item) => {
+                            const c = (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
+                            return (
+                              <p key={item.id} className="text-base font-medium text-white">{c?.card?.name ?? "Unknown"}</p>
+                            );
+                          })}
+                          {iPayCash && (
+                            <p className="text-base text-amber-400">+ ${trade.cashDifference.toFixed(2)} cash</p>
+                          )}
+                        </div>
                       </div>
                       <div className="bg-slate-800/50 rounded-lg p-3">
-                        <p className="text-base text-slate-400 mb-1">You're receiving</p>
-                        <p className="text-lg font-bold text-white">${theirMarketValue.toFixed(2)}</p>
-                        {theyPayCash && (
-                          <p className="text-base text-green-400 mt-0.5">+ ${trade.cashDifference.toFixed(2)} cash from them</p>
-                        )}
-                        <p className="text-base text-slate-400 mt-1">{theirItems.length} card{theirItems.length !== 1 ? "s" : ""}</p>
+                        <p className="text-base text-slate-400 mb-2">You're receiving</p>
+                        <div className="space-y-1">
+                          {theirItems.map((item) => {
+                            const c = (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
+                            return (
+                              <p key={item.id} className="text-base font-medium text-white">{c?.card?.name ?? "Unknown"}</p>
+                            );
+                          })}
+                          {theyPayCash && (
+                            <p className="text-base text-green-400">+ ${trade.cashDifference.toFixed(2)} cash from them</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between px-1">
@@ -593,12 +669,30 @@ if (!user) {
                         <span className="text-base font-semibold text-blue-400">They gain ${Math.abs(netValue).toFixed(2)} in value</span>
                       )}
                     </div>
-                    {/* Platform fee */}
-                    <div className="flex items-center justify-between px-1 pt-2 border-t border-slate-700">
-                      <span className="text-base text-slate-400">
-                        Your platform fee <span className="text-slate-400 text-base">(10% of ${theirTotal.toFixed(2)} you receive)</span>
-                      </span>
-                      <span className="text-base font-semibold text-purple-400">${myFee.toFixed(2)}</span>
+                    {/* Platform fee + Shipping + Cash indicator */}
+                    <div className="pt-2 border-t border-slate-700 space-y-1.5">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-base text-slate-400">
+                          Platform fee <span className="text-slate-500 text-base">(10% of ${theirTotal.toFixed(2)})</span>
+                        </span>
+                        <span className="text-base font-semibold text-purple-400">${myFee.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-base text-slate-400">Shipping &amp; handling</span>
+                        <span className="text-base font-semibold text-purple-400">$4.99</span>
+                      </div>
+                      {iPayCash && trade.cashDifference > 0 && (
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-base text-slate-400">Cash to {otherUser.username}</span>
+                          <span className="text-base font-semibold text-red-400">−${trade.cashDifference.toFixed(2)}</span>
+                        </div>
+                      )}
+                      {theyPayCash && trade.cashDifference > 0 && (
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-base text-slate-400">Cash from {otherUser.username}</span>
+                          <span className="text-base font-semibold text-green-400">+${trade.cashDifference.toFixed(2)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -723,115 +817,13 @@ if (!user) {
 
               </div>
             )}
-          </div>
-
-          {/* ── Payment banners ── */}
-          {paymentBanner === "success" && (
-            <div className="bg-green-950/40 border border-green-500/30 rounded-xl p-4 flex items-start gap-3">
-              <CheckCircle size={18} className="text-green-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-base font-semibold text-green-300">Payment successful!</p>
-                <p className="text-base text-slate-400 mt-0.5">Your payment is held in escrow and will be released when the trade completes verification.</p>
-              </div>
-              <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-400 hover:text-white"><X size={14} /></button>
-            </div>
-          )}
-          {paymentBanner === "cancelled" && (
-            <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
-              <AlertCircle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-base font-semibold text-amber-300">Payment cancelled</p>
-                <p className="text-base text-slate-400 mt-0.5">You can complete payment below whenever you're ready.</p>
-              </div>
-              <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-400 hover:text-white"><X size={14} /></button>
-            </div>
-          )}
-
-          {/* ── Per-party payment section (ACCEPTED) ── */}
-          {trade.status === "ACCEPTED" && (() => {
-            const PLATFORM_FEE_RATE = 0.10;
-            const myIsProposer = trade.proposer.id === user.id;
-            const iCashPayer = trade.cashPayerId === user.id;
-            const theyAreCashPayer = trade.cashPayerId === otherUser.id;
-
-            // Use item-level values (same as trade details section) for accuracy
-            const getItemValue = (item: typeof trade.items[0]) => {
-              const c = (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
-              return (c?.askingValueOverride ?? c?.currentMarketValue ?? 0) as number;
-            };
-            const theirCardsValue = theirItems.reduce((sum, item) => sum + getItemValue(item), 0);
-
-            // My total receive value = their card value + any cash they send me
-            const myReceiveValue = theirCardsValue + (theyAreCashPayer ? trade.cashDifference : 0);
-            const myFee = myReceiveValue * PLATFORM_FEE_RATE;
-            const RETURN_SHIPPING = 4.99;
-            const myTotal = myFee + RETURN_SHIPPING + (iCashPayer ? trade.cashDifference : 0);
-
-            // Did I already pay?
-            const myIntentId = myIsProposer ? trade.stripeProposerIntentId : trade.stripeReceiverIntentId;
-            const theirIntentId = myIsProposer ? trade.stripeReceiverIntentId : trade.stripeProposerIntentId;
-            const iPaid = !!myIntentId;
-            const theyPaid = !!theirIntentId;
-
-            return (
-              <div className="space-y-3">
-                {/* My payment */}
-                {!iPaid ? (
-                  <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-5">
-                    <div className="flex items-start gap-3 mb-4">
-                      <CreditCard size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-base font-semibold text-amber-300">Your payment is required</p>
-                        <p className="text-base text-slate-400 mt-1">
-                          Platform fee: <span className="text-white">${myFee.toFixed(2)}</span>
-                          {" "}+ return shipping: <span className="text-white">${RETURN_SHIPPING.toFixed(2)}</span>
-                          {iCashPayer && <> + cash to {otherUser.username}: <span className="text-white">${trade.cashDifference.toFixed(2)}</span></>}
-                          {" "}= <span className="text-white font-semibold">${myTotal.toFixed(2)} total</span>
-                        </p>
-                        <p className="text-base text-slate-400 mt-1">Return shipping covers us mailing your new cards back to you after verification.</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleCompletePayment}
-                      disabled={isLoadingCheckout}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-semibold transition-colors"
-                    >
-                      {isLoadingCheckout ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
-                      {isLoadingCheckout ? "Loading..." : `Complete My Payment — $${myTotal.toFixed(2)}`}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="bg-green-950/30 border border-green-500/30 rounded-xl p-4 flex items-start gap-3">
-                    <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-base font-semibold text-green-300">Your payment is complete</p>
-                      <p className="text-base text-slate-400 mt-0.5">${myTotal.toFixed(2)} held in escrow — releases on trade completion.</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Their payment status */}
-                {!theyPaid ? (
-                  <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex items-start gap-3">
-                    <Clock size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-base text-slate-400"><span className="text-slate-300 font-medium">{otherUser.username}</span> hasn't completed their payment yet. Shipping will unlock once both payments are confirmed.</p>
-                  </div>
-                ) : (
-                  <div className="bg-green-950/20 border border-green-500/20 rounded-xl p-4 flex items-start gap-3">
-                    <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-base text-slate-400"><span className="text-slate-300 font-medium">{otherUser.username}</span>'s payment is confirmed.</p>
-                  </div>
-                )}
-
-              </div>
-            );
-          })()}
 
           {/* ── Shipping phase ── */}
           {["ACCEPTED", "BOTH_SHIPPED", "A_RECEIVED", "B_RECEIVED", "BOTH_RECEIVED"].includes(trade.status) && (() => {
             const myShipment = trade.shipments?.find((s) => s.senderId === user.id && s.direction === "INBOUND");
             const theirShipment = trade.shipments?.find((s) => s.senderId !== user.id && s.direction === "INBOUND");
             const bothPaid = !!(trade.stripeProposerIntentId && trade.stripeReceiverIntentId);
+            const iNeedToShip = myItems.length > 0;
             const VERIFICATION_ADDRESS = "HoloSwaps Verification Center\n123 Card Ave, Suite 100\nLos Angeles, CA 90001";
 
             return (
@@ -849,7 +841,19 @@ if (!user) {
                   </div>
                 )}
 
+                {/* Cash-only user — no shipping needed */}
+                {!iNeedToShip && (
+                  <div className="flex items-start gap-3 bg-blue-950/30 border border-blue-500/20 rounded-lg p-4">
+                    <CheckCircle size={16} className="text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-base font-semibold text-blue-300">No shipment required from you</p>
+                      <p className="text-base text-slate-400 mt-0.5">You're not sending any cards in this trade. Once your payment is confirmed, just wait for the other party's cards to be verified and shipped back to you.</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Shipping instructions + address */}
+                {iNeedToShip && (
                 <div className={`bg-slate-800/50 rounded-lg p-4 ${!bothPaid ? "opacity-40 pointer-events-none select-none" : ""}`}>
                   <p className="text-base font-semibold text-white mb-1">Ship your cards to:</p>
                   <pre className="text-base text-slate-300 font-sans whitespace-pre-wrap">{VERIFICATION_ADDRESS}</pre>
@@ -859,15 +863,20 @@ if (!user) {
                     <li>We recommend insuring cards over $50</li>
                   </ul>
                 </div>
+                )}
 
                 {/* Your tracking */}
-                {!bothPaid ? null : myShipment ? (
+                {!iNeedToShip ? null : !bothPaid ? null : myShipment ? (
                   <div className="flex items-start gap-3 bg-green-950/30 border border-green-500/30 rounded-lg p-4">
                     <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-base font-semibold text-green-300">Your tracking submitted</p>
-                      <p className="text-base text-slate-400 mt-0.5">{myShipment.carrier} · {myShipment.trackingNumber}</p>
-                      <p className="text-base text-slate-400 mt-0.5">Status: {myShipment.status}</p>
+                      <p className="text-base font-semibold text-green-300">
+                        {myShipment.trackingNumber ? "Your tracking submitted" : "Marked as shipped (no tracking)"}
+                      </p>
+                      {myShipment.trackingNumber && (
+                        <p className="text-base text-slate-400 mt-0.5">{myShipment.carrier} · {myShipment.trackingNumber}</p>
+                      )}
+                      <p className="text-base text-slate-400 mt-0.5">{INBOUND_STATUS_LABELS[myShipment.status] ?? myShipment.status}</p>
                     </div>
                   </div>
                 ) : (
@@ -875,7 +884,7 @@ if (!user) {
                     <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/40 border border-amber-500/30">
                       <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
                       <p className="text-base text-amber-300 leading-relaxed">
-                        <span className="font-semibold">Ship with tracking only.</span> Packages sent without a tracking number are not covered by our dispute policy and cannot be verified.
+                        <span className="font-semibold">We strongly recommend shipping with tracking.</span> Packages without a tracking number are not covered by our dispute policy and cannot be automatically verified.
                       </p>
                     </div>
                     <p className="text-base font-semibold text-white">Submit your tracking number</p>
@@ -883,15 +892,20 @@ if (!user) {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-base text-slate-400 mb-1 block">Carrier</label>
-                        <select
-                          value={carrier}
-                          onChange={(e) => setCarrier(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          {["USPS", "UPS", "FedEx", "DHL", "Other"].map((c) => (
-                            <option key={c} value={c}>{c}</option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <select
+                            value={carrier}
+                            onChange={(e) => setCarrier(e.target.value)}
+                            className="w-full px-3 py-2 pr-8 bg-slate-800 border border-slate-700 rounded-lg text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                          >
+                            {["USPS", "UPS", "FedEx", "DHL", "Other"].map((c) => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                            <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                          </div>
+                        </div>
                       </div>
                       <div>
                         <label className="text-base text-slate-400 mb-1 block">Tracking Number</label>
@@ -905,53 +919,74 @@ if (!user) {
                         />
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <label className="flex items-center gap-2 text-base text-slate-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isInsured}
-                          onChange={(e) => setIsInsured(e.target.checked)}
-                          className="rounded"
-                        />
-                        Insured shipment
-                      </label>
-                      {isInsured && (
-                        <input
-                          type="number"
-                          value={insuredValue}
-                          onChange={(e) => setInsuredValue(e.target.value)}
-                          placeholder="Insured value ($)"
-                          min="0"
-                          className="w-36 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      )}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-2 text-base text-slate-300 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isInsured}
+                            onChange={(e) => setIsInsured(e.target.checked)}
+                            className="rounded"
+                          />
+                          Insured shipment
+                        </label>
+                        {isInsured && (
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={insuredValue}
+                            onChange={(e) => setInsuredValue(e.target.value)}
+                            placeholder="Insured value ($)"
+                            className="w-48 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        )}
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isSubmittingTracking || !trackingNumber.trim()}
+                        className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
+                      >
+                        {isSubmittingTracking ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
+                        Submit Tracking
+                      </button>
                     </div>
-                    <button
-                      type="submit"
-                      disabled={isSubmittingTracking || !trackingNumber.trim()}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
-                    >
-                      {isSubmittingTracking ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
-                      Submit Tracking
-                    </button>
+                    <div className="border-t border-slate-700 pt-3 mt-1">
+                      <p className="text-base text-slate-500 mb-2">No tracking number?</p>
+                      <button
+                        type="button"
+                        onClick={handleMarkShippedNoTracking}
+                        disabled={isSubmittingTracking}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-600 hover:bg-slate-500 border border-slate-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
+                      >
+                        {isSubmittingTracking ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
+                        Mark as Shipped (no tracking)
+                      </button>
+                    </div>
                   </form>
                 )}
 
-                {/* Their tracking status */}
-                <div className={`flex items-start gap-3 rounded-lg p-3 ${theirShipment ? "bg-green-950/20 border border-green-500/20" : "bg-slate-800/40 border border-slate-700"}`}>
-                  {theirShipment ? <CheckCircle size={15} className="text-green-400 mt-0.5 flex-shrink-0" /> : <Clock size={15} className="text-slate-400 mt-0.5 flex-shrink-0" />}
-                  <div>
-                    <p className="text-base font-semibold text-slate-300">{otherUser.username}'s shipment</p>
-                    {theirShipment ? (
-                      <p className="text-base text-slate-400 mt-0.5">{theirShipment.carrier} · {theirShipment.trackingNumber} · <span className="text-slate-300">{theirShipment.status}</span></p>
-                    ) : (
-                      <p className="text-base text-slate-400 mt-0.5">Waiting for them to submit tracking</p>
-                    )}
+                {/* Their tracking status — only relevant if they have cards to send */}
+                {theirItems.length > 0 && (
+                  <div className={`flex items-start gap-3 rounded-lg p-3 ${theirShipment ? "bg-green-950/20 border border-green-500/20" : "bg-slate-800/40 border border-slate-700"}`}>
+                    {theirShipment ? <CheckCircle size={15} className="text-green-400 mt-0.5 flex-shrink-0" /> : <Clock size={15} className="text-slate-400 mt-0.5 flex-shrink-0" />}
+                    <div>
+                      <p className="text-base font-semibold text-slate-300">{otherUser.username}'s shipment</p>
+                      {theirShipment ? (
+                        <p className="text-base text-slate-400 mt-0.5">
+                          {theirShipment.trackingNumber
+                            ? `${theirShipment.carrier} · ${theirShipment.trackingNumber} · `
+                            : "No tracking · "}
+                          <span className="text-slate-300">{INBOUND_STATUS_LABELS[theirShipment.status] ?? theirShipment.status}</span>
+                        </p>
+                      ) : (
+                        <p className="text-base text-slate-400 mt-0.5">Waiting for them to submit tracking</p>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Manual receipt confirmation (fallback if AfterShip doesn't detect it) */}
-                {["BOTH_SHIPPED", "A_RECEIVED", "B_RECEIVED"].includes(trade.status) && (() => {
+                {/* Manual receipt confirmation (fallback if AfterShip doesn't detect it) — admin only */}
+                {user.isAdmin && ["BOTH_SHIPPED", "A_RECEIVED", "B_RECEIVED"].includes(trade.status) && (() => {
                   const inboundToMe = trade.shipments?.find((s) => s.senderId !== user.id && s.direction === "INBOUND");
                   const alreadyConfirmed = inboundToMe?.status === "DELIVERED";
                   return (
@@ -972,6 +1007,102 @@ if (!user) {
                     </div>
                   );
                 })()}
+              </div>
+            );
+          })()}
+
+          {/* ── HoloSwaps Verification status ── */}
+          {["BOTH_RECEIVED", "VERIFIED", "COMPLETED"].includes(trade.status) && (() => {
+            const allItems = [...myItems, ...theirItems];
+            const verifications: any[] = (trade as any).verifications ?? [];
+            const verifiedCount = allItems.filter((item) => {
+              const card = (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
+              return card && verifications.some((v) => v.collectionItemId === card.id);
+            }).length;
+            const allVerified = verifiedCount === allItems.length;
+
+            return (
+              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <ShieldCheck size={20} className="text-cyan-400" />
+                    HoloSwaps Verification
+                  </h2>
+                  {allVerified ? (
+                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-base font-medium">
+                      <CheckCircle size={13} /> All cards verified
+                    </span>
+                  ) : (
+                    <span className="text-base text-slate-400">{verifiedCount} / {allItems.length} cards inspected</span>
+                  )}
+                </div>
+
+                {!allVerified && trade.status === "BOTH_RECEIVED" && (
+                  <p className="text-base text-slate-400">Our team has received both packages and is inspecting each card. This typically takes 1–2 business days.</p>
+                )}
+
+                <div className="space-y-2">
+                  {allItems.map((item) => {
+                    const card = (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
+                    if (!card) return null;
+                    const verification = verifications.find((v) => v.collectionItemId === card.id);
+                    return (
+                      <div key={item.id} className={`flex items-center gap-3 rounded-lg px-4 py-3 border ${verification ? "bg-green-950/20 border-green-500/20" : "bg-slate-800/40 border-slate-700"}`}>
+                        {card.card.imageUrl
+                          ? <img src={card.card.imageUrl} alt={card.card.name} className="w-8 h-10 object-cover rounded flex-shrink-0" />
+                          : <div className="w-8 h-10 bg-slate-700 rounded flex-shrink-0" />
+                        }
+                        <p className="flex-1 text-base font-medium text-white truncate">{card.card.name}</p>
+                        {verification ? (
+                          <div className="flex items-center gap-1.5 text-base text-green-400 flex-shrink-0">
+                            <ShieldCheck size={14} />
+                            Verified by HoloSwaps
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-base text-slate-500 flex-shrink-0">
+                            <Clock size={14} />
+                            Awaiting inspection
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ── Return shipment (admin sending verified cards back to user) ── */}
+          {["VERIFIED", "COMPLETED"].includes(trade.status) && theirItems.length > 0 && (() => {
+            const myOutbound = trade.shipments?.find((s: any) => s.receiverId === user.id && s.direction === "OUTBOUND");
+            if (!myOutbound && trade.status !== "VERIFIED") return null;
+            return (
+              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 space-y-3">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Truck size={20} className="text-green-400" />
+                  Your Cards Are On Their Way Back
+                </h2>
+                {myOutbound ? (
+                  <div className="bg-green-950/30 border border-green-500/20 rounded-lg p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Truck size={15} className="text-green-400 flex-shrink-0" />
+                      <p className="text-base font-semibold text-green-300">{OUTBOUND_STATUS_LABELS[myOutbound.status] ?? myOutbound.status}</p>
+                    </div>
+                    {myOutbound.trackingNumber ? (
+                      <>
+                        <p className="text-base text-slate-300">{myOutbound.carrier} · <span className="font-mono">{myOutbound.trackingNumber}</span></p>
+                        <p className="text-base text-slate-500">Use the tracking number above on your carrier's website to track your package.</p>
+                      </>
+                    ) : (
+                      <p className="text-base text-slate-400">No tracking number provided yet.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-3 bg-amber-950/30 border border-amber-500/20 rounded-lg p-4">
+                    <Clock size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-base text-slate-300">Our team is preparing your return shipment. You'll see tracking info here once your cards have been dispatched.</p>
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -1033,7 +1164,7 @@ if (!user) {
 
           {/* Cancel Trade */}
           {canCancel && (
-            <div className="lg:col-span-2 border border-red-500/30 bg-red-950/20 rounded-xl p-4 flex items-center justify-between gap-4">
+            <div className="border border-red-500/30 bg-red-950/20 rounded-xl p-4 flex items-center justify-between gap-4">
               <div>
                 <p className="text-base font-semibold text-red-400">Cancel this trade</p>
                 <p className="text-base text-slate-400 mt-0.5">
@@ -1055,10 +1186,11 @@ if (!user) {
               </button>
             </div>
           )}
+          </div>
 
-          {/* Messages - Right Side */}
-          <div className="lg:col-span-1 flex flex-col">
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden flex flex-col h-full">
+          {/* Messages + Payment - Right Side */}
+          <div className="lg:col-span-1 flex flex-col gap-6">
+            <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
               {/* Messages Header */}
               <div className="p-4 border-b border-slate-800">
                 <div className="flex items-center gap-2">
@@ -1071,7 +1203,7 @@ if (!user) {
               </div>
 
               {/* Messages List */}
-              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div ref={messagesContainerRef} className="h-[45vh] overflow-y-auto p-4 space-y-3">
                 {messages.length === 0 ? (
                   <p className="text-center text-slate-400 text-base py-8">
                     No messages yet. Start the conversation!
@@ -1142,6 +1274,130 @@ if (!user) {
                 </div>
               </form>
             </div>
+
+            {/* ── Payment banners ── */}
+            {paymentBanner === "success" && (
+              <div className="bg-green-950/40 border border-green-500/30 rounded-xl p-4 flex items-start gap-3">
+                <CheckCircle size={18} className="text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-base font-semibold text-green-300">Payment successful!</p>
+                  <p className="text-base text-slate-400 mt-0.5">Your payment is held in escrow and will be released when the trade completes verification.</p>
+                </div>
+                <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-400 hover:text-white"><X size={14} /></button>
+              </div>
+            )}
+            {paymentBanner === "cancelled" && (
+              <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-base font-semibold text-amber-300">Payment cancelled</p>
+                  <p className="text-base text-slate-400 mt-0.5">You can complete payment below whenever you're ready.</p>
+                </div>
+                <button onClick={() => setPaymentBanner(null)} className="ml-auto text-slate-400 hover:text-white"><X size={14} /></button>
+              </div>
+            )}
+
+            {/* ── Per-party payment section (ACCEPTED) ── */}
+            {trade.status === "ACCEPTED" && (() => {
+              const PLATFORM_FEE_RATE = 0.10;
+              const myIsProposer = trade.proposer.id === user.id;
+              const iCashPayer = trade.cashPayerId === user.id;
+              const theyAreCashPayer = trade.cashPayerId === otherUser.id;
+
+              const getItemValue = (item: typeof trade.items[0]) => {
+                const c = (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
+                return (c?.askingValueOverride ?? c?.currentMarketValue ?? 0) as number;
+              };
+              const theirCardsValue = theirItems.reduce((sum, item) => sum + getItemValue(item), 0);
+
+              const myReceiveValue = theirCardsValue + (theyAreCashPayer ? trade.cashDifference : 0);
+              const myFee = myReceiveValue * PLATFORM_FEE_RATE;
+              const RETURN_SHIPPING = 4.99;
+              const myTotal = myFee + RETURN_SHIPPING + (iCashPayer ? trade.cashDifference : 0);
+
+              const myIntentId = myIsProposer ? trade.stripeProposerIntentId : trade.stripeReceiverIntentId;
+              const theirIntentId = myIsProposer ? trade.stripeReceiverIntentId : trade.stripeProposerIntentId;
+              const iPaid = !!myIntentId;
+              const theyPaid = !!theirIntentId;
+
+              return (
+                <div className="space-y-3">
+                  {!iPaid ? (
+                    <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-5 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <CreditCard size={18} className="text-amber-400 flex-shrink-0" />
+                        <p className="text-base font-semibold text-amber-300">Payment required to proceed</p>
+                      </div>
+
+                      {/* Itemized breakdown */}
+                      <div className="bg-slate-900/60 rounded-lg divide-y divide-slate-700/50">
+                        <div className="flex items-center justify-between px-4 py-2.5">
+                          <span className="text-base text-slate-300">Platform fee <span className="text-slate-500">(10% of ${myReceiveValue.toFixed(2)})</span></span>
+                          <span className="text-base font-medium text-white">${myFee.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between px-4 py-2.5">
+                          <span className="text-base text-slate-300">Shipping &amp; handling <span className="text-slate-500">(return delivery after verification)</span></span>
+                          <span className="text-base font-medium text-white">${RETURN_SHIPPING.toFixed(2)}</span>
+                        </div>
+                        {iCashPayer && trade.cashDifference > 0 && (
+                          <div className="flex items-center justify-between px-4 py-2.5">
+                            <span className="text-base text-slate-300">Cash to {otherUser.username}</span>
+                            <span className="text-base font-medium text-red-400">−${trade.cashDifference.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {theyAreCashPayer && trade.cashDifference > 0 && (
+                          <div className="flex items-center justify-between px-4 py-2.5">
+                            <span className="text-base text-slate-300">Cash from {otherUser.username}</span>
+                            <span className="text-base font-medium text-green-400">+${trade.cashDifference.toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between px-4 py-3 bg-slate-800/50 rounded-b-lg">
+                          <span className="text-base font-semibold text-white">Total due today</span>
+                          <span className="text-base font-bold text-amber-300">${myTotal.toFixed(2)}</span>
+                        </div>
+                      </div>
+
+                      {theyAreCashPayer && trade.cashDifference > 0 ? (
+                        <p className="text-base text-slate-500">
+                          Your ${myTotal.toFixed(2)} is held in escrow. The ${trade.cashDifference.toFixed(2)} cash from {otherUser.username} is held in their escrow and will be transferred to you when the trade completes.
+                        </p>
+                      ) : (
+                        <p className="text-base text-slate-500">Funds are held in escrow and only captured when the trade completes successfully.</p>
+                      )}
+
+                      <button
+                        onClick={handleCompletePayment}
+                        disabled={isLoadingCheckout}
+                        className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-semibold transition-colors"
+                      >
+                        {isLoadingCheckout ? <Loader2 size={15} className="animate-spin" /> : <CreditCard size={15} />}
+                        {isLoadingCheckout ? "Loading..." : `Pay $${myTotal.toFixed(2)}`}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-green-950/30 border border-green-500/30 rounded-xl p-4 flex items-start gap-3">
+                      <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-base font-semibold text-green-300">Your payment is complete</p>
+                        {theyAreCashPayer && trade.cashDifference > 0 ? (
+                          <p className="text-base text-slate-400 mt-0.5">
+                            ${myTotal.toFixed(2)} held in escrow. You'll also receive ${trade.cashDifference.toFixed(2)} from {otherUser.username} — held in their escrow and transferred to you on completion.
+                          </p>
+                        ) : (
+                          <p className="text-base text-slate-400 mt-0.5">${myTotal.toFixed(2)} held in escrow — releases on trade completion.</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {iPaid && !theyPaid && (
+                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex items-start gap-3">
+                      <Clock size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-base text-slate-400">Waiting for the other party to complete their payment. Shipping will unlock once both payments are confirmed.</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </main>

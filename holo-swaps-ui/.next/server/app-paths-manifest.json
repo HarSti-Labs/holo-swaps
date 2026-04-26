@@ -1,7 +1,8 @@
 {
-  "/dashboard/page": "app/dashboard/page.js",
-  "/trades/page": "app/trades/page.js",
+  "/trades/[tradeId]/page": "app/trades/[tradeId]/page.js",
   "/page": "app/page.js",
-  "/settings/page": "app/settings/page.js",
-  "/trades/[tradeId]/page": "app/trades/[tradeId]/page.js"
+  "/admin/trades/[tradeId]/page": "app/admin/trades/[tradeId]/page.js",
+  "/admin/trades/page": "app/admin/trades/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }

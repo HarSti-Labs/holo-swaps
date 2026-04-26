@@ -29,4 +29,5 @@ export interface IEmailService {
   sendTradeMessageEmail(to: string, recipientUsername: string, senderUsername: string, tradeCode: string, messageBody: string, tradeUrl: string): Promise<void>;
   sendCancelRequestEmail(to: string, recipientUsername: string, requesterUsername: string, tradeCode: string, tradeUrl: string): Promise<void>;
   sendCancelAcceptedEmail(to: string, recipientUsername: string, otherUsername: string, tradeCode: string): Promise<void>;
+  sendTradeCompletedEmail(to: string, recipientUsername: string, otherUsername: string, tradeCode: string, tradeUrl: string): Promise<void>;
 }

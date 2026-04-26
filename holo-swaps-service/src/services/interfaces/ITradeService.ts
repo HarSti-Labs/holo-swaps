@@ -17,6 +17,7 @@ export interface ITradeService {
   confirmReceipt(tradeId: string, userId: string): Promise<Trade>;
   refreshTradePrices(tradeId: string, userId: string): Promise<Trade>;
   // Admin only
+  adminConfirmShipmentReceived(tradeId: string, senderId: string): Promise<Trade>;
   verifyCards(tradeId: string, adminId: string, data: VerifyCardsData): Promise<Trade>;
   completeTrade(tradeId: string, adminId: string): Promise<Trade>;
   disputeTrade(tradeId: string, adminId: string, notes: string): Promise<Trade>;

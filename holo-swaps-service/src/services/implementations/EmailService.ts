@@ -616,6 +616,48 @@ export class EmailService implements IEmailService {
     }
   }
 
+  async sendTradeCompletedEmail(to: string, recipientUsername: string, otherUsername: string, tradeCode: string, tradeUrl: string): Promise<void> {
+    try {
+      await this.resend.emails.send({
+        from: config.resend.from,
+        to,
+        subject: `Your trade is complete — ${tradeCode}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f9f9f9;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 32px; border: 1px solid #e0e0e0;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #dcfce7; border-radius: 50%;">
+                  <span style="font-size: 32px;">🎉</span>
+                </div>
+              </div>
+              <h1 style="color: #1a1a2e; font-size: 22px; margin-top: 0; text-align: center;">Trade Complete!</h1>
+              <p style="color: #444; font-size: 15px; line-height: 1.6; text-align: center;">
+                Hi ${recipientUsername}, your trade with <strong>${otherUsername}</strong> has been verified and completed.
+              </p>
+              <div style="background: #f3f4f6; border-radius: 6px; padding: 16px; margin: 24px 0;">
+                <p style="margin: 0; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Trade Code</p>
+                <p style="margin: 4px 0 0; font-size: 20px; font-weight: bold; font-family: monospace; color: #1a1a2e;">${tradeCode}</p>
+              </div>
+              <p style="color: #444; font-size: 14px; line-height: 1.6; text-align: center;">
+                Your cards are on their way! Check your trade for outbound tracking information so you can follow your shipment.
+              </p>
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${tradeUrl}" style="background: #16a34a; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: bold; display: inline-block;">
+                  View Tracking Info
+                </a>
+              </div>
+              <p style="color: #888; font-size: 12px; margin-top: 24px; text-align: center;">
+                Thanks for trading on Holo Swaps. Questions? Contact us at <a href="mailto:admin@holoswaps.com" style="color: #4f46e5;">admin@holoswaps.com</a>.
+              </p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error("Failed to send trade completed email", { to, tradeCode, err });
+    }
+  }
+
   async sendCancelAcceptedEmail(to: string, recipientUsername: string, otherUsername: string, tradeCode: string): Promise<void> {
     try {
       await this.resend.emails.send({

@@ -43,9 +43,9 @@ export default function TradesPage() {
 
   const [trades, setTrades] = useState<Trade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const initialFilter = (searchParams.get("filter") as "all" | "active" | "completed") ?? "all";
-  const [filter, setFilter] = useState<"all" | "active" | "completed">(
-    ["all", "active", "completed"].includes(initialFilter) ? initialFilter : "all"
+  const initialFilter = (searchParams.get("filter") as "all" | "active" | "completed" | "cancelled") ?? "all";
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "cancelled">(
+    ["all", "active", "completed", "cancelled"].includes(initialFilter) ? initialFilter : "all"
   );
 
   useEffect(() => {
@@ -62,12 +62,12 @@ export default function TradesPage() {
 
       if (filter === "active") {
         filtered = filtered.filter((t) =>
-          ["PROPOSED", "COUNTERED", "ACCEPTED", "BOTH_SHIPPED", "A_RECEIVED", "B_RECEIVED", "BOTH_RECEIVED"].includes(t.status)
+          ["PROPOSED", "COUNTERED", "ACCEPTED", "BOTH_SHIPPED", "A_RECEIVED", "B_RECEIVED", "BOTH_RECEIVED", "VERIFIED"].includes(t.status)
         );
       } else if (filter === "completed") {
-        filtered = filtered.filter((t) =>
-          ["COMPLETED", "CANCELLED", "DISPUTED"].includes(t.status)
-        );
+        filtered = filtered.filter((t) => t.status === "COMPLETED");
+      } else if (filter === "cancelled") {
+        filtered = filtered.filter((t) => ["CANCELLED", "DISPUTED"].includes(t.status));
       }
 
       setTrades(filtered);
@@ -137,6 +137,16 @@ export default function TradesPage() {
           >
             Completed
           </button>
+          <button
+            onClick={() => setFilter("cancelled")}
+            className={`px-4 py-2 font-medium transition-colors ${
+              filter === "cancelled"
+                ? "text-blue-400 border-b-2 border-blue-400"
+                : "text-slate-400 hover:text-slate-300"
+            }`}
+          >
+            Cancelled
+          </button>
         </div>
 
         {/* Trades List */}
@@ -153,7 +163,9 @@ export default function TradesPage() {
                 ? "Start trading by browsing other users' collections"
                 : filter === "active"
                 ? "You don't have any active trades"
-                : "You haven't completed any trades yet"}
+                : filter === "completed"
+                ? "You haven't completed any trades yet"
+                : "You don't have any cancelled trades"}
             </p>
           </div>
         ) : (

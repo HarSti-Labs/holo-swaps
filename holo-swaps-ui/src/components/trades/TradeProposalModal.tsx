@@ -114,6 +114,7 @@ export function TradeProposalModal({
   };
 
   const PLATFORM_FEE_RATE = 0.10;
+  const RETURN_SHIPPING = 4.99;
 
   const myTotal = calculateTotalValue(myCards);
   const theirTotal = calculateTotalValue(theirCards);
@@ -474,15 +475,21 @@ export function TradeProposalModal({
                     : "You're offering more than you're receiving — a generous offer."}
                 </p>
 
-                {/* Platform fee */}
+                {/* Fees */}
                 {(myCards.length > 0 || theirCards.length > 0) && (
-                  <div className="mt-3 pt-3 border-t border-slate-700 space-y-1">
-                    {(myCards.length > 0 || theirCards.length > 0) && (
-                      <div className="flex items-center justify-between text-base">
-                        <p className="font-semibold text-slate-400 uppercase tracking-wide">Platform Fee (10%)</p>
-                        <span className="font-semibold text-purple-400">${myFee.toFixed(2)}</span>
-                      </div>
-                    )}
+                  <div className="mt-3 pt-3 border-t border-slate-700 space-y-1.5">
+                    <div className="flex items-center justify-between text-base">
+                      <p className="text-slate-400">Platform Fee (10%)</p>
+                      <span className="font-semibold text-purple-400">${myFee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-base">
+                      <p className="text-slate-400">Return Shipping</p>
+                      <span className="font-semibold text-slate-300">${RETURN_SHIPPING.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-base pt-1 border-t border-slate-700">
+                      <p className="font-semibold text-slate-300">Your Total Due</p>
+                      <span className="font-semibold text-white">${(myFee + RETURN_SHIPPING + cashAddNumber).toFixed(2)}</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -529,10 +536,9 @@ export function TradeProposalModal({
           {myReceiveTotal > 0 && (
             <p className="text-base text-slate-400 mb-3">
               By proposing this trade, you agree to a{" "}
-              <span className="text-purple-400 font-medium">
-                ${myFee.toFixed(2)} platform fee
-              </span>{" "}
-              (10% of the ${myReceiveTotal.toFixed(2)} you receive), collected when the trade completes.
+              <span className="text-purple-400 font-medium">${myFee.toFixed(2)} platform fee</span>
+              {" "}+ <span className="text-slate-300 font-medium">$4.99 return shipping</span>
+              {" "}= <span className="text-white font-medium">${(myFee + RETURN_SHIPPING).toFixed(2)} total</span>, collected when the trade is accepted.
             </p>
           )}
           <div className="flex items-center justify-between">

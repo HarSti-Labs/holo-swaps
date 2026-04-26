@@ -15,18 +15,19 @@ const queryClient = new QueryClient({
 
 function AuthInit({ children }: { children: React.ReactNode }) {
   const loadUser = useAuthStore((s) => s.loadUser);
+  const refreshUser = useAuthStore((s) => s.refreshUser);
 
   useEffect(() => {
     // Load user on mount
     loadUser();
 
-    // Refresh user data every 5 minutes to keep it in sync
+    // Refresh user data every 5 minutes — use refreshUser which never clears auth on error
     const interval = setInterval(() => {
-      loadUser();
+      refreshUser();
     }, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [loadUser]);
+  }, [loadUser, refreshUser]);
 
   return <>{children}</>;
 }

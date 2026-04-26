@@ -17,6 +17,10 @@ import {
   adminVerifyCards,
   adminCompleteTrade,
   adminDisputeTrade,
+  adminForceStatus,
+  adminConfirmShipmentReceived,
+  adminSubmitOutboundTracking,
+  adminUpdateOutboundTracking,
   getTradeSnapshots,
   getCheckoutUrl,
 } from "@/controllers/tradeController";
@@ -64,5 +68,9 @@ router.post("/:tradeId/dispute", openDispute);
 router.patch("/:tradeId/verify", requireAdmin, adminVerifyCards);
 router.patch("/:tradeId/complete", requireAdmin, adminCompleteTrade);
 router.patch("/:tradeId/admin-dispute", requireAdmin, adminDisputeTrade);
+router.patch("/:tradeId/admin-received", requireAdmin, adminConfirmShipmentReceived);
+router.post("/:tradeId/admin-outbound-tracking", requireAdmin, adminSubmitOutboundTracking);
+router.patch("/:tradeId/admin-outbound-tracking", requireAdmin, adminUpdateOutboundTracking);
+router.patch("/:tradeId/admin-force-status", requireAdmin, adminForceStatus);
 
 export default router;
