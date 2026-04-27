@@ -256,6 +256,7 @@ model Card {
   cardType        String?
   imageUrl        String?
   tcgplayerId     String?   @unique
+  tcgapiDevId     Int?      @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 

@@ -12,6 +12,8 @@
     "db:studio": "prisma studio",
     "db:seed:cards": "tsx src/scripts/seedCardsFromCSV.ts",
     "db:cleanup:seed": "tsx src/scripts/cleanupSeedData.ts",
+    "db:reset": "tsx src/scripts/resetDatabase.ts",
+    "db:seed": "tsx src/scripts/seedFromTcgApiDev.ts",
     "lint": "eslint src --ext .ts",
     "test": "jest"
   },

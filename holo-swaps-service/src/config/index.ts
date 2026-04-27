@@ -32,9 +32,9 @@ export const config = {
     secretKey: process.env.STRIPE_SECRET_KEY!,
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
   },
-  tcgapis: {
-    apiKey: process.env.TCGAPIS_API_KEY || "",
-    apiUrl: process.env.TCGAPIS_API_URL || "https://api.tcgapis.com/v1",
+  tcgapiDev: {
+    apiKey: process.env.TCGAPI_DEV_API_KEY || "",
+    apiUrl: "https://api.tcgapi.dev/v1",
   },
   supabase: {
     url: process.env.SUPABASE_URL || "",

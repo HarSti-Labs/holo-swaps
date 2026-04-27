@@ -9,35 +9,71 @@ import {
 import { logger } from "@/utils/logger";
 
 export class PricingService implements IPricingService {
-  async getCardPrice(tcgplayerId: string): Promise<CardPriceData | null> {
+  private get headers() {
+    return { "X-API-Key": config.tcgapiDev.apiKey };
+  }
+
+  /**
+   * Fetch price for a single card by its tcgapi.dev internal ID.
+   * This is the fast path used during sync (ID already stored on Card row).
+   */
+  async getCardPriceByDevId(tcgapiDevId: number): Promise<CardPriceData | null> {
     try {
       const response = await fetch(
-        `${config.tcgapis.apiUrl}/pricing/product/${tcgplayerId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${config.tcgapis.apiKey}`,
-          },
-        }
+        `${config.tcgapiDev.apiUrl}/cards/${tcgapiDevId}/prices`,
+        { headers: this.headers }
       );
 
       if (!response.ok) return null;
 
-      const data = await response.json();
-      const price = data.results?.[0];
-
+      const json = await response.json();
+      const price = json.data;
       if (!price) return null;
 
       return {
-        cardId: tcgplayerId,
-        tcgplayerId,
-        marketPrice: price.marketPrice || 0,
-        lowPrice: price.lowPrice || 0,
-        midPrice: price.midPrice || 0,
-        highPrice: price.highPrice || 0,
+        cardId: String(tcgapiDevId),
+        tcgplayerId: String(tcgapiDevId),
+        marketPrice: price.market_price ?? 0,
+        lowPrice: price.low_price ?? 0,
+        midPrice: price.median_price ?? 0,
+        highPrice: price.foil_market_price ?? 0,
         updatedAt: new Date(),
       };
     } catch (error) {
-      logger.error("Failed to fetch TCGAPIs price", { tcgplayerId, error });
+      logger.error("Failed to fetch tcgapi.dev price by dev ID", { tcgapiDevId, error });
+      return null;
+    }
+  }
+
+  /**
+   * Fetch price for a card by TCGPlayer ID.
+   * Two-step: resolve tcgplayer ID → tcgapi.dev card ID, then fetch prices.
+   * Stores the resolved tcgapiDevId back onto the Card row to avoid the
+   * double-call on subsequent lookups.
+   */
+  async getCardPrice(tcgplayerId: string): Promise<CardPriceData | null> {
+    try {
+      // Step 1: resolve to tcgapi.dev card
+      const cardResp = await fetch(
+        `${config.tcgapiDev.apiUrl}/cards/tcgplayer/${tcgplayerId}`,
+        { headers: this.headers }
+      );
+
+      if (!cardResp.ok) return null;
+
+      const cardJson = await cardResp.json();
+      const devId: number | undefined = cardJson.data?.id;
+      if (!devId) return null;
+
+      // Persist the devId so future lookups skip this step
+      await prisma.card.updateMany({
+        where: { tcgplayerId },
+        data: { tcgapiDevId: devId },
+      });
+
+      return this.getCardPriceByDevId(devId);
+    } catch (error) {
+      logger.error("Failed to fetch tcgapi.dev price by tcgplayerId", { tcgplayerId, error });
       return null;
     }
   }
@@ -67,7 +103,6 @@ export class PricingService implements IPricingService {
       0
     );
 
-    // Positive = proposer needs to pay cash, Negative = receiver needs to pay cash
     const cashDifference = receiverTotalValue - proposerTotalValue;
 
     return {
@@ -89,7 +124,6 @@ export class PricingService implements IPricingService {
 
     return Promise.all(
       items.map(async (item) => {
-        // Use override value if set
         if (item.askingValueOverride !== null) {
           return {
             collectionItemId: item.id,
@@ -99,14 +133,25 @@ export class PricingService implements IPricingService {
           };
         }
 
-        // Fetch live market price
-        let marketValue = item.currentMarketValue || 0;
+        let marketValue = item.currentMarketValue ?? 0;
 
-        if (item.card.tcgplayerId) {
+        // Use fast path if tcgapiDevId is already stored
+        if (item.card.tcgapiDevId) {
+          const priceData = await this.getCardPriceByDevId(item.card.tcgapiDevId);
+          if (priceData) {
+            marketValue = priceData.marketPrice;
+            await prisma.userCollection.update({
+              where: { id: item.id },
+              data: {
+                currentMarketValue: marketValue,
+                marketValueUpdatedAt: new Date(),
+              },
+            });
+          }
+        } else if (item.card.tcgplayerId) {
           const priceData = await this.getCardPrice(item.card.tcgplayerId);
           if (priceData) {
             marketValue = priceData.marketPrice;
-            // Cache it
             await prisma.userCollection.update({
               where: { id: item.id },
               data: {

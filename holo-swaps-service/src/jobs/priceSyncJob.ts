@@ -3,48 +3,78 @@ import { PricingService } from "@/services/implementations/PricingService";
 import { logger } from "@/utils/logger";
 
 const pricingService = new PricingService();
-const BATCH_SIZE = 20;
+
+// Stay well under the free-tier daily limit (100 req/day).
+// Each card with a tcgapiDevId costs 1 request; without it costs 2.
+// We cap at 80 cards to leave headroom for on-demand lookups.
+const DAILY_SYNC_CAP = 80;
+const BATCH_SIZE = 10;
+const BATCH_DELAY_MS = 1000;
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export function startPriceSyncJob(): void {
-  logger.info("Price sync job started");
-  // Run once at startup, then every 6 hours
+  logger.info("Price sync job started (runs once per day)");
   syncPrices().catch((err) => logger.error("Price sync job error", { err }));
   setInterval(() => {
     syncPrices().catch((err) => logger.error("Price sync job error", { err }));
-  }, 6 * 60 * 60 * 1000);
+  }, ONE_DAY_MS);
 }
 
 async function syncPrices(): Promise<void> {
-  const cards = await prisma.card.findMany({
-    where: { tcgplayerId: { not: null } },
-    select: { id: true, tcgplayerId: true },
+  // Only sync cards that are actually in someone's active collection —
+  // no point fetching prices for catalog cards nobody owns.
+  const activeCardIds = await prisma.userCollection.findMany({
+    where: { status: { not: "TRADED_AWAY" } },
+    select: { cardId: true },
+    distinct: ["cardId"],
   });
 
-  if (cards.length === 0) {
-    logger.info("Price sync: no cards with tcgplayerId, skipping");
+  if (activeCardIds.length === 0) {
+    logger.info("Price sync: no cards in active collections, skipping");
     return;
   }
 
-  logger.info(`Price sync: syncing ${cards.length} cards`);
+  const cardIds = activeCardIds.map((r) => r.cardId);
+
+  // Fetch card rows — prefer those with tcgapiDevId already populated
+  // (1 API call each) and sort by oldest price update first.
+  const cards = await prisma.card.findMany({
+    where: {
+      id: { in: cardIds },
+      OR: [{ tcgapiDevId: { not: null } }, { tcgplayerId: { not: null } }],
+    },
+    select: { id: true, tcgapiDevId: true, tcgplayerId: true },
+    orderBy: { updatedAt: "asc" },
+    take: DAILY_SYNC_CAP,
+  });
+
+  if (cards.length === 0) {
+    logger.info("Price sync: no eligible cards found, skipping");
+    return;
+  }
+
+  logger.info(`Price sync: syncing ${cards.length} cards (cap: ${DAILY_SYNC_CAP})`);
 
   let synced = 0;
   let failed = 0;
 
-  // Process in batches to avoid hammering the TCGPlayer API
   for (let i = 0; i < cards.length; i += BATCH_SIZE) {
     const batch = cards.slice(i, i + BATCH_SIZE);
 
     await Promise.all(
       batch.map(async (card) => {
-        if (!card.tcgplayerId) return;
+        const priceData = card.tcgapiDevId
+          ? await pricingService.getCardPriceByDevId(card.tcgapiDevId)
+          : card.tcgplayerId
+          ? await pricingService.getCardPrice(card.tcgplayerId)
+          : null;
 
-        const priceData = await pricingService.getCardPrice(card.tcgplayerId);
         if (!priceData) {
           failed++;
           return;
         }
 
-        // Record price history
         await prisma.cardPriceHistory.create({
           data: {
             cardId: card.id,
@@ -54,11 +84,10 @@ async function syncPrices(): Promise<void> {
           },
         });
 
-        // Update cached market value on all collection items for this card
         await prisma.userCollection.updateMany({
           where: {
             cardId: card.id,
-            askingValueOverride: null, // don't override user-set prices
+            askingValueOverride: null,
           },
           data: {
             currentMarketValue: priceData.marketPrice,
@@ -70,9 +99,8 @@ async function syncPrices(): Promise<void> {
       })
     );
 
-    // Small delay between batches to be a good API citizen
     if (i + BATCH_SIZE < cards.length) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
     }
   }
 
