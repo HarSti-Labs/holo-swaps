@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { collectionApi } from "@/lib/api/collection";
@@ -27,7 +27,7 @@ const PRIORITY_COLORS: Record<WantPriority, string> = {
   LOW: "bg-slate-500/20 text-slate-300 border-slate-500/50",
 };
 
-export default function MyCardsPage() {
+function MyCardsPageContent() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
@@ -989,6 +989,10 @@ export default function MyCardsPage() {
       )}
     </div>
   );
+}
+
+export default function MyCardsPage() {
+  return <Suspense><MyCardsPageContent /></Suspense>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

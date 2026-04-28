@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { tradesApi } from "@/lib/api/trades";
@@ -36,7 +36,7 @@ const STATUS_COLORS: Record<TradeStatus, string> = {
   CANCELLED: "bg-slate-500/20 text-slate-400 border-slate-500/30",
 };
 
-export default function TradesPage() {
+function TradesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuthStore();
@@ -279,4 +279,8 @@ export default function TradesPage() {
       </main>
     </div>
   );
+}
+
+export default function TradesPage() {
+  return <Suspense><TradesPageContent /></Suspense>;
 }

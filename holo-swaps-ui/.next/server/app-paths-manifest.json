@@ -3,5 +3,8 @@
   "/listings/page": "app/listings/page.js",
   "/admin/trades/page": "app/admin/trades/page.js",
   "/cards/page": "app/cards/page.js",
-  "/collection/page": "app/collection/page.js"
+  "/page": "app/page.js",
+  "/collection/page": "app/collection/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/matches/page": "app/matches/page.js"
 }

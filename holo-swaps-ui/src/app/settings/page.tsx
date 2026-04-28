@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { authApi } from "@/lib/api/auth";
@@ -40,7 +40,7 @@ interface Address {
   isDefault: boolean;
 }
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, logout, loadUser } = useAuthStore();
@@ -1093,4 +1093,8 @@ export default function SettingsPage() {
       )}
     </div>
   );
+}
+
+export default function SettingsPage() {
+  return <Suspense><SettingsPageContent /></Suspense>;
 }
