@@ -88,6 +88,8 @@ function listingUserToUser(listing: Listing): User {
     isEmailVerified: true,
     tradeCount: 0,
     stripeAccountVerified: false,
+    stripeCustomerId: null,
+    stripeAccountId: null,
     isAdmin: false,
     emailOnTradeProposed: true,
     emailOnTradeCountered: true,
