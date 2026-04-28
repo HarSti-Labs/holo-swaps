@@ -210,7 +210,7 @@ export function TradeProposalModal({
                             </div>
                           ) : (
                             <p className="text-base text-slate-400">
-                              ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                              ${card.currentMarketValue != null ? card.currentMarketValue.toFixed(2) : "—"}
                             </p>
                           )}
                         </div>
@@ -278,7 +278,7 @@ export function TradeProposalModal({
                               </div>
                             ) : (
                               <p className="text-base text-green-400">
-                                ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                                ${card.currentMarketValue != null ? card.currentMarketValue.toFixed(2) : "—"}
                               </p>
                             )}
                           </div>
@@ -329,7 +329,7 @@ export function TradeProposalModal({
                             </div>
                           ) : (
                             <p className="text-base text-slate-400">
-                              ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                              ${card.currentMarketValue != null ? card.currentMarketValue.toFixed(2) : "—"}
                             </p>
                           )}
                         </div>
@@ -397,7 +397,7 @@ export function TradeProposalModal({
                               </div>
                             ) : (
                               <p className="text-base text-green-400">
-                                ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                                ${card.currentMarketValue != null ? card.currentMarketValue.toFixed(2) : "—"}
                               </p>
                             )}
                           </div>

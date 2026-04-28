@@ -86,7 +86,7 @@ export function ListingModal({ isOpen, onClose, item, onSave, onUnlist }: Listin
 
           {/* Market reference */}
           <div className="flex items-center gap-1.5 text-base text-slate-400">
-            <span>Market value: <span className="text-white font-medium">${item.currentMarketValue?.toFixed(2) ?? "N/A"}</span></span>
+            <span>Market value: <span className="text-white font-medium">${item.currentMarketValue != null ? item.currentMarketValue.toFixed(2) : "—"}</span></span>
             <span className="relative group cursor-default">
               <span className="text-slate-400 hover:text-slate-300 transition-colors select-none">ℹ</span>
               <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-48 bg-slate-800 border border-slate-700 text-slate-300 text-base rounded-lg px-2.5 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 leading-snug">

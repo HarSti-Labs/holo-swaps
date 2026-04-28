@@ -98,10 +98,10 @@ export async function getCardSetNames(): Promise<string[]> {
   return data.data!;
 }
 
-// GET /api/cards/rarities?setCode=XXX - Get distinct rarities (optionally scoped to a set)
-export async function getRarities(setCode?: string) {
+// GET /api/cards/rarities?setName=XXX - Get distinct rarities (optionally scoped to a set)
+export async function getRarities(setName?: string) {
   const { data } = await api.get<ApiResponse<string[]>>("/cards/rarities", {
-    params: setCode ? { setCode } : undefined,
+    params: setName ? { setName } : undefined,
   });
   return data.data!;
 }

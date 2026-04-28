@@ -11,6 +11,7 @@ import { EmailService } from "@/services/implementations/EmailService";
 import { StripeService } from "@/services/implementations/StripeService";
 import { logger } from "@/utils/logger";
 import { config } from "@/config";
+import { PricingService } from "@/services/implementations/PricingService";
 
 const emailService = new EmailService();
 const stripeService = new StripeService();
@@ -256,6 +257,52 @@ router.post("/backfill-stripe-customers", authenticate, requireAdmin, async (req
   }
 
   sendSuccess(res, { total: users.length, created, failed }, "Stripe customer backfill complete");
+});
+
+router.post("/sync-prices", async (req: Request, res: Response) => {
+  const pricingService = new PricingService();
+
+  const items = await prisma.userCollection.findMany({
+    where: { status: { not: "TRADED_AWAY" } },
+    select: { cardId: true },
+    distinct: ["cardId"],
+  });
+
+  const cards = await prisma.card.findMany({
+    where: {
+      id: { in: items.map((i) => i.cardId) },
+      OR: [{ tcgapiDevId: { not: null } }, { tcgplayerId: { not: null } }],
+    },
+    select: { id: true, tcgapiDevId: true, tcgplayerId: true },
+  });
+
+  let synced = 0;
+  let failed = 0;
+  let noPrice = 0;
+
+  for (const card of cards) {
+    const priceData = card.tcgapiDevId
+      ? await pricingService.getCardPriceByDevId(card.tcgapiDevId)
+      : card.tcgplayerId
+      ? await pricingService.getCardPrice(card.tcgplayerId)
+      : null;
+
+    if (!priceData) { noPrice++; continue; }
+
+    await prisma.userCollection.updateMany({
+      where: { cardId: card.id },
+      data: { currentMarketValue: priceData.marketPrice, marketValueUpdatedAt: new Date() },
+    });
+
+    await prisma.cardPriceHistory.create({
+      data: { cardId: card.id, marketPrice: priceData.marketPrice, lowPrice: priceData.lowPrice, highPrice: priceData.highPrice },
+    });
+
+    synced++;
+  }
+
+  logger.info(`Manual price sync: ${synced} updated, ${failed} failed, ${noPrice} no price data`);
+  sendSuccess(res, { synced, failed, noPrice, total: cards.length });
 });
 
 export default router;

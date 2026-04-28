@@ -19,24 +19,33 @@ export class PricingService implements IPricingService {
    */
   async getCardPriceByDevId(tcgapiDevId: number): Promise<CardPriceData | null> {
     try {
-      const response = await fetch(
-        `${config.tcgapiDev.apiUrl}/cards/${tcgapiDevId}/prices`,
-        { headers: this.headers }
-      );
+      const url = `${config.tcgapiDev.apiUrl}/cards/${tcgapiDevId}/prices`;
+      logger.info("tcgapi.dev price fetch", { url, hasKey: !!config.tcgapiDev.apiKey, keyPrefix: config.tcgapiDev.apiKey.slice(0, 12) });
+      const response = await fetch(url, { headers: this.headers });
 
-      if (!response.ok) return null;
+      if (!response.ok) {
+        const body = await response.text().catch(() => "");
+        logger.error("tcgapi.dev price fetch failed", { tcgapiDevId, status: response.status, body });
+        return null;
+      }
 
       const json = await response.json();
-      const price = json.data;
-      if (!price) return null;
+      // The API returns an array of price variants — take the first entry
+      const priceList = Array.isArray(json.data) ? json.data : [json.data];
+      const price = priceList[0];
+
+      if (!price || price.market_price == null) {
+        logger.warn("tcgapi.dev: no price data available", { tcgapiDevId });
+        return null;
+      }
 
       return {
         cardId: String(tcgapiDevId),
         tcgplayerId: String(tcgapiDevId),
-        marketPrice: price.market_price ?? 0,
-        lowPrice: price.low_price ?? 0,
-        midPrice: price.median_price ?? 0,
-        highPrice: price.foil_market_price ?? 0,
+        marketPrice: price.market_price,
+        lowPrice: price.low_price ?? null,
+        midPrice: price.median_price ?? null,
+        highPrice: price.foil_market_price ?? null,
         updatedAt: new Date(),
       };
     } catch (error) {

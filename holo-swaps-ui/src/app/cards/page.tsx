@@ -825,7 +825,7 @@ export default function CardsPage() {
   }, [searchQuery]);
 
   const { data: setsData } = useQuery({ queryKey: ["cardSetNames"], queryFn: getCardSetNames, staleTime: 5 * 60 * 1000 });
-  const { data: raritiesData } = useQuery({ queryKey: ["rarities", selectedSet], queryFn: () => getRarities(selectedSet || undefined), staleTime: 5 * 60 * 1000 });
+  const { data: raritiesData } = useQuery({ queryKey: ["rarities", selectedSet], queryFn: () => getRarities(selectedSet || undefined) });
 
   const sets = setsData ?? [];
   const rarities = raritiesData ?? [];

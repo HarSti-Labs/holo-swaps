@@ -1,12 +1,16 @@
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "@/types";
 import { CollectionRepository } from "@/repositories/implementations/CollectionRepository";
+import { PricingService } from "@/services/implementations/PricingService";
+import { prisma } from "@/config/prisma";
 import { sendSuccess, sendCreated } from "@/utils/response";
 import { ApiError } from "@/utils/ApiError";
+import { logger } from "@/utils/logger";
 import { z } from "zod";
 import { CardCondition, CardStatus, GradingCompany } from "@prisma/client";
 
 const collectionRepo = new CollectionRepository();
+const pricingService = new PricingService();
 
 const addItemSchema = z.object({
   cardId: z.string().uuid(),
@@ -74,7 +78,35 @@ export const addToCollection = async (
     availableForTrade: status !== CardStatus.UNAVAILABLE,
   });
 
-  // Apply extra fields Prisma supports directly
+  // Fire-and-forget: fetch market price immediately so listings show a value
+  (async () => {
+    try {
+      const card = await prisma.card.findUnique({
+        where: { id: parsed.data.cardId },
+        select: { tcgapiDevId: true, tcgplayerId: true },
+      });
+      if (!card) return;
+
+      const priceData = card.tcgapiDevId
+        ? await pricingService.getCardPriceByDevId(card.tcgapiDevId)
+        : card.tcgplayerId
+        ? await pricingService.getCardPrice(card.tcgplayerId)
+        : null;
+
+      if (priceData) {
+        await prisma.userCollection.update({
+          where: { id: item.id },
+          data: {
+            currentMarketValue: priceData.marketPrice,
+            marketValueUpdatedAt: new Date(),
+          },
+        });
+      }
+    } catch (err) {
+      logger.error("Failed to fetch initial price for collection item", { itemId: item.id, err });
+    }
+  })();
+
   sendCreated(res, item, "Card added to collection");
 };
 

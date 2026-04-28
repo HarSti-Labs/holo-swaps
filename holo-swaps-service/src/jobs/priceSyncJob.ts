@@ -4,12 +4,15 @@ import { logger } from "@/utils/logger";
 
 const pricingService = new PricingService();
 
-// Stay well under the free-tier daily limit (100 req/day).
-// Each card with a tcgapiDevId costs 1 request; without it costs 2.
-// We cap at 80 cards to leave headroom for on-demand lookups.
-const DAILY_SYNC_CAP = 80;
-const BATCH_SIZE = 10;
-const BATCH_DELAY_MS = 1000;
+// Starter plan: 2,500 req/day.
+// Cap at 2,000 to leave 500 for on-demand lookups during the day.
+const DAILY_SYNC_CAP = 2000;
+const BATCH_SIZE = 25;
+const BATCH_DELAY_MS = 200;
+
+// Only re-fetch a card's price if it hasn't been updated in this many days.
+// With 2,500 credits/day and a 3-day threshold, we effectively cover ~7,500 unique cards.
+const PRICE_STALE_DAYS = 3;
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -22,31 +25,37 @@ export function startPriceSyncJob(): void {
 }
 
 async function syncPrices(): Promise<void> {
-  // Only sync cards that are actually in someone's active collection —
-  // no point fetching prices for catalog cards nobody owns.
-  const activeCardIds = await prisma.userCollection.findMany({
-    where: { status: { not: "TRADED_AWAY" } },
-    select: { cardId: true },
+  const staleThreshold = new Date(Date.now() - PRICE_STALE_DAYS * 24 * 60 * 60 * 1000);
+
+  // Find distinct card IDs in active collections whose price is stale or never fetched.
+  // Prioritise never-fetched (null) first, then oldest update.
+  const staleItems = await prisma.userCollection.findMany({
+    where: {
+      status: { not: "TRADED_AWAY" },
+      OR: [
+        { marketValueUpdatedAt: null },
+        { marketValueUpdatedAt: { lt: staleThreshold } },
+      ],
+    },
+    select: { cardId: true, marketValueUpdatedAt: true },
     distinct: ["cardId"],
+    orderBy: { marketValueUpdatedAt: "asc" }, // nulls first, then oldest
+    take: DAILY_SYNC_CAP,
   });
 
-  if (activeCardIds.length === 0) {
-    logger.info("Price sync: no cards in active collections, skipping");
+  if (staleItems.length === 0) {
+    logger.info("Price sync: all active collection prices are fresh, skipping");
     return;
   }
 
-  const cardIds = activeCardIds.map((r) => r.cardId);
+  const cardIds = staleItems.map((r) => r.cardId);
 
-  // Fetch card rows — prefer those with tcgapiDevId already populated
-  // (1 API call each) and sort by oldest price update first.
   const cards = await prisma.card.findMany({
     where: {
       id: { in: cardIds },
       OR: [{ tcgapiDevId: { not: null } }, { tcgplayerId: { not: null } }],
     },
     select: { id: true, tcgapiDevId: true, tcgplayerId: true },
-    orderBy: { updatedAt: "asc" },
-    take: DAILY_SYNC_CAP,
   });
 
   if (cards.length === 0) {
@@ -85,10 +94,7 @@ async function syncPrices(): Promise<void> {
         });
 
         await prisma.userCollection.updateMany({
-          where: {
-            cardId: card.id,
-            askingValueOverride: null,
-          },
+          where: { cardId: card.id },
           data: {
             currentMarketValue: priceData.marketPrice,
             marketValueUpdatedAt: new Date(),

@@ -569,7 +569,9 @@ function ListingCard({
         {/* Price badge */}
         {price != null && (
           <div className={`absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-base font-bold px-2 py-0.5 rounded-lg ${listing.askingValueOverride != null ? "text-teal-400" : "text-green-400"}`}>
-            {listing.askingValueOverride != null && <span className="opacity-70 text-base block leading-none mb-0.5">ASKING</span>}
+            <span className="opacity-70 text-base block leading-none mb-0.5">
+              {listing.askingValueOverride != null ? "ASKING" : "MARKET"}
+            </span>
             ${price.toFixed(2)}
           </div>
         )}

@@ -185,10 +185,12 @@ export const getCardSets = async (req: Request, res: Response): Promise<void> =>
   sendSuccess(res, rows.map((r) => r.setName));
 };
 
-// GET /api/cards/rarities?setCode=XXX
+// GET /api/cards/rarities?setName=XXX
 export const getRarities = async (req: Request, res: Response): Promise<void> => {
-  const { setCode } = req.query;
-  const where = setCode ? { setCode: setCode as string, rarity: { not: null } } : { rarity: { not: null } };
+  const { setName } = req.query;
+  const where = setName
+    ? { setName: { contains: setName as string, mode: "insensitive" as const }, rarity: { not: null } }
+    : { rarity: { not: null } };
   const rows = await prisma.card.findMany({
     where,
     select: { rarity: true },

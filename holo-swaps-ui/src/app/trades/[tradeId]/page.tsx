@@ -531,7 +531,7 @@ if (!user) {
                               </div>
                             ) : (
                               <p className="text-base text-green-400 mt-1">
-                                ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                                ${card.currentMarketValue != null ? card.currentMarketValue.toFixed(2) : "—"}
                               </p>
                             )}
                             {verification && (
@@ -593,7 +593,7 @@ if (!user) {
                               </div>
                             ) : (
                               <p className="text-base text-green-400 mt-1">
-                                ${card.currentMarketValue?.toFixed(2) || "N/A"}
+                                ${card.currentMarketValue != null ? card.currentMarketValue.toFixed(2) : "—"}
                               </p>
                             )}
                             {verification && (

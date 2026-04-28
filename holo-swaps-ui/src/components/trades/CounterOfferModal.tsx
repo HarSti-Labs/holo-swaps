@@ -32,7 +32,7 @@ function CardRow({ card, onAdd, onRemove }: { card: CollectionItem; onAdd?: () =
         {card.askingValueOverride != null ? (
           <span className="text-base text-teal-400">${card.askingValueOverride.toFixed(2)}</span>
         ) : (
-          <span className="text-base text-green-400">${card.currentMarketValue?.toFixed(2) ?? "N/A"}</span>
+          <span className="text-base text-green-400">${card.currentMarketValue != null ? card.currentMarketValue.toFixed(2) : "—"}</span>
         )}
       </div>
       {onRemove && (

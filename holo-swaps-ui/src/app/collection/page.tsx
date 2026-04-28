@@ -1048,16 +1048,31 @@ function CollectionCard({
             </div>
             <div className="text-center">
               <p className="text-base text-slate-400 uppercase tracking-wide mb-1">Condition</p>
-              <span className="inline-block px-3 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
-                {CONDITION_LABELS[item.condition]}
-              </span>
+              <div className="flex flex-col items-center gap-1">
+                <span className="inline-block px-3 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
+                  {CONDITION_LABELS[item.condition]}
+                </span>
+                <div className="flex gap-1">
+                  {item.isFoil && <span className="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-xs font-bold">FOIL</span>}
+                  {item.isFirstEdition && <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-xs font-bold">1ST</span>}
+                </div>
+              </div>
             </div>
             <div className="text-center">
-              <p className="text-base text-slate-400 uppercase tracking-wide mb-1">Attributes</p>
-              <div className="flex justify-center gap-2">
-                {item.isFoil && <span className="px-2 py-1 rounded-lg bg-yellow-500/20 text-yellow-300 text-xs font-bold">FOIL</span>}
-                {item.isFirstEdition && <span className="px-2 py-1 rounded-lg bg-purple-500/20 text-purple-300 text-xs font-bold">1ST ED</span>}
-              </div>
+              <p className="text-base text-slate-400 uppercase tracking-wide mb-1">Value</p>
+              {item.askingValueOverride != null ? (
+                <div>
+                  <p className="text-sm font-bold text-teal-400">${item.askingValueOverride.toFixed(2)}</p>
+                  <p className="text-xs text-teal-600">asking</p>
+                </div>
+              ) : item.currentMarketValue != null ? (
+                <div>
+                  <p className="text-sm font-bold text-green-400">${item.currentMarketValue.toFixed(2)}</p>
+                  <p className="text-xs text-slate-500">market</p>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-600">—</p>
+              )}
             </div>
           </div>
           {!selectMode && (
@@ -1147,13 +1162,28 @@ function CollectionCard({
             </div>
           )}
         </div>
-        <div className="p-4 space-y-2 bg-gradient-to-b from-slate-900/90 to-slate-950/90">
+        <div className="flex-1 p-4 space-y-2 bg-gradient-to-b from-slate-900/90 to-slate-950/90">
           <h3 className="font-bold text-white line-clamp-2 min-h-[2.5rem]">{item.card.name}</h3>
           <p className="text-base text-slate-400">{item.card.setName}</p>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-2 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">{CONDITION_LABELS[item.condition]}</span>
             {item.isFoil && <span className="px-2 py-1 rounded-lg bg-yellow-500/20 text-yellow-300 text-xs font-bold">FOIL</span>}
             {item.isFirstEdition && <span className="px-2 py-1 rounded-lg bg-purple-500/20 text-purple-300 text-xs font-bold">1ST ED</span>}
+          </div>
+          <div className="pt-1">
+            {item.askingValueOverride != null ? (
+              <div>
+                <p className="text-xs text-teal-600 font-medium uppercase tracking-wide">Asking</p>
+                <span className="text-sm font-bold text-teal-400">${item.askingValueOverride.toFixed(2)}</span>
+              </div>
+            ) : item.currentMarketValue != null ? (
+              <div>
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Market</p>
+                <span className="text-sm font-bold text-green-400">${item.currentMarketValue.toFixed(2)}</span>
+              </div>
+            ) : (
+              <span className="text-xs text-slate-600">No price yet</span>
+            )}
           </div>
         </div>
       </div>
@@ -1242,7 +1272,7 @@ function WantCard({ want, viewMode, onEdit, onRemove, selectMode = false, select
             </div>
           )}
         </div>
-        <div onClick={!selectMode ? onEdit : undefined} className={`p-4 space-y-2 bg-gradient-to-b from-slate-900/90 to-slate-950/90 ${!selectMode ? "cursor-pointer" : ""}`}>
+        <div onClick={!selectMode ? onEdit : undefined} className={`flex-1 p-4 space-y-2 bg-gradient-to-b from-slate-900/90 to-slate-950/90 ${!selectMode ? "cursor-pointer" : ""}`}>
           <h3 className="font-bold text-white line-clamp-2 min-h-[2.5rem]">{want.card.name}</h3>
           <p className="text-base text-slate-400">{want.card.setName}</p>
           <span className="inline-block px-2 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
@@ -1490,7 +1520,12 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
                     onClick={() => { setSelectedCard(card); setStep("details"); }}
                     className="text-left bg-slate-800/50 rounded-xl p-3 hover:bg-slate-800 transition-colors border border-slate-700 hover:border-blue-500/60"
                   >
-                    <div className="aspect-[2/3] bg-gradient-to-br from-blue-950 to-purple-950 rounded-lg mb-2" />
+                    <div className="aspect-[2/3] bg-gradient-to-br from-blue-950 to-purple-950 rounded-lg mb-2 overflow-hidden">
+                      {card.imageUrl
+                        ? <img src={card.imageUrl} alt={card.name} className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center text-slate-600 text-2xl">🃏</div>
+                      }
+                    </div>
                     <p className="font-semibold text-white text-base line-clamp-2">{card.name}</p>
                     <p className="text-base text-slate-400">{card.setName}</p>
                   </button>
@@ -1502,9 +1537,18 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
           {step === "details" && selectedCard && (
             <div className="space-y-4">
               <button onClick={() => setStep("search")} className="text-base text-blue-400 hover:text-blue-300 transition-colors">← Back to search</button>
-              <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-                <p className="font-semibold text-white">{selectedCard.name}</p>
-                <p className="text-base text-slate-400">{selectedCard.setName}</p>
+              <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700 flex items-center gap-4">
+                <div className="w-16 h-22 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-blue-950 to-purple-950">
+                  {selectedCard.imageUrl
+                    ? <img src={selectedCard.imageUrl} alt={selectedCard.name} className="w-full h-full object-cover" />
+                    : <div className="w-full h-full flex items-center justify-center text-2xl">🃏</div>
+                  }
+                </div>
+                <div>
+                  <p className="font-semibold text-white">{selectedCard.name}</p>
+                  <p className="text-base text-slate-400">{selectedCard.setName}</p>
+                  {selectedCard.rarity && <p className="text-xs text-slate-500 mt-0.5">{selectedCard.rarity}</p>}
+                </div>
               </div>
               <div>
                 <label className="block text-base font-medium text-slate-300 mb-2">Condition</label>

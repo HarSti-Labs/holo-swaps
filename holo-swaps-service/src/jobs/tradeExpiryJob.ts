@@ -87,7 +87,6 @@ async function cancelExpiredTrades(): Promise<void> {
       tradeCode: true,
       proposerId: true,
       receiverId: true,
-      stripePaymentIntentId: true,
     },
   });
 
