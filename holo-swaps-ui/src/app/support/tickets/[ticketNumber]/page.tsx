@@ -20,7 +20,7 @@ const STATUS_LABELS = {
   RESOLVED: "Resolved",
 };
 
-const URGENCY_STYLES = {
+const URGENCY_STYLES: Record<string, string> = {
   NORMAL: "text-slate-400",
   HIGH: "text-orange-400",
   URGENT: "text-red-400",
