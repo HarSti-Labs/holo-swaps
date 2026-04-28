@@ -1,3 +1,11 @@
 node_modules/
 holo-swaps-service/node_modules/
 holo-swaps-ui/node_modules/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+holo-swaps-service/.env
+holo-swaps-ui/.env.local
