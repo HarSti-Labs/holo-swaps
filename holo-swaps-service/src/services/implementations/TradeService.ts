@@ -230,7 +230,7 @@ export class TradeService implements ITradeService {
     const isProposer = userId === trade.proposerId;
     const otherId = isProposer ? trade.receiverId : trade.proposerId;
 
-    const tradeItems = trade.items as any[];
+    const tradeItems = (trade as any).items as any[];
 
     // ── MY SIDE ──────────────────────────────────────────────────────────────
     const newMyItemIds = isProposer ? data.proposerCollectionItemIds : data.receiverCollectionItemIds;
@@ -457,10 +457,10 @@ export class TradeService implements ITradeService {
       const c = item.collectionItem ?? item.proposerCollection ?? item.receiverCollection;
       return (c?.askingValueOverride ?? c?.currentMarketValue ?? 0) as number;
     };
-    const proposerItemsValue = (trade.items as any[])
+    const proposerItemsValue = ((trade as any).items as any[])
       .filter((i) => i.ownedByProposer)
       .reduce((sum, i) => sum + getItemValue(i), 0);
-    const receiverItemsValue = (trade.items as any[])
+    const receiverItemsValue = ((trade as any).items as any[])
       .filter((i) => !i.ownedByProposer)
       .reduce((sum, i) => sum + getItemValue(i), 0);
 
@@ -693,7 +693,7 @@ export class TradeService implements ITradeService {
 
     const updated = await prisma.trade.update({
       where: { id: tradeId },
-      data: { cancellationRequestedById: userId },
+      data: { cancellationRequestedById: userId } as any,
     });
 
     // Notify and email the other party
@@ -750,7 +750,7 @@ export class TradeService implements ITradeService {
     const itemIds = await this.getTradeItemIds(tradeId);
     const updated = await prisma.trade.update({
       where: { id: tradeId },
-      data: { status: TradeStatus.CANCELLED, cancellationRequestedById: null },
+      data: { status: TradeStatus.CANCELLED, cancellationRequestedById: null } as any,
     });
     await this.unlockCards(itemIds);
 
@@ -1130,7 +1130,7 @@ export class TradeService implements ITradeService {
    * preconditions. Used to unstick trades with bad/legacy data (e.g. cash-only trades
    * created before the cash-only shipping fix).
    */
-  async adminForceStatus(tradeId: string, targetStatus: TradeStatus.BOTH_RECEIVED | TradeStatus.VERIFIED): Promise<Trade> {
+  async adminForceStatus(tradeId: string, targetStatus: TradeStatus): Promise<Trade> {
     const trade = await this.tradeRepository.findById(tradeId);
     if (!trade) throw ApiError.notFound("Trade not found");
 

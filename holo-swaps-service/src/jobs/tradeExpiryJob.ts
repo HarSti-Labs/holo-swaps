@@ -37,7 +37,7 @@ async function sendExpiryWarnings(): Promise<void> {
   const alreadyWarned = await prisma.notification.findMany({
     where: {
       type: NotificationType.TRADE_EXPIRY_WARNING,
-      data: { path: ["tradeId"], in: trades.map((t) => t.id) },
+      data: { path: ["tradeId"], in: trades.map((t) => t.id) } as any,
     },
     select: { data: true },
   });

@@ -102,7 +102,7 @@ export class EmailService implements IEmailService {
       await this.resend.emails.send({
         from: config.resend.from,
         to: "admin@holoswaps.com",
-        replyTo: data.email,
+        reply_to: data.email,
         subject: `[${data.ticketNumber}] [${data.urgency}] ${data.category} — ${data.subject}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto; padding: 24px; background: #f9f9f9;">

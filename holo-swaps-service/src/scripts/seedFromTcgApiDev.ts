@@ -52,7 +52,7 @@ async function fetchSets(): Promise<TcgApiSet[]> {
     throw new Error(`Failed to fetch sets: ${resp.status} ${resp.statusText}`);
   }
 
-  const json = await resp.json();
+  const json = await resp.json() as any;
   return json.data as TcgApiSet[];
 }
 
@@ -70,7 +70,7 @@ async function fetchCardsForSet(setId: number, setName: string): Promise<TcgApiC
       break;
     }
 
-    const json = await resp.json();
+    const json = await resp.json() as any;
     cards.push(...(json.data as TcgApiCard[]));
     hasMore = json.meta?.has_more ?? false;
     page++;

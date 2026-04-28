@@ -65,7 +65,7 @@ export class UserRepository implements IUserRepository {
       },
       select: selectSafeUser,
     });
-    return user as SafeUser;
+    return user as unknown as SafeUser;
   }
 
   async update(id: string, data: UpdateUserData): Promise<SafeUser> {
@@ -74,7 +74,7 @@ export class UserRepository implements IUserRepository {
       data,
       select: selectSafeUser,
     });
-    return user as SafeUser;
+    return user as unknown as SafeUser;
   }
 
   async updateStripeAccount(id: string, stripeAccountId: string): Promise<SafeUser> {
@@ -83,7 +83,7 @@ export class UserRepository implements IUserRepository {
       data: { stripeAccountId, stripeAccountVerified: true },
       select: selectSafeUser,
     });
-    return user as SafeUser;
+    return user as unknown as SafeUser;
   }
 
   async delete(id: string): Promise<void> {

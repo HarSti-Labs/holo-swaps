@@ -145,7 +145,7 @@ export class TradeRepository implements ITradeRepository {
   ): Promise<Trade> {
     return prisma.trade.update({
       where: { id },
-      data: { stripePaymentIntentId: paymentIntentId },
+      data: { stripePaymentIntentId: paymentIntentId } as any,
       include: tradeInclude,
     }) as unknown as Trade;
   }

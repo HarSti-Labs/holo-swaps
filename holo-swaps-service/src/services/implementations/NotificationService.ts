@@ -22,7 +22,7 @@ export class NotificationService {
           type: payload.type,
           title: payload.title,
           body: payload.body,
-          data: payload.data,
+          data: payload.data as any,
         },
       });
     } catch (err) {
@@ -38,7 +38,7 @@ export class NotificationService {
           type: payload.type,
           title: payload.title,
           body: payload.body,
-          data: payload.data,
+          data: payload.data as any,
         })),
       });
     } catch (err) {

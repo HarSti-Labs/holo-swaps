@@ -29,7 +29,7 @@ export class PricingService implements IPricingService {
         return null;
       }
 
-      const json = await response.json();
+      const json = await response.json() as any;
       // The API returns an array of price variants — take the first entry
       const priceList = Array.isArray(json.data) ? json.data : [json.data];
       const price = priceList[0];
@@ -70,7 +70,7 @@ export class PricingService implements IPricingService {
 
       if (!cardResp.ok) return null;
 
-      const cardJson = await cardResp.json();
+      const cardJson = await cardResp.json() as any;
       const devId: number | undefined = cardJson.data?.id;
       if (!devId) return null;
 

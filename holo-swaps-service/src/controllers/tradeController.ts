@@ -1,5 +1,6 @@
 import { Response } from "express";
 import { TradeStatus } from "@prisma/client";
+import { prisma } from "@/config/prisma";
 import { AuthenticatedRequest } from "@/types";
 import { TradeService } from "@/services/implementations/TradeService";
 import { StripeService } from "@/services/implementations/StripeService";
@@ -334,7 +335,7 @@ export const adminForceStatus = async (
   }
   const trade = await tradeService.adminForceStatus(
     req.params.tradeId,
-    status as TradeStatus.BOTH_RECEIVED | TradeStatus.VERIFIED
+    status as TradeStatus
   );
   sendSuccess(res, trade, `Trade status forced to ${status}`);
 };

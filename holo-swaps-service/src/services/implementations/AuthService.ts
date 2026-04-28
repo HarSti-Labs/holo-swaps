@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { authenticator } from "otplib";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { authenticator } = require("otplib");
 import QRCode from "qrcode";
 import { config } from "@/config";
 import { prisma } from "@/config/prisma";
@@ -102,10 +103,10 @@ export class AuthService implements IAuthService {
       return { requiresTwoFactor: true, twoFactorToken };
     }
 
-    const safeUser: SafeUser = { ...user, passwordHash: undefined as never };
-    const token = this.generateAccessToken(safeUser);
+    const { passwordHash: _pw1, ...safeUser } = user;
+    const token = this.generateAccessToken(safeUser as SafeUser);
     const refreshToken = await this.createRefreshToken(user.id, deviceInfo);
-    return { requiresTwoFactor: false, user: safeUser, token, refreshToken };
+    return { requiresTwoFactor: false, user: safeUser as SafeUser, token, refreshToken };
   }
 
   async verifyTwoFactor(twoFactorToken: string, code: string): Promise<AuthResult> {
@@ -133,10 +134,10 @@ export class AuthService implements IAuthService {
       if (matchIndex === -1) throw ApiError.unauthorized("Invalid two-factor code");
     }
 
-    const safeUser: SafeUser = { ...user, passwordHash: undefined as never };
-    const token = this.generateAccessToken(safeUser);
+    const { passwordHash: _pw2, ...safeUser } = user;
+    const token = this.generateAccessToken(safeUser as SafeUser);
     const refreshToken = await this.createRefreshToken(user.id);
-    return { user: safeUser, token, refreshToken };
+    return { user: safeUser as SafeUser, token, refreshToken };
   }
 
   async refreshToken(token: string): Promise<AuthResult> {
@@ -293,7 +294,7 @@ export class AuthService implements IAuthService {
 
     await prisma.user.update({
       where: { id: userId },
-      data: { twoFactorEnabled: false, twoFactorSecret: null, twoFactorBackupCodes: null },
+      data: { twoFactorEnabled: false, twoFactorSecret: null, twoFactorBackupCodes: null } as any,
     });
   }
 
