@@ -1,7 +1,7 @@
 {
+  "/admin/trades/page": "app/admin/trades/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/cards/page": "app/cards/page.js",
   "/listings/page": "app/listings/page.js",
-  "/collection/page": "app/collection/page.js",
-  "/admin/trades/page": "app/admin/trades/page.js"
+  "/cards/page": "app/cards/page.js",
+  "/collection/page": "app/collection/page.js"
 }
