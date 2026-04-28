@@ -521,7 +521,7 @@ if (!user) {
                               {card.card.setName}
                             </p>
                             <p className="text-base text-slate-400">
-                              {CONDITION_LABELS[card.condition]}
+                              {CONDITION_LABELS[card.condition as keyof typeof CONDITION_LABELS]}
                               {card.isFoil && " • Foil"}
                             </p>
                             {card.askingValueOverride != null ? (
@@ -583,7 +583,7 @@ if (!user) {
                               {card.card.setName}
                             </p>
                             <p className="text-base text-slate-400">
-                              {CONDITION_LABELS[card.condition]}
+                              {CONDITION_LABELS[card.condition as keyof typeof CONDITION_LABELS]}
                               {card.isFoil && " • Foil"}
                             </p>
                             {card.askingValueOverride != null ? (
