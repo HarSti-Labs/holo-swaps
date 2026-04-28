@@ -184,7 +184,7 @@ export function TradeProposalModal({
               {myCards.length > 0 && (
                 <div className="mb-4 space-y-2">
                   <p className="text-base text-slate-400">Selected ({myCards.length})</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {myCards.map((card) => (
                       <div
                         key={card.id}
@@ -245,7 +245,7 @@ export function TradeProposalModal({
                 ) : myCollection.length === 0 ? (
                   <p className="text-slate-400 text-center py-8">No cards available for trade</p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto">
                     {myCollection
                       .filter((c) => !myCards.find((sc) => sc.id === c.id))
                       .filter((c) => !mySearch || c.card.name.toLowerCase().includes(mySearch.toLowerCase()))
@@ -303,7 +303,7 @@ export function TradeProposalModal({
               {theirCards.length > 0 && (
                 <div className="mb-4 space-y-2">
                   <p className="text-base text-slate-400">Selected ({theirCards.length})</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {theirCards.map((card) => (
                       <div
                         key={card.id}
@@ -364,7 +364,7 @@ export function TradeProposalModal({
                 ) : theirCollection.length === 0 ? (
                   <p className="text-slate-400 text-center py-8">No cards available for trade</p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto">
                     {theirCollection
                       .filter((c) => !theirCards.find((sc) => sc.id === c.id))
                       .filter((c) => !theirSearch || c.card.name.toLowerCase().includes(theirSearch.toLowerCase()))

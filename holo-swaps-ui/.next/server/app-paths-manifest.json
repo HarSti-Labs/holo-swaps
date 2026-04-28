@@ -1,10 +1,8 @@
 {
-  "/dashboard/page": "app/dashboard/page.js",
+  "/not-found": "app/not-found.js",
   "/listings/page": "app/listings/page.js",
-  "/admin/trades/page": "app/admin/trades/page.js",
-  "/cards/page": "app/cards/page.js",
-  "/page": "app/page.js",
-  "/collection/page": "app/collection/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/auth/login/page": "app/auth/login/page.js",
-  "/matches/page": "app/matches/page.js"
+  "/cards/page": "app/cards/page.js",
+  "/collection/page": "app/collection/page.js"
 }
