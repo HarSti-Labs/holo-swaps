@@ -4335,12 +4335,20 @@ video {
     display: none;
   }
 
+  .sm\:h-14 {
+    height: 3.5rem;
+  }
+
   .sm\:w-48 {
     width: 12rem;
   }
 
   .sm\:w-56 {
     width: 14rem;
+  }
+
+  .sm\:w-14 {
+    width: 3.5rem;
   }
 
   .sm\:grid-cols-2 {
@@ -4353,6 +4361,14 @@ video {
 
   .sm\:flex-row {
     flex-direction: row;
+  }
+
+  .sm\:gap-5 {
+    gap: 1.25rem;
+  }
+
+  .sm\:rounded-2xl {
+    border-radius: 1rem;
   }
 }
 
