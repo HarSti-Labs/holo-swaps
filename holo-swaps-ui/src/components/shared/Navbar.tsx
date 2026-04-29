@@ -64,6 +64,12 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
   return (
     <header className="sticky top-0 z-50 glass border-b border-border/60">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
