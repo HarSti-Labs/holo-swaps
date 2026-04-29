@@ -1,7 +1,7 @@
 {
-  "/support/page": "app/support/page.js",
+  "/settings/page": "app/settings/page.js",
   "/how-it-works/page": "app/how-it-works/page.js",
-  "/cards/page": "app/cards/page.js",
-  "/page": "app/page.js",
-  "/settings/page": "app/settings/page.js"
+  "/shipping-guide/page": "app/shipping-guide/page.js",
+  "/collection/page": "app/collection/page.js",
+  "/cards/page": "app/cards/page.js"
 }

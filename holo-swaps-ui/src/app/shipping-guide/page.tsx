@@ -4,11 +4,11 @@ import { Truck, Package, ShieldCheck, MapPin, AlertTriangle, ChevronRight } from
 // ─── UPDATE THIS WHEN YOU HAVE YOUR PO BOX ───────────────────────────────────
 const VERIFICATION_ADDRESS = {
   line1: "HoloSwaps Verification Center",
-  line2: "c/o Harsti Labs LLC",
+  line2: "c/o HoloSwaps",
   poBox: "[YOUR PO BOX HERE]",
-  city: "[CITY]",
-  state: "[STATE]",
-  zip: "[ZIP]",
+  city: "Worcester",
+  state: "MA",
+  zip: "01602",
 };
 // ─────────────────────────────────────────────────────────────────────────────
 

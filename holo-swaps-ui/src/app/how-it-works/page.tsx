@@ -20,11 +20,11 @@ import {
 // ─── UPDATE THIS WHEN YOU HAVE YOUR PO BOX ───────────────────────────────────
 const VERIFICATION_ADDRESS = {
   line1: "HoloSwaps Verification Center",
-  line2: "c/o Harsti Labs LLC",
+  line2: "c/o HoloSwaps",
   poBox: "[YOUR PO BOX HERE]",
-  city: "[CITY]",
-  state: "[STATE]",
-  zip: "[ZIP]",
+  city: "Worcester",
+  state: "MA",
+  zip: "01602",
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -197,7 +197,7 @@ export default function HowItWorksPage() {
                 { icon: ShieldCheck, label: "Verified Trades", sub: "Every card inspected", color: "text-green-400" },
                 { icon: ArrowLeftRight, label: "Fair Matching", sub: "Value-based matching", color: "text-blue-400" },
                 { icon: MapPin, label: "Secure Shipping", sub: "Cards go through us", color: "text-purple-400" },
-                { icon: Clock, label: "~2–3 Weeks", sub: "Typical trade time", color: "text-yellow-400" },
+                { icon: Clock, label: "~1–2 Weeks", sub: "Typical trade time", color: "text-yellow-400" },
               ].map(({ icon: Icon, label, sub, color }) => (
                 <div key={label} className="flex flex-col items-center gap-1">
                   <Icon size={24} className={color} />

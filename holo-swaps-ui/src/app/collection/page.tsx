@@ -681,7 +681,7 @@ function MyCardsPageContent() {
             )}
 
             {!collectionLoading && filteredCollection.length > 0 && (
-              <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" : "space-y-4"}>
+              <div className={viewMode === "grid" ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6" : "space-y-4"}>
                 {filteredCollection.map((item) => (
                   <CollectionCard
                     key={item.id}
@@ -932,7 +932,7 @@ function MyCardsPageContent() {
 
             {!wantsLoading && filteredWants.length > 0 && (
               wantViewMode === "grid" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
                   {filteredWants.map((want) => (
                     <WantCard
                       key={want.id}
@@ -1033,37 +1033,37 @@ function CollectionCard({
             {selected ? <CheckSquare size={18} className="text-blue-400 flex-shrink-0" /> : <Square size={18} className="text-slate-400 flex-shrink-0" />}
           </div>
         )}
-        <div className="flex items-center justify-between">
-          <div className="flex-1 grid grid-cols-5 gap-4 items-center">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 items-center">
             <div className="col-span-2">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-white text-lg">{item.card.name}</h3>
+                <h3 className="font-bold text-white text-base sm:text-lg truncate">{item.card.name}</h3>
                 {count > 1 && (
-                  <span className="px-2 py-0.5 rounded-lg bg-blue-500/30 border border-blue-500/50 text-blue-300 text-xs font-black">
+                  <span className="px-2 py-0.5 rounded-lg bg-blue-500/30 border border-blue-500/50 text-blue-300 text-xs font-black flex-shrink-0">
                     ×{count}
                   </span>
                 )}
               </div>
-              <p className="text-base text-slate-400">{item.card.setName}</p>
+              <p className="text-sm text-slate-400 truncate">{item.card.setName}</p>
             </div>
-            <div className="text-center">
+            <div className="hidden sm:block text-center">
               <p className="text-base text-slate-400 uppercase tracking-wide mb-1">Set Code</p>
               <p className="text-base text-white font-mono">{item.card.setCode}</p>
             </div>
             <div className="text-center">
-              <p className="text-base text-slate-400 uppercase tracking-wide mb-1">Condition</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Condition</p>
               <div className="flex flex-col items-center gap-1">
-                <span className="inline-block px-3 py-1 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
+                <span className="inline-block px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 text-xs font-bold">
                   {CONDITION_LABELS[item.condition]}
                 </span>
                 <div className="flex gap-1">
-                  {item.isFoil && <span className="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-xs font-bold">FOIL</span>}
-                  {item.isFirstEdition && <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-xs font-bold">1ST</span>}
+                  {item.isFoil && <span className="px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-xs font-bold">FOIL</span>}
+                  {item.isFirstEdition && <span className="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 text-xs font-bold">1ST</span>}
                 </div>
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base text-slate-400 uppercase tracking-wide mb-1">Value</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Value</p>
               {item.askingValueOverride != null ? (
                 <div>
                   <p className="text-sm font-bold text-teal-400">${item.askingValueOverride.toFixed(2)}</p>
@@ -1081,14 +1081,14 @@ function CollectionCard({
           </div>
           {!selectMode && (
             item.status === "IN_TRADE" ? (
-              <div className="ml-4 flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold">
                   <Lock size={12} />
                   In Trade
                 </span>
               </div>
             ) : (
-              <div className="ml-4 flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={onToggleTrade}
                   title={item.status === "AVAILABLE" ? "Remove from trade" : "Mark as available for trade"}
