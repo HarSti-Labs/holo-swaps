@@ -1,5 +1,5 @@
 import { api } from "./client";
-import { ApiResponse, Card, CardCondition } from "@/types";
+import { ApiResponse, Card, CardCondition, CardMedia } from "@/types";
 
 export interface Listing {
   id: string;
@@ -21,7 +21,7 @@ export interface Listing {
     reputationScore: number;
     tier: string | null;
   };
-  media: { id: string; url: string; order: number }[];
+  media: CardMedia[];
   updatedAt: string;
 }
 
