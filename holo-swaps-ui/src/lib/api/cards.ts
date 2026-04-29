@@ -8,6 +8,7 @@ export interface CardHolder {
   isFirstEdition: boolean;
   currentMarketValue: number | null;
   askingValueOverride: number | null;
+  media?: Array<{ id: string; url: string; angle: string; order: number }>;
   user: {
     id: string;
     username: string;

@@ -2,6 +2,7 @@ import { api } from "./client";
 import {
   ApiResponse,
   CollectionItem,
+  CardMedia,
   WantItem,
   CardCondition,
   WantPriority,
@@ -110,5 +111,30 @@ export const collectionApi = {
 
   removeFromWants: async (wantId: string): Promise<void> => {
     await api.delete(`/wants/${wantId}`);
+  },
+
+  uploadFile: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await api.post<ApiResponse<{ url: string }>>("/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data.data!.url;
+  },
+
+  addCollectionMedia: async (
+    itemId: string,
+    url: string,
+    angle: CardMedia["angle"] = "FRONT"
+  ): Promise<CardMedia> => {
+    const res = await api.post<ApiResponse<CardMedia>>(
+      `/collection/${itemId}/media`,
+      { url, angle }
+    );
+    return res.data.data!;
+  },
+
+  deleteCollectionMedia: async (itemId: string, mediaId: string): Promise<void> => {
+    await api.delete(`/collection/${itemId}/media/${mediaId}`);
   },
 };

@@ -29,6 +29,7 @@ import {
   Check,
   Layers,
   Heart,
+  Camera,
 } from "lucide-react";
 import { Card, CONDITION_LABELS, User, CardCondition, WantPriority } from "@/types";
 import { TradeProposalModal } from "@/components/trades/TradeProposalModal";
@@ -582,11 +583,15 @@ function TradersPanel({
               const price = holder.askingValueOverride ?? holder.currentMarketValue;
               return (
                 <div key={holder.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800/40 transition-colors">
-                  <Link href={`/profile/${holder.user.username}`}>
-                    <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 hover:border-blue-400 transition-colors">
-                      <span className="text-base font-bold text-blue-300">{getInitials(holder.user.username)}</span>
-                    </div>
-                  </Link>
+                  {holder.media && holder.media.length > 0 ? (
+                    <img src={holder.media[0].url} alt="Card photo" className="w-10 h-14 object-cover rounded-lg border border-slate-700 flex-shrink-0" />
+                  ) : (
+                    <Link href={`/profile/${holder.user.username}`}>
+                      <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 hover:border-blue-400 transition-colors">
+                        <span className="text-base font-bold text-blue-300">{getInitials(holder.user.username)}</span>
+                      </div>
+                    </Link>
+                  )}
                   <div className="flex-1 min-w-0">
                     <Link href={`/profile/${holder.user.username}`} className="text-base font-semibold text-white hover:text-blue-400 transition-colors truncate block">
                       {holder.user.username}
@@ -597,6 +602,9 @@ function TradersPanel({
                       </span>
                       {holder.isFoil && <span className="text-xs text-yellow-400 bg-yellow-400/10 px-1.5 py-0.5 rounded">Foil</span>}
                       {holder.isFirstEdition && <span className="text-xs text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded">1st Ed</span>}
+                      {holder.media && holder.media.length > 0 && (
+                        <span className="text-xs text-slate-500 flex items-center gap-0.5"><Camera size={10} />{holder.media.length}</span>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
@@ -867,11 +875,15 @@ function MultiCardTradersPanel({
                       const price = holder.askingValueOverride ?? holder.currentMarketValue;
                       return (
                         <div key={holder.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-800/40 transition-colors">
-                          <Link href={`/profile/${holder.user.username}`}>
-                            <div className="w-7 h-7 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 hover:border-blue-400 transition-colors">
-                              <span className="text-base font-bold text-blue-300">{getInitials(holder.user.username)}</span>
-                            </div>
-                          </Link>
+                          {holder.media && holder.media.length > 0 ? (
+                            <img src={holder.media[0].url} alt="Card photo" className="w-8 h-11 object-cover rounded border border-slate-700 flex-shrink-0" />
+                          ) : (
+                            <Link href={`/profile/${holder.user.username}`}>
+                              <div className="w-7 h-7 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 hover:border-blue-400 transition-colors">
+                                <span className="text-base font-bold text-blue-300">{getInitials(holder.user.username)}</span>
+                              </div>
+                            </Link>
+                          )}
                           <div className="flex-1 min-w-0">
                             <Link href={`/profile/${holder.user.username}`} className="text-base font-semibold text-white hover:text-blue-400 transition-colors truncate block">
                               {holder.user.username}

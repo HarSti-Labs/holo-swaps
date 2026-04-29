@@ -7,7 +7,8 @@ import { sendSuccess, sendCreated } from "@/utils/response";
 import { ApiError } from "@/utils/ApiError";
 import { logger } from "@/utils/logger";
 import { z } from "zod";
-import { CardCondition, CardStatus, GradingCompany } from "@prisma/client";
+import { CardCondition, CardStatus, GradingCompany, MediaAngle } from "@prisma/client";
+import { config } from "@/config";
 
 const collectionRepo = new CollectionRepository();
 const pricingService = new PricingService();
@@ -162,6 +163,67 @@ export const removeFromCollection = async (
 
   await collectionRepo.delete(req.params.itemId);
   sendSuccess(res, null, "Card removed from collection");
+};
+
+// POST /api/collection/:itemId/media
+export const addCollectionMedia = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const item = await collectionRepo.findById(req.params.itemId);
+  if (!item) throw ApiError.notFound("Collection item not found");
+  if (item.userId !== req.user!.id) throw ApiError.forbidden();
+
+  const { url, angle = "FRONT" } = req.body;
+  if (!url || typeof url !== "string") throw ApiError.badRequest("url is required");
+
+  const validAngles = ["FRONT", "BACK", "DETAIL", "OVERVIEW"];
+  if (!validAngles.includes(angle)) throw ApiError.badRequest("Invalid angle");
+
+  const count = await prisma.cardMedia.count({ where: { collectionItemId: item.id } });
+  if (count >= 5) throw ApiError.badRequest("Maximum 5 photos per card");
+
+  const media = await prisma.cardMedia.create({
+    data: {
+      collectionItemId: item.id,
+      type: "PHOTO",
+      angle: angle as MediaAngle,
+      url,
+      order: count,
+    },
+  });
+
+  sendCreated(res, media);
+};
+
+// DELETE /api/collection/:itemId/media/:mediaId
+export const deleteCollectionMedia = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const item = await collectionRepo.findById(req.params.itemId);
+  if (!item) throw ApiError.notFound("Collection item not found");
+  if (item.userId !== req.user!.id) throw ApiError.forbidden();
+
+  const media = await prisma.cardMedia.findUnique({ where: { id: req.params.mediaId } });
+  if (!media || media.collectionItemId !== item.id) throw ApiError.notFound("Media not found");
+
+  // Best-effort delete from Supabase Storage
+  try {
+    const urlObj = new URL(media.url);
+    const parts = urlObj.pathname.split("/card-media/");
+    if (parts.length === 2) {
+      await fetch(`${config.supabase.url}/storage/v1/object/card-media/${parts[1]}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${config.supabase.serviceKey}` },
+      });
+    }
+  } catch (err) {
+    logger.warn("Failed to delete media from storage", { mediaId: media.id, err });
+  }
+
+  await prisma.cardMedia.delete({ where: { id: req.params.mediaId } });
+  sendSuccess(res, null, "Media deleted");
 };
 
 // GET /api/users/:userId/collection  — public collection (available cards only)

@@ -10,6 +10,7 @@ import { useAuthStore } from "@/lib/hooks/useAuth";
 import {
   Plus, Search, Filter, Grid3x3, List, Trash2, Edit2,
   ArrowLeftRight, X, Star, BookMarked, Heart, CheckSquare, Square, Tag, Lock, Trophy,
+  Camera, ImagePlus, Loader2,
 } from "lucide-react";
 import { Card as CardType, CollectionItem, CardCondition, WantItem, WantPriority } from "@/types";
 import { CONDITION_LABELS } from "@/types";
@@ -331,7 +332,7 @@ function MyCardsPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
 
       <main className="container mx-auto px-4 py-8">
         {/* Header */}
@@ -1775,6 +1776,37 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
   const [notes, setNotes] = useState(item.notes || "");
   const [quantity, setQuantity] = useState(item.quantity ?? 1);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [media, setMedia] = useState(item.media ?? []);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError(null);
+    setUploadingPhoto(true);
+    try {
+      const url = await collectionApi.uploadFile(file);
+      const newMedia = await collectionApi.addCollectionMedia(item.id, url, "FRONT");
+      setMedia((prev) => [...prev, newMedia]);
+      queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+    } catch {
+      setPhotoError("Failed to upload photo. Please try again.");
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleDeletePhoto = async (mediaId: string) => {
+    try {
+      await collectionApi.deleteCollectionMedia(item.id, mediaId);
+      setMedia((prev) => prev.filter((m) => m.id !== mediaId));
+      queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+    } catch {
+      setPhotoError("Failed to delete photo.");
+    }
+  };
 
   const updateMutation = useMutation({
     mutationFn: (data: Parameters<typeof collectionApi.updateCollectionItem>[1]) =>
@@ -1808,7 +1840,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 space-y-4">
           {item.status === "IN_TRADE" && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-base">
               <Lock size={16} />
@@ -1891,6 +1923,40 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
                 +
               </button>
             </div>
+          </div>
+
+          {/* Photos */}
+          <div>
+            <label className="block text-base font-medium text-slate-300 mb-1.5">
+              Photos <span className="text-slate-400 font-normal">(up to 5)</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {media.map((m) => (
+                <div key={m.id} className="relative group w-20 h-20 rounded-lg overflow-hidden border border-slate-700">
+                  <img src={m.url} alt="Card photo" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => handleDeletePhoto(m.id)}
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <Trash2 size={16} className="text-red-400" />
+                  </button>
+                </div>
+              ))}
+              {media.length < 5 && (
+                <label className={`w-20 h-20 rounded-lg border-2 border-dashed border-slate-600 hover:border-blue-500 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${uploadingPhoto ? "opacity-50 pointer-events-none" : ""}`}>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+                  {uploadingPhoto ? (
+                    <Loader2 size={18} className="text-slate-400 animate-spin" />
+                  ) : (
+                    <>
+                      <ImagePlus size={18} className="text-slate-400" />
+                      <span className="text-xs text-slate-500">Add</span>
+                    </>
+                  )}
+                </label>
+              )}
+            </div>
+            {photoError && <p className="mt-1.5 text-xs text-red-400">{photoError}</p>}
           </div>
 
           <div>

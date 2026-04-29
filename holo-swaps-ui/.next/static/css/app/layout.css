@@ -1216,6 +1216,12 @@ video {
 .max-h-\[90vh\] {
   max-height: 90vh;
 }
+.max-h-\[92vh\] {
+  max-height: 92vh;
+}
+.max-h-\[85vh\] {
+  max-height: 85vh;
+}
 .min-h-\[2\.5rem\] {
   min-height: 2.5rem;
 }
@@ -1318,6 +1324,9 @@ video {
 }
 .w-px {
   width: 1px;
+}
+.w-\[calc\(100vw-2rem\)\] {
+  width: calc(100vw - 2rem);
 }
 .min-w-0 {
   min-width: 0px;
@@ -1635,6 +1644,9 @@ video {
 }
 .overflow-y-auto {
   overflow-y: auto;
+}
+.overflow-x-hidden {
+  overflow-x: hidden;
 }
 .truncate {
   overflow: hidden;
@@ -4351,6 +4363,10 @@ video {
     width: 3.5rem;
   }
 
+  .sm\:max-w-2xl {
+    max-width: 42rem;
+  }
+
   .sm\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -4369,6 +4385,10 @@ video {
 
   .sm\:items-center {
     align-items: center;
+  }
+
+  .sm\:justify-center {
+    justify-content: center;
   }
 
   .sm\:justify-between {

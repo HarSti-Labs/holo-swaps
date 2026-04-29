@@ -60,6 +60,16 @@ export interface Card {
   tcgplayerId: string | null;
 }
 
+export interface CardMedia {
+  id: string;
+  collectionItemId: string | null;
+  type: "PHOTO" | "VIDEO";
+  angle: "FRONT" | "BACK" | "DETAIL" | "OVERVIEW";
+  url: string;
+  order: number;
+  createdAt: string;
+}
+
 export interface CollectionItem {
   id: string;
   quantity: number;
@@ -70,7 +80,7 @@ export interface CollectionItem {
   isFoil: boolean;
   isFirstEdition: boolean;
   language: string;
-  photos: string[];
+  media: CardMedia[];
   notes: string | null;
   status: "AVAILABLE" | "UNAVAILABLE" | "IN_TRADE" | "TRADED_AWAY";
   askingValueOverride: number | null;

@@ -190,9 +190,9 @@ export function TradeProposalModal({
                         key={card.id}
                         className="bg-slate-800/50 border border-slate-700 rounded-lg p-2 flex items-center gap-2"
                       >
-                        {card.card.imageUrl ? (
+                        {(card.media?.[0]?.url || card.card.imageUrl) ? (
                           <img
-                            src={card.card.imageUrl}
+                            src={card.media?.[0]?.url || card.card.imageUrl!}
                             alt={card.card.name}
                             className="w-12 h-16 object-cover rounded"
                           />
@@ -309,9 +309,9 @@ export function TradeProposalModal({
                         key={card.id}
                         className="bg-slate-800/50 border border-slate-700 rounded-lg p-2 flex items-center gap-2"
                       >
-                        {card.card.imageUrl ? (
+                        {(card.media?.[0]?.url || card.card.imageUrl) ? (
                           <img
-                            src={card.card.imageUrl}
+                            src={card.media?.[0]?.url || card.card.imageUrl!}
                             alt={card.card.name}
                             className="w-12 h-16 object-cover rounded"
                           />
