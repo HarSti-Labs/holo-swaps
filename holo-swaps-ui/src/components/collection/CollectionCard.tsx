@@ -46,9 +46,9 @@ export function CollectionCard({
             className="object-cover"
             sizes="(max-width: 768px) 50vw, 25vw"
           />
-        ) : item.photos[0] ? (
+        ) : item.media?.[0]?.url ? (
           <Image
-            src={item.photos[0]}
+            src={item.media[0].url}
             alt={item.card.name}
             fill
             className="object-cover"
