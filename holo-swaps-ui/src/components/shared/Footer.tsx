@@ -16,7 +16,6 @@ const footerLinks = [
   {
     heading: "Support",
     links: [
-      { label: "Contact Support", href: "/support" },
       { label: "Submit a Ticket", href: "/support" },
     ],
   },

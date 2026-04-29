@@ -51,10 +51,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/matches/page.js"
     ],
-    "/not-found": [
+    "/support/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/not-found.js"
+      "static/chunks/app/support/page.js"
     ]
   }
 }

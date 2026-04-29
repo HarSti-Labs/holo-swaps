@@ -83,7 +83,7 @@ export default function SupportPage() {
     } catch (err: unknown) {
       const msgs = (err as { response?: { data?: { errors?: string[]; message?: string } } })?.response?.data;
       setError(
-        (msgs?.errors ?? []).join(" ") || msgs?.message || "Something went wrong. Please try again or email admin@holoswaps.com directly."
+        (msgs?.errors ?? []).join(" ") || msgs?.message || "Something went wrong. Please try again or email support@holoswaps.com directly."
       );
     } finally {
       setIsLoading(false);
@@ -316,8 +316,8 @@ export default function SupportPage() {
 
           <p className="text-center text-base text-slate-400 mt-6">
             Prefer to email directly?{" "}
-            <a href="mailto:admin@holoswaps.com" className="text-blue-400 hover:text-blue-300 underline">
-              admin@holoswaps.com
+            <a href="mailto:support@holoswaps.com" className="text-blue-400 hover:text-blue-300 underline">
+              support@holoswaps.com
             </a>
           </p>
         </div>

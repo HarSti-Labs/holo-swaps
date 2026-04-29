@@ -23,7 +23,8 @@
       "Bash(find /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-ui/src/components -name *.tsx)",
       "Bash(find /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-service -name *.prisma -o -name tradeController* -o -name tradeRoute*)",
       "Bash(curl:*)",
-      "WebFetch(domain:tcgapi.dev)"
+      "WebFetch(domain:tcgapi.dev)",
+      "Bash(xargs sed:*)"
     ]
   }
 }

@@ -488,9 +488,11 @@ function TradersPanel({
   currentUserId?: string;
 }) {
   const [holdersPage, setHoldersPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc">("default");
 
   useEffect(() => {
     setHoldersPage(1);
+    setSortBy("default");
   }, [card?.id]);
 
   const { data, isLoading } = useQuery({
@@ -511,7 +513,12 @@ function TradersPanel({
     );
   }
 
-  const holders = data?.data ?? [];
+  const rawHolders = data?.data ?? [];
+  const holders = sortBy === "default" ? rawHolders : [...rawHolders].sort((a, b) => {
+    const pa = a.askingValueOverride ?? a.currentMarketValue ?? 0;
+    const pb = b.askingValueOverride ?? b.currentMarketValue ?? 0;
+    return sortBy === "price_asc" ? pa - pb : pb - pa;
+  });
   const totalHolders = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
@@ -537,11 +544,24 @@ function TradersPanel({
       </div>
 
       <div className="px-4 py-2.5 border-b border-slate-800/60 bg-slate-900/40">
-        <div className="flex items-center gap-2">
-          <Users className="h-3.5 w-3.5 text-green-400" />
-          <span className="text-base font-semibold text-slate-300">
-            {isLoading ? "Loading…" : `${totalHolders} trader${totalHolders !== 1 ? "s" : ""} available`}
-          </span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Users className="h-3.5 w-3.5 text-green-400" />
+            <span className="text-base font-semibold text-slate-300">
+              {isLoading ? "Loading…" : `${totalHolders} trader${totalHolders !== 1 ? "s" : ""} available`}
+            </span>
+          </div>
+          {totalHolders > 1 && (
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="default">Price ↕</option>
+              <option value="price_asc">Price ↑</option>
+              <option value="price_desc">Price ↓</option>
+            </select>
+          )}
         </div>
       </div>
 
@@ -623,13 +643,16 @@ function MultiCardTradersPanel({
 }) {
   const [conditionFilter, setConditionFilter] = useState<string>("");
   const [cardFilter, setCardFilter] = useState<string>("");
+  const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc">("default");
+  const [showAllCardsOnly, setShowAllCardsOnly] = useState(false);
 
-  // Reset card filter if a previously-selected card is deselected
   useEffect(() => {
-    if (cardFilter && !cards.find((c) => c.id === cardFilter)) {
-      setCardFilter("");
-    }
+    if (cardFilter && !cards.find((c) => c.id === cardFilter)) setCardFilter("");
   }, [cards, cardFilter]);
+
+  useEffect(() => {
+    if (cards.length < 2) setShowAllCardsOnly(false);
+  }, [cards.length]);
 
   const holderQueries = useQueries({
     queries: cards.map((card) => ({
@@ -639,7 +662,45 @@ function MultiCardTradersPanel({
     })),
   });
 
+  const sortHolders = (holders: CardHolder[]) => {
+    if (sortBy === "default") return holders;
+    return [...holders].sort((a, b) => {
+      const pa = a.askingValueOverride ?? a.currentMarketValue ?? 0;
+      const pb = b.askingValueOverride ?? b.currentMarketValue ?? 0;
+      return sortBy === "price_asc" ? pa - pb : pb - pa;
+    });
+  };
+
+  // Traders who have ALL selected cards
+  const tradersWithAllCards = (() => {
+    if (!showAllCardsOnly || cards.length < 2) return [];
+    const allHoldersByCard = cards.map((_, idx) => {
+      const all = holderQueries[idx]?.data?.data ?? [];
+      return conditionFilter ? all.filter((h) => h.condition === conditionFilter) : all;
+    });
+    if (allHoldersByCard.some((h) => h.length === 0)) return [];
+    let eligibleIds = new Set(
+      allHoldersByCard[0].filter((h) => h.user.id !== currentUserId).map((h) => h.user.id)
+    );
+    for (let i = 1; i < allHoldersByCard.length; i++) {
+      const ids = new Set(allHoldersByCard[i].map((h) => h.user.id));
+      eligibleIds = new Set([...eligibleIds].filter((id) => ids.has(id)));
+    }
+    return Array.from(eligibleIds).map((userId) => {
+      const traderCards = new Map<string, CardHolder>();
+      cards.forEach((card, idx) => {
+        const h = allHoldersByCard[idx].find((h) => h.user.id === userId);
+        if (h) traderCards.set(card.id, h);
+      });
+      const totalValue = Array.from(traderCards.values()).reduce(
+        (sum, h) => sum + (h.askingValueOverride ?? h.currentMarketValue ?? 0), 0
+      );
+      return { holder: allHoldersByCard[0].find((h) => h.user.id === userId)!, traderCards, totalValue };
+    }).sort((a, b) => sortBy === "price_asc" ? a.totalValue - b.totalValue : b.totalValue - a.totalValue);
+  })();
+
   const displayCards = cardFilter ? cards.filter((c) => c.id === cardFilter) : cards;
+  const anyLoading = holderQueries.some((q) => q.isLoading);
 
   if (cards.length === 0) {
     return (
@@ -655,27 +716,37 @@ function MultiCardTradersPanel({
     <div className="flex flex-col h-full">
       {/* Filter bar */}
       <div className="p-3 border-b border-slate-800 space-y-2 bg-slate-900/40">
-        <div className="relative">
-          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none h-3.5 w-3.5" />
+        {/* Card filter + price sort */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none h-3.5 w-3.5" />
+            <select
+              value={cardFilter}
+              onChange={(e) => { setCardFilter(e.target.value); setShowAllCardsOnly(false); }}
+              disabled={showAllCardsOnly}
+              className="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-40"
+            >
+              <option value="">All cards ({cards.length})</option>
+              {cards.map((c) => <option key={c.id} value={c.id}>{c.name} — {c.setCode}</option>)}
+            </select>
+          </div>
           <select
-            value={cardFilter}
-            onChange={(e) => setCardFilter(e.target.value)}
-            className="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="px-2 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            <option value="">All selected cards ({cards.length})</option>
-            {cards.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} — {c.setCode}
-              </option>
-            ))}
+            <option value="default">Price ↕</option>
+            <option value="price_asc">Price ↑</option>
+            <option value="price_desc">Price ↓</option>
           </select>
         </div>
+        {/* Condition filter */}
         <div className="relative">
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none h-3.5 w-3.5" />
           <select
             value={conditionFilter}
             onChange={(e) => setConditionFilter(e.target.value)}
-            className="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="">Any condition</option>
             {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([v, l]) => (
@@ -683,101 +754,157 @@ function MultiCardTradersPanel({
             ))}
           </select>
         </div>
+        {/* Has-all-cards toggle */}
+        {cards.length >= 2 && (
+          <button
+            onClick={() => { setShowAllCardsOnly((v) => !v); setCardFilter(""); }}
+            className={`w-full flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+              showAllCardsOnly
+                ? "bg-green-600/20 border-green-500 text-green-400"
+                : "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-300 hover:border-slate-500"
+            }`}
+          >
+            <Layers className="h-3.5 w-3.5" />
+            {showAllCardsOnly ? `Showing traders with all ${cards.length} cards` : `Traders with all ${cards.length} cards`}
+          </button>
+        )}
       </div>
 
-      {/* Card sections */}
+      {/* Content */}
       <div className="flex-1 overflow-y-auto divide-y divide-slate-800/60">
-        {displayCards.map((card) => {
-          const qIdx = cards.findIndex((c) => c.id === card.id);
-          const query = holderQueries[qIdx];
-          const allHolders = query?.data?.data ?? [];
-          const holders = conditionFilter
-            ? allHolders.filter((h) => h.condition === conditionFilter)
-            : allHolders;
-          const totalRaw = query?.data?.total ?? 0;
-
-          return (
-            <div key={card.id}>
-              {/* Card header */}
-              <div className="flex items-center gap-2.5 px-3 py-2.5 bg-slate-800/50 sticky top-0 z-10">
-                {card.imageUrl ? (
-                  <img
-                    src={card.imageUrl}
-                    alt={card.name}
-                    className="w-7 h-10 object-cover rounded flex-shrink-0 border border-slate-700"
-                  />
-                ) : (
-                  <div className="w-7 h-10 bg-slate-700 rounded flex-shrink-0 flex items-center justify-center border border-slate-600">
-                    <Package className="h-3.5 w-3.5 text-slate-400" />
+        {showAllCardsOnly ? (
+          anyLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+            </div>
+          ) : tradersWithAllCards.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+              <p className="text-slate-400 text-sm font-medium">No trader has all {cards.length} cards</p>
+              <p className="text-slate-500 text-xs mt-1">Try fewer cards or remove the condition filter</p>
+            </div>
+          ) : (
+            tradersWithAllCards.map(({ holder, traderCards, totalValue }) => (
+              <div key={holder.user.id} className="px-3 py-2.5 hover:bg-slate-800/40 transition-colors">
+                <div className="flex items-center justify-between mb-1.5">
+                  <Link href={`/profile/${holder.user.username}`} className="text-sm font-semibold text-white hover:text-blue-400 transition-colors truncate">
+                    {holder.user.username}
+                  </Link>
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                    {totalValue > 0 && <span className="text-xs font-bold text-green-400">${totalValue.toFixed(2)}</span>}
+                    <button
+                      onClick={() => onProposeTrade(holder)}
+                      className="flex items-center gap-1 px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-medium transition-colors"
+                    >
+                      <ArrowLeftRight className="h-3 w-3" />
+                      Trade
+                    </button>
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-base font-bold text-white truncate leading-tight">{card.name}</p>
-                  <p className="text-base text-slate-400 truncate">{card.setCode} {card.cardNumber ? `#${card.cardNumber}` : ""}</p>
                 </div>
-                <div className="flex-shrink-0 text-right">
-                  {query?.isLoading ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />
-                  ) : (
-                    <span className={`text-base font-bold ${holders.length > 0 ? "text-green-400" : "text-slate-400"}`}>
-                      {holders.length}{conditionFilter ? "" : totalRaw > 15 ? "+" : ""}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Traders for this card */}
-              {query?.isLoading ? (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                </div>
-              ) : holders.length === 0 ? (
-                <p className="text-base text-slate-400 italic px-4 py-2.5">
-                  {conditionFilter ? "No traders match this condition" : "No traders available"}
-                </p>
-              ) : (
-                <div>
-                  {holders.map((holder) => {
-                    const price = holder.askingValueOverride ?? holder.currentMarketValue;
+                <div className="space-y-0.5">
+                  {Array.from(traderCards.entries()).map(([cardId, h]) => {
+                    const card = cards.find((c) => c.id === cardId);
+                    const price = h.askingValueOverride ?? h.currentMarketValue;
                     return (
-                      <div key={holder.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-800/40 transition-colors">
-                        <Link href={`/profile/${holder.user.username}`}>
-                          <div className="w-7 h-7 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 hover:border-blue-400 transition-colors">
-                            <span className="text-base font-bold text-blue-300">{getInitials(holder.user.username)}</span>
-                          </div>
-                        </Link>
-                        <div className="flex-1 min-w-0">
-                          <Link href={`/profile/${holder.user.username}`} className="text-base font-semibold text-white hover:text-blue-400 transition-colors truncate block">
-                            {holder.user.username}
-                          </Link>
-                          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                            <span className="text-base text-slate-400 bg-slate-800 px-1 py-0.5 rounded">
-                              {CONDITION_LABELS[holder.condition as keyof typeof CONDITION_LABELS] ?? holder.condition}
-                            </span>
-                            {holder.isFoil && <span className="text-xs text-yellow-400">Foil</span>}
-                            {holder.isFirstEdition && <span className="text-xs text-purple-400">1st</span>}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                          {price != null && <span className="text-base font-semibold text-green-400">${price.toFixed(2)}</span>}
-                          {holder.user.id !== currentUserId && (
-                            <button
-                              onClick={() => onProposeTrade(holder)}
-                              className="flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-base font-medium transition-colors"
-                            >
-                              <ArrowLeftRight className="h-2.5 w-2.5" />
-                              Trade
-                            </button>
-                          )}
+                      <div key={cardId} className="flex items-center justify-between text-xs">
+                        <span className="text-slate-400 truncate max-w-[120px]">{card?.name}</span>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <span className="text-slate-500 bg-slate-800 px-1 py-0.5 rounded">
+                            {CONDITION_LABELS[h.condition as keyof typeof CONDITION_LABELS] ?? h.condition}
+                          </span>
+                          {price != null && <span className="text-green-400 font-medium">${price.toFixed(2)}</span>}
                         </div>
                       </div>
                     );
                   })}
                 </div>
-              )}
-            </div>
-          );
-        })}
+              </div>
+            ))
+          )
+        ) : (
+          displayCards.map((card) => {
+            const qIdx = cards.findIndex((c) => c.id === card.id);
+            const query = holderQueries[qIdx];
+            const allHolders = query?.data?.data ?? [];
+            const filtered = conditionFilter ? allHolders.filter((h) => h.condition === conditionFilter) : allHolders;
+            const holders = sortHolders(filtered);
+            const totalRaw = query?.data?.total ?? 0;
+
+            return (
+              <div key={card.id}>
+                <div className="flex items-center gap-2.5 px-3 py-2.5 bg-slate-800/50 sticky top-0 z-10">
+                  {card.imageUrl ? (
+                    <img src={card.imageUrl} alt={card.name} className="w-7 h-10 object-cover rounded flex-shrink-0 border border-slate-700" />
+                  ) : (
+                    <div className="w-7 h-10 bg-slate-700 rounded flex-shrink-0 flex items-center justify-center border border-slate-600">
+                      <Package className="h-3.5 w-3.5 text-slate-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-bold text-white truncate leading-tight">{card.name}</p>
+                    <p className="text-base text-slate-400 truncate">{card.setCode} {card.cardNumber ? `#${card.cardNumber}` : ""}</p>
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    {query?.isLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />
+                    ) : (
+                      <span className={`text-base font-bold ${holders.length > 0 ? "text-green-400" : "text-slate-400"}`}>
+                        {holders.length}{conditionFilter ? "" : totalRaw > 15 ? "+" : ""}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {query?.isLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                  </div>
+                ) : holders.length === 0 ? (
+                  <p className="text-base text-slate-400 italic px-4 py-2.5">
+                    {conditionFilter ? "No traders match this condition" : "No traders available"}
+                  </p>
+                ) : (
+                  <div>
+                    {holders.map((holder) => {
+                      const price = holder.askingValueOverride ?? holder.currentMarketValue;
+                      return (
+                        <div key={holder.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-800/40 transition-colors">
+                          <Link href={`/profile/${holder.user.username}`}>
+                            <div className="w-7 h-7 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 hover:border-blue-400 transition-colors">
+                              <span className="text-base font-bold text-blue-300">{getInitials(holder.user.username)}</span>
+                            </div>
+                          </Link>
+                          <div className="flex-1 min-w-0">
+                            <Link href={`/profile/${holder.user.username}`} className="text-base font-semibold text-white hover:text-blue-400 transition-colors truncate block">
+                              {holder.user.username}
+                            </Link>
+                            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                              <span className="text-base text-slate-400 bg-slate-800 px-1 py-0.5 rounded">
+                                {CONDITION_LABELS[holder.condition as keyof typeof CONDITION_LABELS] ?? holder.condition}
+                              </span>
+                              {holder.isFoil && <span className="text-xs text-yellow-400">Foil</span>}
+                              {holder.isFirstEdition && <span className="text-xs text-purple-400">1st</span>}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                            {price != null && <span className="text-base font-semibold text-green-400">${price.toFixed(2)}</span>}
+                            {holder.user.id !== currentUserId && (
+                              <button
+                                onClick={() => onProposeTrade(holder)}
+                                className="flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-base font-medium transition-colors"
+                              >
+                                <ArrowLeftRight className="h-2.5 w-2.5" />
+                                Trade
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
@@ -807,6 +934,9 @@ export default function CardsPage() {
   const [checkedCards, setCheckedCards] = useState<Map<string, Card>>(new Map());
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkMode, setBulkMode] = useState<"collection" | "wants">("collection");
+
+  // Mobile traders modal
+  const [showTradersModal, setShowTradersModal] = useState(false);
 
   const limit = 18;
 
@@ -845,6 +975,7 @@ export default function CardsPage() {
 
   const handleProposeTrade = useCallback((holder: CardHolder) => {
     if (!user) return;
+    setShowTradersModal(false);
     setTradeTarget(holder.user as User);
   }, [user]);
 
@@ -1035,8 +1166,8 @@ export default function CardsPage() {
             )}
           </div>
 
-          {/* Right: traders panel (sticky) */}
-          <div className="lg:w-80 xl:w-96 flex-shrink-0">
+          {/* Right: traders panel (sticky, desktop only) */}
+          <div className="hidden lg:block lg:w-80 xl:w-96 flex-shrink-0">
             <div className="lg:sticky lg:top-20 bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden flex flex-col" style={{ minHeight: "420px", maxHeight: "calc(100vh - 6rem)" }}>
               <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/80">
                 <h2 className="text-base font-semibold text-slate-300 flex items-center gap-2">
@@ -1087,6 +1218,93 @@ export default function CardsPage() {
           </div>
         </div>
       </main>
+
+      {/* Mobile: floating "See Available Traders" button */}
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
+        <button
+          onClick={() => setShowTradersModal(true)}
+          className="flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-full shadow-2xl font-semibold text-sm transition-colors"
+        >
+          <Users className="h-4 w-4" />
+          See Available Traders
+          {(isSelectMode ? checkedCards.size : selectedCard ? 1 : 0) > 0 && (
+            <span className="ml-1 bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+              {isSelectMode ? checkedCards.size : 1}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Mobile traders modal (bottom sheet) */}
+      {showTradersModal && (
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70"
+            onClick={() => setShowTradersModal(false)}
+          />
+          {/* Sheet */}
+          <div
+            className="relative bg-slate-900 border-t border-slate-800 rounded-t-2xl flex flex-col"
+            style={{ maxHeight: "85vh" }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80 rounded-t-2xl">
+              <h2 className="text-base font-semibold text-slate-300 flex items-center gap-2">
+                <Users className="h-4 w-4 text-green-400" />
+                Available Traders
+              </h2>
+              <button
+                onClick={() => setShowTradersModal(false)}
+                className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+              {isSelectMode ? (
+                <MultiCardTradersPanel
+                  cards={Array.from(checkedCards.values())}
+                  onProposeTrade={handleProposeTrade}
+                  currentUserId={user?.id}
+                />
+              ) : (
+                <TradersPanel
+                  card={selectedCard}
+                  onProposeTrade={handleProposeTrade}
+                  currentUserId={user?.id}
+                />
+              )}
+            </div>
+
+            {/* Selection actions */}
+            {isSelectMode && checkedCards.size > 0 && (
+              <div className="border-t border-slate-800 p-4 space-y-2.5 bg-slate-900/80">
+                <p className="text-base font-semibold text-slate-300 flex items-center gap-2">
+                  <Layers className="h-3.5 w-3.5 text-blue-400" />
+                  {checkedCards.size} card{checkedCards.size !== 1 ? "s" : ""} selected
+                </p>
+                <button
+                  onClick={() => { setBulkMode("collection"); setShowBulkModal(true); setShowTradersModal(false); }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-base font-semibold transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add to Collection
+                </button>
+                <button
+                  onClick={() => { setBulkMode("wants"); setShowBulkModal(true); setShowTradersModal(false); }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-pink-600 hover:bg-pink-500 text-white rounded-xl text-base font-semibold transition-colors"
+                >
+                  <Heart className="h-4 w-4" />
+                  Add to Want List
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Bulk add modal */}
       {showBulkModal && checkedCount > 0 && (

@@ -3,7 +3,7 @@ import Link from "next/link";
 const EFFECTIVE_DATE = "April 19, 2025";
 const COMPANY = "Harsti Labs LLC";
 const PLATFORM = "HoloSwaps";
-const CONTACT_EMAIL = "admin@holoswaps.com";
+const CONTACT_EMAIL = "support@holoswaps.com";
 
 export default function TermsOfServicePage() {
   return (
