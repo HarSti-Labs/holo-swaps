@@ -64,7 +64,7 @@ function listingToCollectionItem(listing: Listing): CollectionItem {
     isFoil: listing.isFoil,
     isFirstEdition: listing.isFirstEdition,
     language: listing.language,
-    photos: listing.media.map((m) => m.url),
+    media: listing.media,
     notes: listing.listingDescription,
     status: "AVAILABLE",
     askingValueOverride: listing.askingValueOverride,
