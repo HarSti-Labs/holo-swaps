@@ -58,6 +58,7 @@ function MyCardsPageContent() {
   const [collectionSelectMode, setCollectionSelectMode] = useState(false);
   const [selectedCollectionIds, setSelectedCollectionIds] = useState<Set<string>>(new Set());
   const [isBulkCollectionLoading, setIsBulkCollectionLoading] = useState(false);
+  const [noPhotoError, setNoPhotoError] = useState<string | null>(null);
 
   // ── Want list state ───────────────────────────────────────────────
   const [showAddWantDialog, setShowAddWantDialog] = useState(false);
@@ -100,6 +101,10 @@ function MyCardsPageContent() {
   });
 
   const handleToggleListing = (item: CollectionItem) => {
+    if (!item.isOpenListing && (!item.media || item.media.length === 0)) {
+      showNoPhotoError(`"${item.card.name}" needs at least one photo before it can be listed. Click the edit button to upload photos.`);
+      return;
+    }
     setListingModalItem(item);
   };
 
@@ -131,7 +136,16 @@ function MyCardsPageContent() {
     },
   });
 
+  const showNoPhotoError = (msg: string) => {
+    setNoPhotoError(msg);
+    setTimeout(() => setNoPhotoError(null), 5000);
+  };
+
   const handleToggleTrade = (item: CollectionItem) => {
+    if (item.status !== "AVAILABLE" && (!item.media || item.media.length === 0)) {
+      showNoPhotoError(`"${item.card.name}" needs at least one photo before it can be marked as available for trade. Click the edit button to upload photos.`);
+      return;
+    }
     toggleTradeMutation.mutate({ itemId: item.id, availableForTrade: item.status !== "AVAILABLE" });
   };
 
@@ -160,8 +174,20 @@ function MyCardsPageContent() {
   const bulkSetTradeCollection = async (available: boolean) => {
     setIsBulkCollectionLoading(true);
     try {
+      let ids = [...selectedCollectionIds];
+      if (available) {
+        const noPhoto = ids.filter((id) => {
+          const item = collection.find((i) => i.id === id);
+          return !item?.media || item.media.length === 0;
+        });
+        if (noPhoto.length > 0) {
+          showNoPhotoError(`${noPhoto.length} card(s) skipped — they need at least one photo before being marked as available. Use the edit button to upload photos.`);
+          ids = ids.filter((id) => !noPhoto.includes(id));
+        }
+        if (ids.length === 0) return;
+      }
       await Promise.all(
-        [...selectedCollectionIds].map((id) =>
+        ids.map((id) =>
           collectionApi.updateCollectionItem(id, { status: available ? "AVAILABLE" : "UNAVAILABLE" })
         )
       );
@@ -678,6 +704,13 @@ function MyCardsPageContent() {
                 <button onClick={clearFilters} className="px-4 py-2 rounded-xl bg-slate-800 text-white hover:bg-slate-700 transition-colors">
                   Clear filters
                 </button>
+              </div>
+            )}
+
+            {noPhotoError && (
+              <div className="flex items-start gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-base mb-4">
+                <Camera size={16} className="flex-shrink-0 mt-0.5" />
+                <span>{noPhotoError}</span>
               </div>
             )}
 
@@ -1990,6 +2023,10 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
                 if (item.status === "IN_TRADE") {
                   updateMutation.mutate({ quantity });
                 } else {
+                  if (availableForTrade && media.length === 0) {
+                    setPhotoError("Please upload at least one photo before marking this card as available for trade.");
+                    return;
+                  }
                   updateMutation.mutate({ condition, isFoil, isFirstEdition, status: availableForTrade ? "AVAILABLE" : "UNAVAILABLE", notes: notes || undefined, quantity });
                 }
               }}

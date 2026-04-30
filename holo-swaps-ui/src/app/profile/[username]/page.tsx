@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { usersApi, ReportPayload } from "@/lib/api/users";
+import { usersApi, ReportPayload, TradeReview } from "@/lib/api/users";
 import { supportApi, SupportTicketSummary } from "@/lib/api/support";
 import { collectionApi } from "@/lib/api/collection";
 import { User, CollectionItem, CONDITION_LABELS } from "@/types";
-import { Loader2, Star, TrendingUp, MapPin, Calendar, UserPlus, UserMinus, Users, Headphones, ChevronRight, Package, ArrowLeftRight, MoreHorizontal, ShieldOff, Shield, Flag, X, ChevronDown } from "lucide-react";
+import { Loader2, Star, TrendingUp, MapPin, Calendar, UserPlus, UserMinus, Users, Headphones, ChevronRight, Package, ArrowLeftRight, MoreHorizontal, ShieldOff, Shield, Flag, X, ChevronDown, MessageSquare } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import Link from "next/link";
@@ -37,6 +37,10 @@ export default function ProfilePage() {
   const [theirCollection, setTheirCollection] = useState<CollectionItem[]>([]);
   const [isLoadingCollection, setIsLoadingCollection] = useState(false);
   const [collectionLoaded, setCollectionLoaded] = useState(false);
+  const [reviews, setReviews] = useState<TradeReview[]>([]);
+  const [reviewsTotal, setReviewsTotal] = useState(0);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [reviewsLoaded, setReviewsLoaded] = useState(false);
 
   const isOwnProfile = currentUser?.username === username;
 
@@ -67,6 +71,20 @@ export default function ProfilePage() {
     fetchProfile();
   }, [username]);
 
+  useEffect(() => {
+    setReviewsLoaded(false);
+    setReviews([]);
+    setReviewsTotal(0);
+  }, [username]);
+
+  // Load reviews when user is loaded (stats tab is shown by default)
+  useEffect(() => {
+    if (user && !reviewsLoaded) {
+      loadReviews();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const loadCollection = async () => {
     if (collectionLoaded) return;
     setIsLoadingCollection(true);
@@ -81,10 +99,28 @@ export default function ProfilePage() {
     }
   };
 
+  const loadReviews = async () => {
+    if (reviewsLoaded) return;
+    setIsLoadingReviews(true);
+    try {
+      const result = await usersApi.getReviews(username, 1, 10);
+      setReviews(result.data);
+      setReviewsTotal(result.total);
+      setReviewsLoaded(true);
+    } catch (err) {
+      console.error("Failed to load reviews:", err);
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
+
   const handleTabChange = (tab: "stats" | "tickets" | "collection") => {
     setActiveTab(tab);
     if (tab === "collection" && !collectionLoaded) {
       loadCollection();
+    }
+    if (tab === "stats" && !reviewsLoaded) {
+      loadReviews();
     }
   };
 
@@ -391,8 +427,50 @@ export default function ProfilePage() {
             </div>
 
             <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-4">Recent Reviews</h3>
-              <p className="text-slate-400 text-base">No reviews yet</p>
+              <h3 className="text-lg font-semibold mb-4">
+                Reviews {reviewsTotal > 0 && <span className="text-base text-slate-400 font-normal">({reviewsTotal})</span>}
+              </h3>
+              {isLoadingReviews ? (
+                <div className="flex items-center gap-2 text-slate-400 text-base">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading reviews...
+                </div>
+              ) : reviews.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <MessageSquare className="h-8 w-8 text-slate-600 mb-2" />
+                  <p className="text-slate-400 text-base">No reviews yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-xs font-bold">
+                              {review.author.username.slice(0, 1).toUpperCase()}
+                            </span>
+                          </div>
+                          <span className="text-base font-medium text-white">{review.author.username}</span>
+                        </div>
+                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-4 w-4 ${star <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-slate-600"}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="text-slate-300 text-base leading-relaxed">{review.comment}</p>
+                      )}
+                      <p className="text-slate-500 text-base mt-2">
+                        {new Date(review.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

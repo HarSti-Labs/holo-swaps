@@ -1,6 +1,19 @@
 import { api } from "./client";
 import { ApiResponse, User, PaginatedResult, CollectionItem } from "@/types";
 
+export interface TradeReview {
+  id: string;
+  tradeId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  author: {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+  };
+}
+
 export interface ReportPayload {
   reason: string;
   details?: string;
@@ -52,6 +65,14 @@ export const usersApi = {
   getFollowing: async (username: string, page = 1, limit = 20): Promise<PaginatedResult<User>> => {
     const res = await api.get<ApiResponse<PaginatedResult<User>>>(
       `/users/${username}/following`,
+      { params: { page, limit } }
+    );
+    return res.data.data!;
+  },
+
+  getReviews: async (username: string, page = 1, limit = 10): Promise<PaginatedResult<TradeReview>> => {
+    const res = await api.get<ApiResponse<PaginatedResult<TradeReview>>>(
+      `/users/${username}/reviews`,
       { params: { page, limit } }
     );
     return res.data.data!;

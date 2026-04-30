@@ -1,7 +1,4 @@
 {
-  "/shipping-guide/page": "app/shipping-guide/page.js",
-  "/collection/page": "app/collection/page.js",
-  "/cards/page": "app/cards/page.js",
-  "/listings/page": "app/listings/page.js",
-  "/dashboard/page": "app/dashboard/page.js"
+  "/not-found": "app/not-found.js",
+  "/collection/page": "app/collection/page.js"
 }

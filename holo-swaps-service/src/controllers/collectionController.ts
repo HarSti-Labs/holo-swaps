@@ -139,6 +139,15 @@ export const updateCollectionItem = async (
   }
 
   const { status, gradingCompany, gradingScore, gradingCertNumber, ...rest } = parsed.data;
+
+  // Require at least one photo before a card can be marked AVAILABLE
+  if (status === CardStatus.AVAILABLE) {
+    const photoCount = await prisma.cardMedia.count({ where: { collectionItemId: item.id } });
+    if (photoCount === 0) {
+      throw ApiError.badRequest("Please upload at least one photo before marking this card as available for trade.");
+    }
+  }
+
   const updated = await collectionRepo.update(req.params.itemId, {
     ...rest,
     ...(status !== undefined && {
