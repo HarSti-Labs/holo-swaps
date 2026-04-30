@@ -1,16 +1,14 @@
 import Link from "next/link";
 import { Truck, Package, ShieldCheck, MapPin, AlertTriangle, ChevronRight } from "lucide-react";
 
-// ─── UPDATE THIS WHEN YOU HAVE YOUR PO BOX ───────────────────────────────────
 const VERIFICATION_ADDRESS = {
   line1: "HoloSwaps Verification Center",
   line2: "c/o HoloSwaps",
-  poBox: "[YOUR PO BOX HERE]",
+  poBox: "PO Box 4782",
   city: "Worcester",
   state: "MA",
   zip: "01602",
 };
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function ShippingGuidePage() {
   return (

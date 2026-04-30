@@ -59,8 +59,8 @@ export function Footer() {
                 <MapPin size={14} className="mt-0.5 flex-shrink-0" />
                 <span>
                   {COMPANY}<br />
-                  PO Box 12345<br />
-                  Los Angeles, CA 90001
+                  PO Box 4782<br />
+                  Worcester, MA 01602
                 </span>
               </div>
             </div>

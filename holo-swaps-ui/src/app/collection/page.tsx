@@ -102,7 +102,7 @@ function MyCardsPageContent() {
 
   const handleToggleListing = (item: CollectionItem) => {
     if (!item.isOpenListing && (!item.media || item.media.length === 0)) {
-      showNoPhotoError(`"${item.card.name}" needs at least one photo before it can be listed. Click the edit button to upload photos.`);
+      showNoPhotoError(`Open "${item.card.name}" and add at least one photo before listing it.`);
       return;
     }
     setListingModalItem(item);
@@ -143,7 +143,7 @@ function MyCardsPageContent() {
 
   const handleToggleTrade = (item: CollectionItem) => {
     if (item.status !== "AVAILABLE" && (!item.media || item.media.length === 0)) {
-      showNoPhotoError(`"${item.card.name}" needs at least one photo before it can be marked as available for trade. Click the edit button to upload photos.`);
+      showNoPhotoError(`Open "${item.card.name}" and add at least one photo before marking it as available for trade.`);
       return;
     }
     toggleTradeMutation.mutate({ itemId: item.id, availableForTrade: item.status !== "AVAILABLE" });
@@ -181,7 +181,7 @@ function MyCardsPageContent() {
           return !item?.media || item.media.length === 0;
         });
         if (noPhoto.length > 0) {
-          showNoPhotoError(`${noPhoto.length} card(s) skipped — they need at least one photo before being marked as available. Use the edit button to upload photos.`);
+          showNoPhotoError(`${noPhoto.length} card(s) skipped — open each card and add at least one photo before marking them as available.`);
           ids = ids.filter((id) => !noPhoto.includes(id));
         }
         if (ids.length === 0) return;
@@ -2024,7 +2024,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
                   updateMutation.mutate({ quantity });
                 } else {
                   if (availableForTrade && media.length === 0) {
-                    setPhotoError("Please upload at least one photo before marking this card as available for trade.");
+                    setPhotoError("Add at least one photo above before marking this card as available for trade.");
                     return;
                   }
                   updateMutation.mutate({ condition, isFoil, isFirstEdition, status: availableForTrade ? "AVAILABLE" : "UNAVAILABLE", notes: notes || undefined, quantity });
