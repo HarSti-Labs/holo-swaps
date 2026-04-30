@@ -548,7 +548,7 @@ function ListingCard({
   onOffer: () => void;
 }) {
   const price = listing.askingValueOverride ?? listing.currentMarketValue;
-  const imageUrl = listing.media[0]?.url ?? listing.card.imageUrl;
+  const imageUrl = listing.card.imageUrl;
 
   return (
     <div className="group relative bg-slate-900/60 border border-slate-700/60 rounded-2xl overflow-hidden hover:border-green-500/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 flex flex-col cursor-pointer" onClick={onDetail}>
@@ -688,10 +688,10 @@ function ListingDetailModal({
   onOffer: () => void;
 }) {
   const price = listing.askingValueOverride ?? listing.currentMarketValue;
-  const imageUrl = listing.media[0]?.url ?? listing.card.imageUrl;
-  const allImages = listing.media.length > 0
-    ? listing.media.map((m) => m.url)
-    : listing.card.imageUrl ? [listing.card.imageUrl] : [];
+  const allImages = [
+    ...(listing.card.imageUrl ? [listing.card.imageUrl] : []),
+    ...listing.media.map((m) => m.url),
+  ];
 
   const [activeImage, setActiveImage] = useState(0);
 
@@ -735,18 +735,22 @@ function ListingDetailModal({
             </div>
             {/* Thumbnail strip */}
             {allImages.length > 1 && (
-              <div className="flex gap-1.5 mt-2">
+              <div className="flex gap-1.5 mt-2 flex-wrap">
                 {allImages.map((url, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveImage(i)}
-                    className={cn(
-                      "w-12 h-16 rounded-lg overflow-hidden border-2 transition-colors flex-shrink-0",
-                      activeImage === i ? "border-green-500" : "border-slate-700 hover:border-slate-500"
-                    )}
-                  >
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                  </button>
+                  <div key={i} className="flex flex-col items-center gap-0.5">
+                    <button
+                      onClick={() => setActiveImage(i)}
+                      className={cn(
+                        "w-12 h-16 rounded-lg overflow-hidden border-2 transition-colors flex-shrink-0",
+                        activeImage === i ? "border-green-500" : "border-slate-700 hover:border-slate-500"
+                      )}
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                    <span className="text-slate-500" style={{ fontSize: "9px" }}>
+                      {i === 0 ? "Card" : `Photo ${i}`}
+                    </span>
+                  </div>
                 ))}
               </div>
             )}
