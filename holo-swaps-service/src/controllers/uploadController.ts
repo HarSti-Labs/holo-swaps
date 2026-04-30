@@ -7,11 +7,12 @@ import { sendCreated } from "@/utils/response";
 import { ApiError } from "@/utils/ApiError";
 import { config } from "@/config";
 
-const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "video/mp4"];
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "video/mp4"];
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20MB
 
 const MIME_TO_EXT: Record<string, string> = {
   "image/jpeg": "jpg",
+  "image/jpg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
   "video/mp4": "mp4",

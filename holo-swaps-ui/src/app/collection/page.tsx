@@ -1817,14 +1817,27 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
     const file = e.target.files?.[0];
     if (!file) return;
     setPhotoError(null);
+
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Only image files are supported.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setPhotoError("Photo is too large (max 20MB). Try a lower camera resolution.");
+      e.target.value = "";
+      return;
+    }
+
     setUploadingPhoto(true);
     try {
       const url = await collectionApi.uploadFile(file);
       const newMedia = await collectionApi.addCollectionMedia(item.id, url, "FRONT");
       setMedia((prev) => [...prev, newMedia]);
       queryClient.invalidateQueries({ queryKey: ["myCollection"] });
-    } catch {
-      setPhotoError("Failed to upload photo. Please try again.");
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setPhotoError(msg ?? "Failed to upload photo. Please try again.");
     } finally {
       setUploadingPhoto(false);
       e.target.value = "";
@@ -1977,7 +1990,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
               ))}
               {media.length < 5 && (
                 <label className={`w-20 h-20 rounded-lg border-2 border-dashed border-slate-600 hover:border-blue-500 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${uploadingPhoto ? "opacity-50 pointer-events-none" : ""}`}>
-                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
                   {uploadingPhoto ? (
                     <Loader2 size={18} className="text-slate-400 animate-spin" />
                   ) : (
