@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import rateLimit from "express-rate-limit";
+
 
 import { config } from "@/config";
 import { logger } from "@/utils/logger";
@@ -40,14 +40,6 @@ app.use(
     credentials: true,
   })
 );
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  message: { success: false, message: "Too many requests, please try again later" },
-});
-app.use("/api", limiter);
 
 // Stripe webhook needs raw body — must come before express.json()
 app.use(
