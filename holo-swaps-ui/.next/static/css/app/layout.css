@@ -1334,9 +1334,6 @@ video {
 .min-w-\[200px\] {
   min-width: 200px;
 }
-.min-w-\[180px\] {
-  min-width: 180px;
-}
 .max-w-2xl {
   max-width: 42rem;
 }
@@ -1554,13 +1551,6 @@ video {
 }
 .gap-8 {
   gap: 2rem;
-}
-.gap-x-2 {
-  -moz-column-gap: 0.5rem;
-       column-gap: 0.5rem;
-}
-.gap-y-2 {
-  row-gap: 0.5rem;
 }
 .space-y-0\.5 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
@@ -1895,6 +1885,9 @@ video {
 .border-purple-500\/30 {
   border-color: rgb(168 85 247 / 0.3);
 }
+.border-purple-500\/40 {
+  border-color: rgb(168 85 247 / 0.4);
+}
 .border-purple-600\/40 {
   border-color: rgb(147 51 234 / 0.4);
 }
@@ -2012,9 +2005,6 @@ video {
 .border-yellow-800 {
   --tw-border-opacity: 1;
   border-color: rgb(133 77 14 / var(--tw-border-opacity, 1));
-}
-.border-purple-500\/40 {
-  border-color: rgb(168 85 247 / 0.4);
 }
 .border-r-transparent {
   border-right-color: transparent;
@@ -2701,6 +2691,9 @@ video {
 .to-slate-800 {
   --tw-gradient-to: #1e293b var(--tw-gradient-to-position);
 }
+.to-slate-900 {
+  --tw-gradient-to: #0f172a var(--tw-gradient-to-position);
+}
 .to-slate-950 {
   --tw-gradient-to: #020617 var(--tw-gradient-to-position);
 }
@@ -2712,9 +2705,6 @@ video {
 }
 .to-transparent {
   --tw-gradient-to: transparent var(--tw-gradient-to-position);
-}
-.to-slate-900 {
-  --tw-gradient-to: #0f172a var(--tw-gradient-to-position);
 }
 .bg-clip-text {
   -webkit-background-clip: text;
@@ -3299,6 +3289,9 @@ video {
 }
 .underline {
   text-decoration-line: underline;
+}
+.underline-offset-2 {
+  text-underline-offset: 2px;
 }
 .placeholder-slate-500::-moz-placeholder {
   --tw-placeholder-opacity: 1;
@@ -4397,16 +4390,16 @@ video {
     width: 3.5rem;
   }
 
+  .sm\:w-24 {
+    width: 6rem;
+  }
+
   .sm\:w-48 {
     width: 12rem;
   }
 
   .sm\:w-56 {
     width: 14rem;
-  }
-
-  .sm\:w-24 {
-    width: 6rem;
   }
 
   .sm\:min-w-\[180px\] {
@@ -4441,6 +4434,10 @@ video {
     justify-content: space-between;
   }
 
+  .sm\:gap-2 {
+    gap: 0.5rem;
+  }
+
   .sm\:gap-4 {
     gap: 1rem;
   }
@@ -4451,10 +4448,6 @@ video {
 
   .sm\:gap-6 {
     gap: 1.5rem;
-  }
-
-  .sm\:gap-2 {
-    gap: 0.5rem;
   }
 
   .sm\:self-auto {
@@ -4479,11 +4472,6 @@ video {
     padding-bottom: 1rem;
   }
 
-  .sm\:text-lg {
-    font-size: 1.125rem;
-    line-height: 1.75rem;
-  }
-
   .sm\:text-3xl {
     font-size: 1.875rem;
     line-height: 2.25rem;
@@ -4492,6 +4480,11 @@ video {
   .sm\:text-base {
     font-size: 1rem;
     line-height: 1.5rem;
+  }
+
+  .sm\:text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
   }
 }
 

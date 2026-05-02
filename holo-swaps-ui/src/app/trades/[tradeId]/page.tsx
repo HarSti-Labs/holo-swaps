@@ -448,7 +448,7 @@ if (!user) {
               <h1 className="text-3xl font-bold mb-2">Trade #{trade.tradeCode}</h1>
               <p className="text-slate-400">
                 With{" "}
-                <Link href={`/profile/${otherUser.username}?from=/trades/${tradeId}`} className="hover:text-white transition-colors">
+                <Link href={`/profile/${otherUser.username}?from=/trades/${tradeId}`} className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
                   {otherUser.username}
                 </Link>
                 {" "}• {new Date(trade.createdAt).toLocaleDateString()}
