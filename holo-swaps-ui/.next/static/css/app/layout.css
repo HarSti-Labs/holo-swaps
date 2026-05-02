@@ -1555,6 +1555,13 @@ video {
 .gap-8 {
   gap: 2rem;
 }
+.gap-x-2 {
+  -moz-column-gap: 0.5rem;
+       column-gap: 0.5rem;
+}
+.gap-y-2 {
+  row-gap: 0.5rem;
+}
 .space-y-0\.5 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
   margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));
@@ -2705,6 +2712,9 @@ video {
 }
 .to-transparent {
   --tw-gradient-to: transparent var(--tw-gradient-to-position);
+}
+.to-slate-900 {
+  --tw-gradient-to: #0f172a var(--tw-gradient-to-position);
 }
 .bg-clip-text {
   -webkit-background-clip: text;
@@ -4351,12 +4361,24 @@ video {
     grid-column: span 2 / span 2;
   }
 
+  .sm\:mb-0 {
+    margin-bottom: 0px;
+  }
+
+  .sm\:ml-2 {
+    margin-left: 0.5rem;
+  }
+
   .sm\:block {
     display: block;
   }
 
   .sm\:flex {
     display: flex;
+  }
+
+  .sm\:inline-flex {
+    display: inline-flex;
   }
 
   .sm\:hidden {
@@ -4431,6 +4453,10 @@ video {
     gap: 1.5rem;
   }
 
+  .sm\:gap-2 {
+    gap: 0.5rem;
+  }
+
   .sm\:self-auto {
     align-self: auto;
   }
@@ -4443,6 +4469,16 @@ video {
     padding: 2rem;
   }
 
+  .sm\:px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .sm\:py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
   .sm\:text-lg {
     font-size: 1.125rem;
     line-height: 1.75rem;
@@ -4451,6 +4487,11 @@ video {
   .sm\:text-3xl {
     font-size: 1.875rem;
     line-height: 2.25rem;
+  }
+
+  .sm\:text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
   }
 }
 

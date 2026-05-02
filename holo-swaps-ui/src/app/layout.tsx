@@ -23,6 +23,12 @@ const dmMono = DM_Mono({
   weight: ["400", "500"],
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: {
     default: "HoloSwaps — Trade Pokémon Cards Safely",

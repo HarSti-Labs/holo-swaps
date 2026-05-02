@@ -91,6 +91,7 @@ export default function TradeDetailPage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showCounterModal, setShowCounterModal] = useState(false);
+  const [selectedTradeCard, setSelectedTradeCard] = useState<any | null>(null);
 
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -542,16 +543,17 @@ if (!user) {
                       return (
                         <div
                           key={item.id}
-                          className="flex gap-3 bg-slate-800/50 rounded-lg p-3"
+                          onClick={() => setSelectedTradeCard(card)}
+                          className="flex gap-3 bg-slate-800/50 hover:bg-slate-800 rounded-lg p-3 cursor-pointer transition-colors"
                         >
                           {card.card.imageUrl ? (
                             <img
                               src={card.card.imageUrl}
                               alt={card.card.name}
-                              className="w-16 h-20 object-cover rounded flex-shrink-0"
+                              className="w-16 h-24 object-cover rounded flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-16 h-20 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
+                            <div className="w-16 h-24 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
                               <Package className="h-8 w-8 text-slate-400" />
                             </div>
                           )}
@@ -604,16 +606,17 @@ if (!user) {
                       return (
                         <div
                           key={item.id}
-                          className="flex gap-3 bg-slate-800/50 rounded-lg p-3"
+                          onClick={() => setSelectedTradeCard(card)}
+                          className="flex gap-3 bg-slate-800/50 hover:bg-slate-800 rounded-lg p-3 cursor-pointer transition-colors"
                         >
                           {card.card.imageUrl ? (
                             <img
                               src={card.card.imageUrl}
                               alt={card.card.name}
-                              className="w-16 h-20 object-cover rounded flex-shrink-0"
+                              className="w-16 h-24 object-cover rounded flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-16 h-20 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
+                            <div className="w-16 h-24 bg-slate-700 rounded flex items-center justify-center flex-shrink-0">
                               <Package className="h-8 w-8 text-slate-400" />
                             </div>
                           )}
@@ -752,14 +755,14 @@ if (!user) {
                     const receiverItems = snap.items.filter((i: any) => !i.ownedByProposer);
                     return (
                       <div key={snap.id} className={`rounded-xl border p-4 ${snap.round === snapshots.length ? "border-blue-500/40 bg-blue-950/20" : "border-slate-700 bg-slate-800/30"}`}>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-base font-bold px-2 py-0.5 rounded-full ${snap.round === snapshots.length ? "bg-blue-500/20 text-blue-300" : "bg-slate-700 text-slate-400"}`}>
-                              {snap.label}
-                            </span>
+                        <div className="mb-3">
+                          <span className={`inline-block text-base font-bold px-2 py-0.5 rounded-full mb-1.5 sm:mb-0 ${snap.round === snapshots.length ? "bg-blue-500/20 text-blue-300" : "bg-slate-700 text-slate-400"}`}>
+                            {snap.label}
+                          </span>
+                          <div className="flex items-center justify-between sm:inline-flex sm:items-center sm:gap-2 sm:ml-2">
                             <span className="text-base text-slate-400">by {isMe ? "You" : snap.actionBy.username}</span>
+                            <span className="text-base text-slate-400 sm:ml-2">{new Date(snap.createdAt).toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                           </div>
-                          <span className="text-base text-slate-400">{new Date(snap.createdAt).toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
@@ -1495,6 +1498,118 @@ if (!user) {
         </div>
       )}
 
+      {/* Card Detail Modal */}
+      {selectedTradeCard && (
+        <TradeCardDetailModal card={selectedTradeCard} onClose={() => setSelectedTradeCard(null)} />
+      )}
+
+    </div>
+  );
+}
+
+function TradeCardDetailModal({ card, onClose }: { card: any; onClose: () => void }) {
+  const photos: string[] = card.media?.map((m: any) => m.url) ?? [];
+  const allImages = [
+    ...(card.card.imageUrl ? [card.card.imageUrl] : []),
+    ...photos,
+  ];
+  const [activeImage, setActiveImage] = useState(0);
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl overflow-y-auto max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
+          <h2 className="text-lg font-bold text-white truncate pr-4">{card.card.name}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors flex-shrink-0">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {/* Image */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-48 aspect-[2/3] bg-gradient-to-br from-blue-950 to-slate-900 rounded-xl overflow-hidden">
+              {allImages[activeImage] ? (
+                <img src={allImages[activeImage]} alt={card.card.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Package className="h-12 w-12 text-slate-600" />
+                </div>
+              )}
+            </div>
+            {allImages.length > 1 && (
+              <div className="flex gap-1.5 flex-wrap justify-center">
+                {allImages.map((url, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImage(i)}
+                    className={`w-10 h-14 rounded-lg overflow-hidden border-2 transition-colors ${activeImage === i ? "border-blue-500" : "border-slate-700 hover:border-slate-500"}`}
+                  >
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Details */}
+          <div className="space-y-2 text-base">
+            <div className="flex justify-between">
+              <span className="text-slate-400">Set</span>
+              <span className="text-white font-medium text-right">{card.card.setName}</span>
+            </div>
+            {card.card.cardNumber && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Number</span>
+                <span className="text-white font-medium">#{card.card.cardNumber}</span>
+              </div>
+            )}
+            {card.card.rarity && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Rarity</span>
+                <span className="text-white font-medium">{card.card.rarity}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-slate-400">Condition</span>
+              <span className="text-white font-medium">{CONDITION_LABELS[card.condition as keyof typeof CONDITION_LABELS]}</span>
+            </div>
+            {card.isFoil && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Foil</span>
+                <span className="text-purple-300 font-medium">✦ Yes</span>
+              </div>
+            )}
+            {card.isFirstEdition && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Edition</span>
+                <span className="text-amber-300 font-medium">1st Edition</span>
+              </div>
+            )}
+            {card.gradingCompany && card.gradingCompany !== "UNGRADED" && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Grade</span>
+                <span className="text-white font-medium">{card.gradingCompany} {card.gradingScore}</span>
+              </div>
+            )}
+            <div className="flex justify-between pt-1 border-t border-slate-800">
+              <span className="text-slate-400">Value</span>
+              {card.askingValueOverride != null ? (
+                <span className="text-teal-400 font-semibold">${card.askingValueOverride.toFixed(2)} <span className="text-teal-600 font-normal text-xs">owner price</span></span>
+              ) : (
+                <span className="text-green-400 font-semibold">{card.currentMarketValue != null ? `$${card.currentMarketValue.toFixed(2)}` : "—"}</span>
+              )}
+            </div>
+            {card.notes && (
+              <div className="pt-1 border-t border-slate-800">
+                <p className="text-slate-400 mb-1">Notes</p>
+                <p className="text-slate-300">{card.notes}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

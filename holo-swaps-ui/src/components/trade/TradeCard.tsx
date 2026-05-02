@@ -35,7 +35,7 @@ export function TradeCard({ trade, className }: TradeCardProps) {
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
               <span className="text-base font-bold text-primary">
                 {getInitials(counterparty.username)}
               </span>
@@ -47,7 +47,7 @@ export function TradeCard({ trade, className }: TradeCardProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center items-end gap-1 sm:gap-2 flex-shrink-0">
             <TradeStatusBadge status={trade.status} />
             <span className="text-base text-muted-foreground font-mono">
               {trade.tradeCode}
