@@ -52,12 +52,15 @@ export default function FriendsPage() {
     },
   });
 
-  if (!isAuthenticated) {
-    router.replace("/auth/login");
-    return null;
-  }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace("/auth/login");
+    }
+  }, [isAuthenticated, router]);
 
   const showSearch = debouncedQuery.length >= 2;
+
+  if (!isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
