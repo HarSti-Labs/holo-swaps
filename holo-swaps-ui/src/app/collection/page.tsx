@@ -1190,8 +1190,8 @@ function CollectionCard({
               ×{count}
             </div>
           )}
-          {item.card.imageUrl ? (
-            <img src={item.card.imageUrl} alt={item.card.name} className="w-full h-full object-cover" />
+          {(item.media?.[0]?.url ?? item.card.imageUrl) ? (
+            <img src={item.media?.[0]?.url ?? item.card.imageUrl!} alt={item.card.name} className="w-full h-full object-cover" />
           ) : (
             <div className="text-center p-6">
               <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-500/40 via-purple-500/40 to-pink-500/40 flex items-center justify-center border-4 border-blue-400/40">

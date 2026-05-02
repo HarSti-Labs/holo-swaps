@@ -548,7 +548,7 @@ function ListingCard({
   onOffer: () => void;
 }) {
   const price = listing.askingValueOverride ?? listing.currentMarketValue;
-  const imageUrl = listing.card.imageUrl;
+  const imageUrl = listing.media?.[0]?.url ?? listing.card.imageUrl;
 
   return (
     <div className="group relative bg-slate-900/60 border border-slate-700/60 rounded-2xl overflow-hidden hover:border-green-500/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 flex flex-col cursor-pointer" onClick={onDetail}>

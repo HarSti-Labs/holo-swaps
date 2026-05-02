@@ -635,8 +635,8 @@ export default function ProfilePage() {
                           key={item.id}
                           className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden hover:border-slate-500 transition-colors"
                         >
-                          {item.card.imageUrl ? (
-                            <img src={item.card.imageUrl} alt={item.card.name} className="w-full aspect-[2/3] object-cover" />
+                          {(item.media?.[0]?.url ?? item.card.imageUrl) ? (
+                            <img src={item.media?.[0]?.url ?? item.card.imageUrl!} alt={item.card.name} className="w-full aspect-[2/3] object-cover" />
                           ) : (
                             <div className="w-full aspect-[2/3] bg-slate-700 flex items-center justify-center">
                               <Package className="h-8 w-8 text-slate-400" />
