@@ -17,6 +17,7 @@ export const selectSafeUser = {
   location: true,
   reputationScore: true,
   tradeCount: true,
+  tier: true,
   stripeCustomerId: true,
   stripeAccountId: true,
   stripeAccountVerified: true,

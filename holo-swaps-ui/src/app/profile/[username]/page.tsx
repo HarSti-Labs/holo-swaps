@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { usersApi, ReportPayload, TradeReview } from "@/lib/api/users";
 import { supportApi, SupportTicketSummary } from "@/lib/api/support";
 import { collectionApi } from "@/lib/api/collection";
 import { User, CollectionItem, CONDITION_LABELS } from "@/types";
-import { Loader2, Star, TrendingUp, MapPin, Calendar, UserPlus, UserMinus, Users, Headphones, ChevronRight, Package, ArrowLeftRight, MoreHorizontal, ShieldOff, Shield, Flag, X, ChevronDown, MessageSquare } from "lucide-react";
+import { Loader2, Star, TrendingUp, MapPin, Calendar, UserPlus, UserMinus, Users, Headphones, ChevronRight, Package, ArrowLeftRight, MoreHorizontal, ShieldOff, Shield, Flag, X, ChevronDown, MessageSquare, Search, SlidersHorizontal, ArrowLeft } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import Link from "next/link";
@@ -14,14 +14,16 @@ import { TradeProposalModal } from "@/components/trades/TradeProposalModal";
 
 export default function ProfilePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const username = params.username as string;
+  const fromUrl = searchParams.get("from");
   const { user: currentUser } = useAuthStore();
 
   const [user, setUser] = useState<User | null>(null);
   const [tickets, setTickets] = useState<SupportTicketSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"stats" | "tickets" | "collection">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "tickets" | "collection">("collection");
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
@@ -37,6 +39,11 @@ export default function ProfilePage() {
   const [theirCollection, setTheirCollection] = useState<CollectionItem[]>([]);
   const [isLoadingCollection, setIsLoadingCollection] = useState(false);
   const [collectionLoaded, setCollectionLoaded] = useState(false);
+  const [collectionSearch, setCollectionSearch] = useState("");
+  const [collectionCondition, setCollectionCondition] = useState("");
+  const [collectionSet, setCollectionSet] = useState("");
+  const [collectionFoilOnly, setCollectionFoilOnly] = useState(false);
+  const [collectionSort, setCollectionSort] = useState<"default" | "price_asc" | "price_desc">("default");
   const [reviews, setReviews] = useState<TradeReview[]>([]);
   const [reviewsTotal, setReviewsTotal] = useState(0);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
@@ -77,10 +84,10 @@ export default function ProfilePage() {
     setReviewsTotal(0);
   }, [username]);
 
-  // Load reviews when user is loaded (stats tab is shown by default)
+  // Load collection when user is loaded (collection tab is shown by default)
   useEffect(() => {
-    if (user && !reviewsLoaded) {
-      loadReviews();
+    if (user && !collectionLoaded) {
+      loadCollection();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -213,12 +220,23 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
       <main className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Back button when coming from a trade */}
+        {fromUrl && (
+          <Link
+            href={fromUrl}
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4 text-sm"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Trade
+          </Link>
+        )}
+
         {/* Profile Header */}
-        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 mb-6">
-          <div className="flex items-start gap-6">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 sm:p-8 mb-6">
+          <div className="flex items-start gap-3 sm:gap-6">
             {/* Avatar */}
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-              <span className="text-3xl font-bold text-white">
+            <div className="w-14 h-14 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-xl sm:text-3xl font-bold text-white">
                 {getInitials(user.username)}
               </span>
             </div>
@@ -227,6 +245,16 @@ export default function ProfilePage() {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2 flex-wrap">
                 <h1 className="text-3xl font-bold">{user.username}</h1>
+                {user.tier && (
+                  <span className={`text-sm font-bold px-2.5 py-1 rounded-full border ${
+                    user.tier === "DIAMOND" ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/30" :
+                    user.tier === "GOLD"    ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30" :
+                    user.tier === "SILVER"  ? "bg-slate-400/20 text-slate-300 border-slate-400/30" :
+                                             "bg-orange-700/20 text-orange-400 border-orange-700/30"
+                  }`}>
+                    {user.tier}
+                  </span>
+                )}
                 {!isOwnProfile && currentUser && (
                   <div className="flex items-center gap-2">
                     {/* Follow / Unfollow */}
@@ -360,16 +388,6 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 border-b border-slate-800">
-          <button
-            onClick={() => handleTabChange("stats")}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === "stats"
-                ? "text-blue-400 border-b-2 border-blue-400"
-                : "text-slate-400 hover:text-slate-300"
-            }`}
-          >
-            Stats & Reviews
-          </button>
           {!isOwnProfile && (
             <button
               onClick={() => handleTabChange("collection")}
@@ -382,6 +400,16 @@ export default function ProfilePage() {
               Collection
             </button>
           )}
+          <button
+            onClick={() => handleTabChange("stats")}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === "stats"
+                ? "text-blue-400 border-b-2 border-blue-400"
+                : "text-slate-400 hover:text-slate-300"
+            }`}
+          >
+            Stats & Reviews
+          </button>
           {isOwnProfile && (
             <button
               onClick={() => handleTabChange("tickets")}
@@ -476,75 +504,164 @@ export default function ProfilePage() {
         )}
 
         {/* Collection Tab */}
-        {activeTab === "collection" && !isOwnProfile && (
-          <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-blue-400" />
-                <h2 className="text-lg font-bold">{user.username}'s Collection</h2>
-                {!isLoadingCollection && (
-                  <span className="text-base text-slate-400">({theirCollection.length} available)</span>
+        {activeTab === "collection" && !isOwnProfile && (() => {
+          const sets = [...new Set(theirCollection.map((i) => i.card.setName))].sort();
+          const filtered = theirCollection
+            .filter((i) => !collectionSearch || i.card.name.toLowerCase().includes(collectionSearch.toLowerCase()))
+            .filter((i) => !collectionCondition || i.condition === collectionCondition)
+            .filter((i) => !collectionSet || i.card.setName === collectionSet)
+            .filter((i) => !collectionFoilOnly || i.isFoil);
+          const sorted = collectionSort === "default" ? filtered : [...filtered].sort((a, b) => {
+            const pa = a.currentMarketValue ?? 0;
+            const pb = b.currentMarketValue ?? 0;
+            return collectionSort === "price_asc" ? pa - pb : pb - pa;
+          });
+          return (
+            <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-blue-400 flex-shrink-0" />
+                  <h2 className="text-lg font-bold">{user.username}'s Collection</h2>
+                  {!isLoadingCollection && (
+                    <span className="text-base text-slate-400">({sorted.length}{sorted.length !== theirCollection.length ? ` of ${theirCollection.length}` : ""} available)</span>
+                  )}
+                </div>
+                {currentUser && (
+                  <button
+                    onClick={() => setIsTradeModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-green-700 hover:bg-green-600 text-white text-base transition-colors self-start sm:self-auto"
+                  >
+                    <ArrowLeftRight className="h-4 w-4" />
+                    Propose Trade
+                  </button>
                 )}
               </div>
-              {currentUser && (
-                <button
-                  onClick={() => setIsTradeModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-green-700 hover:bg-green-600 text-white text-base transition-colors"
-                >
-                  <ArrowLeftRight className="h-4 w-4" />
-                  Propose Trade
-                </button>
+
+              {isLoadingCollection ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+                </div>
+              ) : theirCollection.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Package className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                  <p className="text-slate-400">No cards available for trade</p>
+                </div>
+              ) : (
+                <>
+                  {/* Filter bar */}
+                  <div className="px-4 py-4 border-b border-slate-800 flex flex-wrap gap-2.5">
+                    {/* Search */}
+                    <div className="relative w-full sm:flex-1 sm:min-w-[180px]">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Search cards..."
+                        value={collectionSearch}
+                        onChange={(e) => setCollectionSearch(e.target.value)}
+                        className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    {/* Set */}
+                    <div className="relative">
+                      <select
+                        value={collectionSet}
+                        onChange={(e) => setCollectionSet(e.target.value)}
+                        className="appearance-none pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      >
+                        <option value="">All Sets</option>
+                        {sets.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    </div>
+                    {/* Condition */}
+                    <div className="relative">
+                      <select
+                        value={collectionCondition}
+                        onChange={(e) => setCollectionCondition(e.target.value)}
+                        className="appearance-none pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      >
+                        <option value="">Any Condition</option>
+                        {(Object.entries(CONDITION_LABELS) as [string, string][]).map(([v, l]) => (
+                          <option key={v} value={v}>{l}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    </div>
+                    {/* Sort */}
+                    <div className="relative">
+                      <select
+                        value={collectionSort}
+                        onChange={(e) => setCollectionSort(e.target.value as typeof collectionSort)}
+                        className="appearance-none pl-3 pr-8 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      >
+                        <option value="default">Default</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    </div>
+                    {/* Foil toggle */}
+                    <button
+                      onClick={() => setCollectionFoilOnly((v) => !v)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-base font-medium transition-colors ${
+                        collectionFoilOnly
+                          ? "bg-purple-600/20 border-purple-500/40 text-purple-300"
+                          : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      ✦ Foil
+                    </button>
+                    {/* Clear */}
+                    {(collectionSearch || collectionCondition || collectionSet || collectionFoilOnly || collectionSort !== "default") && (
+                      <button
+                        onClick={() => { setCollectionSearch(""); setCollectionCondition(""); setCollectionSet(""); setCollectionFoilOnly(false); setCollectionSort("default"); }}
+                        className="flex items-center gap-1 text-base text-slate-500 hover:text-red-400 transition-colors px-2"
+                      >
+                        <X className="h-3.5 w-3.5" /> Clear
+                      </button>
+                    )}
+                  </div>
+
+                  {sorted.length === 0 ? (
+                    <div className="p-12 text-center">
+                      <SlidersHorizontal className="h-10 w-10 text-slate-600 mx-auto mb-3" />
+                      <p className="text-slate-400">No cards match your filters</p>
+                    </div>
+                  ) : (
+                    <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      {sorted.map((item) => (
+                        <div
+                          key={item.id}
+                          className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden hover:border-slate-500 transition-colors"
+                        >
+                          {item.card.imageUrl ? (
+                            <img src={item.card.imageUrl} alt={item.card.name} className="w-full aspect-[2/3] object-cover" />
+                          ) : (
+                            <div className="w-full aspect-[2/3] bg-slate-700 flex items-center justify-center">
+                              <Package className="h-8 w-8 text-slate-400" />
+                            </div>
+                          )}
+                          <div className="p-3">
+                            <p className="text-base font-medium truncate">{item.card.name}</p>
+                            <p className="text-base text-slate-400 truncate">{item.card.setName}</p>
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-base text-slate-400">{CONDITION_LABELS[item.condition]}</span>
+                              {item.isFoil && <span className="text-base text-yellow-400 font-medium">✦ Foil</span>}
+                            </div>
+                            <p className="text-base font-semibold text-green-400 mt-1">
+                              {item.currentMarketValue != null ? `$${item.currentMarketValue.toFixed(2)}` : "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
-
-            {isLoadingCollection ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-              </div>
-            ) : theirCollection.length === 0 ? (
-              <div className="p-12 text-center">
-                <Package className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                <p className="text-slate-400">No cards available for trade</p>
-              </div>
-            ) : (
-              <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {theirCollection.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden hover:border-slate-500 transition-colors"
-                  >
-                    {item.card.imageUrl ? (
-                      <img
-                        src={item.card.imageUrl}
-                        alt={item.card.name}
-                        className="w-full aspect-[2/3] object-cover"
-                      />
-                    ) : (
-                      <div className="w-full aspect-[2/3] bg-slate-700 flex items-center justify-center">
-                        <Package className="h-8 w-8 text-slate-400" />
-                      </div>
-                    )}
-                    <div className="p-3">
-                      <p className="text-base font-medium truncate">{item.card.name}</p>
-                      <p className="text-base text-slate-400 truncate">{item.card.setName}</p>
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-base text-slate-400">{CONDITION_LABELS[item.condition]}</span>
-                        {item.isFoil && (
-                          <span className="text-base text-yellow-400 font-medium">Foil</span>
-                        )}
-                      </div>
-                      <p className="text-base font-semibold text-green-400 mt-1">
-                        {item.currentMarketValue != null
-                          ? `$${item.currentMarketValue.toFixed(2)}`
-                          : "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         {/* Support Tickets Tab */}
         {activeTab === "tickets" && isOwnProfile && (

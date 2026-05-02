@@ -20,7 +20,23 @@ export interface ReportPayload {
   tradeId?: string;
 }
 
+export interface UserSearchResult {
+  id: string;
+  username: string;
+  avatarUrl: string | null;
+  bio: string | null;
+  reputationScore: number;
+  tradeCount: number;
+  tier: string | null;
+  isFollowing: boolean;
+}
+
 export const usersApi = {
+  search: async (q: string, limit = 20): Promise<UserSearchResult[]> => {
+    const res = await api.get<ApiResponse<UserSearchResult[]>>("/users/search", { params: { q, limit } });
+    return res.data.data ?? [];
+  },
+
   getProfile: async (username: string): Promise<User> => {
     const res = await api.get<ApiResponse<User>>(`/users/${username}`);
     return res.data.data!;

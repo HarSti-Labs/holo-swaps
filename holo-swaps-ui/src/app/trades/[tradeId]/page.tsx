@@ -23,9 +23,11 @@ import {
   ShieldCheck,
   CreditCard,
   AlertTriangle,
+  ExternalLink,
 } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { CONDITION_LABELS } from "@/types";
+import Link from "next/link";
 import { CounterOfferModal } from "@/components/trades/CounterOfferModal";
 
 const STATUS_LABELS: Record<TradeStatus, string> = {
@@ -403,12 +405,52 @@ if (!user) {
           >
             ← Back to Trades
           </button>
+
+          {/* Proposer banner — shown to the receiver so they know who initiated */}
+          {!isProposer && (
+            <div className="flex items-center gap-4 bg-slate-900/60 border border-slate-700/60 rounded-2xl px-5 py-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {trade.proposer.avatarUrl ? (
+                  <img src={trade.proposer.avatarUrl} alt="" className="w-12 h-12 object-cover" />
+                ) : (
+                  <span className="text-white font-bold text-lg">{getInitials(trade.proposer.username)}</span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-slate-400 text-sm mb-0.5">Trade proposed by</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-white font-bold text-lg leading-tight truncate">{trade.proposer.username}</p>
+                  {trade.proposer.tier && (
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border flex-shrink-0 ${
+                      trade.proposer.tier === "DIAMOND" ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/30" :
+                      trade.proposer.tier === "GOLD"    ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30" :
+                      trade.proposer.tier === "SILVER"  ? "bg-slate-400/20 text-slate-300 border-slate-400/30" :
+                                                          "bg-orange-700/20 text-orange-400 border-orange-700/30"
+                    }`}>
+                      {trade.proposer.tier}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Link
+                href={`/profile/${trade.proposer.username}?from=/trades/${tradeId}`}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-sm font-medium transition-colors flex-shrink-0"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                View Profile
+              </Link>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">Trade #{trade.tradeCode}</h1>
               <p className="text-slate-400">
-                With {otherUser.username} •{" "}
-                {new Date(trade.createdAt).toLocaleDateString()}
+                With{" "}
+                <Link href={`/profile/${otherUser.username}?from=/trades/${tradeId}`} className="hover:text-white transition-colors">
+                  {otherUser.username}
+                </Link>
+                {" "}• {new Date(trade.createdAt).toLocaleDateString()}
               </p>
             </div>
             <div

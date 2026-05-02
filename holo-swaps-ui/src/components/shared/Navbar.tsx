@@ -22,6 +22,7 @@ import {
   Flag,
   Tag,
   Truck,
+  Users,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -30,6 +31,7 @@ const navLinks = [
   { href: "/collection", label: "My Cards", icon: BookMarked },
   { href: "/trades", label: "My Trades", icon: Repeat2 },
   { href: "/matches", label: "Matches", icon: Sparkles },
+  { href: "/friends", label: "Friends", icon: Users },
 ];
 
 const helpLinks = [

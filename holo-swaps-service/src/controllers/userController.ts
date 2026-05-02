@@ -52,6 +52,51 @@ const reportSchema = z.object({
   tradeId: z.string().uuid().optional(),
 });
 
+// GET /api/users/search?q=&limit=
+export const searchUsers = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const q = String(req.query.q ?? "").trim();
+  const limit = Math.min(parseInt(String(req.query.limit ?? "20"), 10) || 20, 50);
+  const currentUserId = (req as AuthenticatedRequest).user?.id;
+
+  if (!q) {
+    sendSuccess(res, []);
+    return;
+  }
+
+  const users = await prisma.user.findMany({
+    where: {
+      isBanned: false,
+      ...(currentUserId ? { NOT: { id: currentUserId } } : {}),
+      username: { contains: q, mode: "insensitive" },
+    },
+    select: {
+      id: true,
+      username: true,
+      avatarUrl: true,
+      bio: true,
+      reputationScore: true,
+      tradeCount: true,
+      tier: true,
+    },
+    orderBy: { username: "asc" },
+    take: limit,
+  });
+
+  let followingSet = new Set<string>();
+  if (currentUserId && users.length > 0) {
+    const follows = await prisma.userFollow.findMany({
+      where: { followerId: currentUserId, followingId: { in: users.map((u) => u.id) } },
+      select: { followingId: true },
+    });
+    followingSet = new Set(follows.map((f) => f.followingId));
+  }
+
+  sendSuccess(res, users.map((u) => ({ ...u, isFollowing: followingSet.has(u.id) })));
+};
+
 // GET /api/users/:username
 export const getPublicProfile = async (
   req: Request,
@@ -97,6 +142,7 @@ export const getPublicProfile = async (
     location: user.location,
     reputationScore: user.reputationScore,
     tradeCount: user.tradeCount,
+    tier: user.tier,
     reviewCount,
     avgRating: avgRating._avg.rating ?? null,
     followerCount,

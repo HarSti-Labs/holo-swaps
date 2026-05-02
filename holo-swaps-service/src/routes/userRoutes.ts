@@ -17,12 +17,14 @@ import {
   getUserReviews,
   getPublicCollection,
   getLeaderboard,
+  searchUsers,
 } from "@/controllers/userController";
 
 const router = Router();
 
 // Static routes before /:username to avoid conflicts
 router.get("/leaderboard", getLeaderboard);
+router.get("/search", optionalAuthenticate, searchUsers);
 
 // /me routes
 router.patch("/me", authenticate, updateProfile);
