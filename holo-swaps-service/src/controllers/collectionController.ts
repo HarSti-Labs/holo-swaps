@@ -24,7 +24,7 @@ const addItemSchema = z.object({
   gradingCompany: z.nativeEnum(GradingCompany).optional(),
   gradingScore: z.number().positive().optional(),
   gradingCertNumber: z.string().optional(),
-  askingValueOverride: z.number().positive().optional(),
+  askingValueOverride: z.number().positive().nullable().optional(),
   quantity: z.number().int().min(1).max(99).optional(),
 });
 

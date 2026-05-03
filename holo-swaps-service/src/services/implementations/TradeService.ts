@@ -136,12 +136,7 @@ export class TradeService implements ITradeService {
     const cashPayerId =
       netCash > 0 ? data.proposerId : netCash < 0 ? data.receiverId : undefined;
 
-    // Create trade + lock all cards in one transaction
-    const allItemIds = [
-      ...data.proposerCollectionItemIds,
-      ...data.receiverCollectionItemIds,
-    ];
-
+    // Create trade (cards are NOT locked until the trade is accepted)
     const trade = await prisma.$transaction(async (tx) => {
       const tradeCode = await this.tradeRepository.generateTradeCode();
 
@@ -174,12 +169,6 @@ export class TradeService implements ITradeService {
             ],
           },
         },
-      });
-
-      // Lock all cards
-      await tx.userCollection.updateMany({
-        where: { id: { in: allItemIds } },
-        data: { status: CardStatus.IN_TRADE, lockedByTradeId: created.id },
       });
 
       return created;
@@ -324,13 +313,9 @@ export class TradeService implements ITradeService {
         },
       });
 
-      // Process MY SIDE changes
+      // Process MY SIDE changes (cards are not locked until acceptance — just manage trade items)
       if (newMyItemIds && newMyItemIds.length > 0) {
         if (toRemoveMyIds.length > 0) {
-          await tx.userCollection.updateMany({
-            where: { id: { in: toRemoveMyIds } },
-            data: { status: CardStatus.AVAILABLE, lockedByTradeId: null },
-          });
           await tx.tradeItem.deleteMany({
             where: { tradeId, collectionItemId: { in: toRemoveMyIds } },
           });
@@ -339,10 +324,6 @@ export class TradeService implements ITradeService {
           const newItemValues = await tx.userCollection.findMany({
             where: { id: { in: toAddMyIds } },
             select: { id: true, currentMarketValue: true },
-          });
-          await tx.userCollection.updateMany({
-            where: { id: { in: toAddMyIds } },
-            data: { status: CardStatus.IN_TRADE, lockedByTradeId: tradeId },
           });
           await tx.tradeItem.createMany({
             data: toAddMyIds.map((id) => ({
@@ -358,10 +339,6 @@ export class TradeService implements ITradeService {
       // Process THEIR SIDE changes
       if (newOtherItemIds && newOtherItemIds.length > 0) {
         if (toRemoveOtherIds.length > 0) {
-          await tx.userCollection.updateMany({
-            where: { id: { in: toRemoveOtherIds } },
-            data: { status: CardStatus.AVAILABLE, lockedByTradeId: null },
-          });
           await tx.tradeItem.deleteMany({
             where: { tradeId, collectionItemId: { in: toRemoveOtherIds } },
           });
@@ -370,10 +347,6 @@ export class TradeService implements ITradeService {
           const newOtherItemValues = await tx.userCollection.findMany({
             where: { id: { in: toAddOtherIds } },
             select: { id: true, currentMarketValue: true },
-          });
-          await tx.userCollection.updateMany({
-            where: { id: { in: toAddOtherIds } },
-            data: { status: CardStatus.IN_TRADE, lockedByTradeId: tradeId },
           });
           await tx.tradeItem.createMany({
             data: toAddOtherIds.map((id) => ({
@@ -526,13 +499,29 @@ export class TradeService implements ITradeService {
       cancelUrl: `${frontendUrl}/trades/${trade.id}?payment=cancelled`,
     });
 
-    await prisma.trade.update({
-      where: { id: trade.id },
-      data: {
-        stripeProposerSessionId: proposerSession.id,
-        stripeReceiverSessionId: receiverSession.id,
-      },
+    // Validate all cards are still AVAILABLE before locking (another trade may have been accepted first)
+    const allTradeItemIds = await this.getTradeItemIds(tradeId);
+    const unavailableCount = await prisma.userCollection.count({
+      where: { id: { in: allTradeItemIds }, status: { not: CardStatus.AVAILABLE } },
     });
+    if (unavailableCount > 0) {
+      throw ApiError.badRequest("One or more cards in this trade are no longer available. The other party may have accepted a different trade.");
+    }
+
+    await prisma.$transaction([
+      prisma.trade.update({
+        where: { id: trade.id },
+        data: {
+          stripeProposerSessionId: proposerSession.id,
+          stripeReceiverSessionId: receiverSession.id,
+        },
+      }),
+      // Lock all cards now that both parties have agreed
+      prisma.userCollection.updateMany({
+        where: { id: { in: allTradeItemIds } },
+        data: { status: CardStatus.IN_TRADE, lockedByTradeId: tradeId },
+      }),
+    ]);
 
     const updated = await this.tradeRepository.updateStatus(tradeId, TradeStatus.ACCEPTED);
 

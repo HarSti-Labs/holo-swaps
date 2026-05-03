@@ -90,6 +90,7 @@ export default function TradeDetailPage() {
   const [isDeclining, setIsDeclining] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showCounterModal, setShowCounterModal] = useState(false);
   const [selectedTradeCard, setSelectedTradeCard] = useState<any | null>(null);
 
@@ -247,9 +248,10 @@ export default function TradeDetailPage() {
     }
   };
 
-  const handleDecline = async () => {
-    if (!confirm("Are you sure you want to decline this trade?")) return;
+  const handleDecline = () => setShowDeclineModal(true);
 
+  const confirmDecline = async () => {
+    setShowDeclineModal(false);
     setActionError(null);
     setIsDeclining(true);
     try {
@@ -1458,6 +1460,44 @@ if (!user) {
       )}
 
       {/* Cancel Confirmation Modal */}
+      {showDeclineModal && trade && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowDeclineModal(false)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
+                </div>
+                <h2 className="text-lg font-bold text-white">Decline Trade</h2>
+              </div>
+              <button onClick={() => setShowDeclineModal(false)} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-5">
+              <p className="text-base text-slate-300">
+                Are you sure you want to decline this trade offer? The other party will be notified.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-700">
+              <button
+                onClick={() => setShowDeclineModal(false)}
+                className="px-4 py-2 rounded-lg text-base text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                Keep Trade
+              </button>
+              <button
+                onClick={confirmDecline}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-base font-medium transition-colors"
+              >
+                <X className="h-4 w-4" />
+                Yes, Decline Trade
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showCancelModal && trade && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowCancelModal(false)}>
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>

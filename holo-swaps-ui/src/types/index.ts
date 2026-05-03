@@ -85,8 +85,6 @@ export interface CollectionItem {
   status: "AVAILABLE" | "UNAVAILABLE" | "IN_TRADE" | "TRADED_AWAY";
   askingValueOverride: number | null;
   currentMarketValue: number | null;
-  isOpenListing: boolean;
-  listingDescription: string | null;
   createdAt: string;
 }
 

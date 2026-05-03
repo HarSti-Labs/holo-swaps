@@ -338,8 +338,6 @@ model UserCollection {
   askingValueOverride   Float?         // override market price for this card
   currentMarketValue    Float?         // cached from TCGPlayer
   marketValueUpdatedAt  DateTime?
-  isOpenListing         Boolean        @default(false)
-  listingDescription    String?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
 

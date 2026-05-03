@@ -9,12 +9,11 @@ import { api } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import {
   Plus, Search, Filter, Grid3x3, List, Trash2, Edit2,
-  ArrowLeftRight, X, Star, BookMarked, Heart, CheckSquare, Square, Tag, Lock, Trophy,
+  ArrowLeftRight, X, Star, BookMarked, Heart, CheckSquare, Square, Lock, Trophy,
   Camera, ImagePlus, Loader2,
 } from "lucide-react";
 import { Card as CardType, CollectionItem, CardCondition, WantItem, WantPriority } from "@/types";
 import { CONDITION_LABELS } from "@/types";
-import { ListingModal } from "@/components/listings/ListingModal";
 
 const PRIORITY_LABELS: Record<WantPriority, string> = {
   HIGH: "High Priority",
@@ -88,9 +87,6 @@ function MyCardsPageContent() {
   const collection = collectionData?.data ?? [];
   const wants = wantsData ?? [];
 
-  // ── Listing modal state ───────────────────────────────────────────
-  const [listingModalItem, setListingModalItem] = useState<CollectionItem | null>(null);
-
   // ── Mutations ─────────────────────────────────────────────────────
   const toggleTradeMutation = useMutation({
     mutationFn: ({ itemId, availableForTrade }: { itemId: string; availableForTrade: boolean }) =>
@@ -99,28 +95,6 @@ function MyCardsPageContent() {
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["myCollection"] }),
   });
-
-  const handleToggleListing = (item: CollectionItem) => {
-    if (!item.isOpenListing && (!item.media || item.media.length === 0)) {
-      showNoPhotoError(`Open "${item.card.name}" and add at least one photo before listing it.`);
-      return;
-    }
-    setListingModalItem(item);
-  };
-
-  const handleListingSave = async (askingPrice: number | null, description: string) => {
-    if (!listingModalItem) return;
-    await collectionApi.toggleListing(listingModalItem.id, true, description, askingPrice ?? undefined);
-    queryClient.invalidateQueries({ queryKey: ["myCollection"] });
-    setListingModalItem(null);
-  };
-
-  const handleListingUnlist = async () => {
-    if (!listingModalItem) return;
-    await collectionApi.toggleListing(listingModalItem.id, false);
-    queryClient.invalidateQueries({ queryKey: ["myCollection"] });
-    setListingModalItem(null);
-  };
 
   const removeWantMutation = useMutation({
     mutationFn: (wantId: string) => collectionApi.removeFromWants(wantId),
@@ -138,7 +112,6 @@ function MyCardsPageContent() {
 
   const showNoPhotoError = (msg: string) => {
     setNoPhotoError(msg);
-    setTimeout(() => setNoPhotoError(null), 5000);
   };
 
   const handleToggleTrade = (item: CollectionItem) => {
@@ -708,12 +681,6 @@ function MyCardsPageContent() {
               </div>
             )}
 
-            {noPhotoError && (
-              <div className="flex items-start gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-base mb-4">
-                <Camera size={16} className="flex-shrink-0 mt-0.5" />
-                <span>{noPhotoError}</span>
-              </div>
-            )}
 
             {!collectionLoading && filteredCollection.length > 0 && (
               <div className={viewMode === "grid" ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6" : "space-y-4"}>
@@ -725,7 +692,6 @@ function MyCardsPageContent() {
                     count={item.quantity ?? 1}
                     onEdit={() => !collectionSelectMode && setEditingItem(item)}
                     onToggleTrade={() => handleToggleTrade(item)}
-                    onToggleListing={() => handleToggleListing(item)}
                     selectMode={collectionSelectMode}
                     selected={selectedCollectionIds.has(item.id)}
                     onToggleSelect={() => toggleCollectionSelect(item.id)}
@@ -1002,6 +968,35 @@ function MyCardsPageContent() {
         )}
       </main>
 
+      {noPhotoError && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setNoPhotoError(null)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <Camera className="h-5 w-5 text-amber-400" />
+                </div>
+                <h2 className="text-lg font-bold text-white">Photo Required</h2>
+              </div>
+              <button onClick={() => setNoPhotoError(null)} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-5">
+              <p className="text-base text-slate-300">{noPhotoError}</p>
+            </div>
+            <div className="flex justify-end p-5 border-t border-slate-700">
+              <button
+                onClick={() => setNoPhotoError(null)}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-medium rounded-lg text-base transition-colors"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showAddDialog && <AddCardDialog onClose={() => setShowAddDialog(false)} />}
       {editingItem && <EditCardDialog item={editingItem} onClose={() => setEditingItem(null)} />}
       {showAddWantDialog && <AddWantDialog onClose={() => setShowAddWantDialog(false)} />}
@@ -1011,15 +1006,6 @@ function MyCardsPageContent() {
           onClose={() => setEditingWant(null)}
           onSave={(data) => updateWantMutation.mutate({ wantId: editingWant.id, data })}
           isSaving={updateWantMutation.isPending}
-        />
-      )}
-      {listingModalItem && (
-        <ListingModal
-          isOpen={true}
-          onClose={() => setListingModalItem(null)}
-          item={listingModalItem}
-          onSave={handleListingSave}
-          onUnlist={handleListingUnlist}
         />
       )}
     </div>
@@ -1040,7 +1026,6 @@ function CollectionCard({
   count,
   onEdit,
   onToggleTrade,
-  onToggleListing,
   selectMode,
   selected,
   onToggleSelect,
@@ -1050,7 +1035,6 @@ function CollectionCard({
   count: number;
   onEdit: () => void;
   onToggleTrade: () => void;
-  onToggleListing: () => void;
   selectMode: boolean;
   selected: boolean;
   onToggleSelect: () => void;
@@ -1135,18 +1119,7 @@ function CollectionCard({
                 >
                   <ArrowLeftRight size={18} />
                 </button>
-                <button
-                  onClick={onToggleListing}
-                  title={item.isOpenListing ? "Remove from listings" : "List publicly for offers"}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
-                    item.isOpenListing
-                      ? "bg-teal-500/20 border-teal-500 text-teal-400 hover:bg-teal-500/30"
-                      : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-300"
-                  }`}
-                >
-                  <Tag size={18} />
-                </button>
-                {item.isOpenListing && item.askingValueOverride != null && (
+                {item.status === "AVAILABLE" && item.askingValueOverride != null && (
                   <span className="text-base font-semibold text-teal-400">${item.askingValueOverride.toFixed(2)}</span>
                 )}
                 <button onClick={onEdit} className="p-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors">
@@ -1244,23 +1217,11 @@ function CollectionCard({
               }`}
             >
               <ArrowLeftRight size={12} />
-              {item.status === "AVAILABLE" ? "Trading" : "Trade"}
-            </button>
-            <button
-              onClick={onToggleListing}
-              title={item.isOpenListing ? "Remove from listings" : "List publicly for offers"}
-              className={`flex-1 py-2 flex items-center justify-center gap-1.5 text-base font-bold border-l-2 border-slate-700/50 transition-colors ${
-                item.isOpenListing
-                  ? "bg-teal-500/20 text-teal-400 hover:bg-teal-500/30"
-                  : "bg-slate-900/90 text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
-              }`}
-            >
-              <Tag size={12} />
-              {item.isOpenListing
+              {item.status === "AVAILABLE"
                 ? item.askingValueOverride != null
                   ? `$${item.askingValueOverride.toFixed(2)}`
-                  : "Listed"
-                : "List"}
+                  : "Trading"
+                : "Trade"}
             </button>
           </div>
         )
@@ -1807,6 +1768,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
   const [isFoil, setIsFoil] = useState(item.isFoil || false);
   const [isFirstEdition, setIsFirstEdition] = useState(item.isFirstEdition || false);
   const [availableForTrade, setAvailableForTrade] = useState(item.status === "AVAILABLE");
+  const [askingPrice, setAskingPrice] = useState<string>(item.askingValueOverride != null ? String(item.askingValueOverride) : "");
   const [notes, setNotes] = useState(item.notes || "");
   const [quantity, setQuantity] = useState(item.quantity ?? 1);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -1944,6 +1906,28 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
           </div>
 
           <div>
+            <label className="block text-base font-medium text-slate-300 mb-1.5">
+              Asking Price <span className="text-slate-400 font-normal">(optional)</span>
+            </label>
+            <p className="text-base text-slate-400 mb-2">
+              Leave blank to use the market price{item.currentMarketValue != null ? ` ($${item.currentMarketValue.toFixed(2)})` : ""}
+            </p>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={askingPrice}
+                onChange={(e) => setAskingPrice(e.target.value)}
+                disabled={item.status === "IN_TRADE"}
+                placeholder="0.00"
+                className="w-full pl-7 pr-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base disabled:opacity-40 disabled:cursor-not-allowed"
+              />
+            </div>
+          </div>
+
+          <div>
             <label className="block text-base font-medium text-slate-300 mb-1.5">Quantity</label>
             <p className="text-base text-slate-400 mb-2">How many identical copies of this card you own</p>
             <div className="flex items-center gap-2">
@@ -2041,7 +2025,8 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
                     setPhotoError("Add at least one photo above before marking this card as available for trade.");
                     return;
                   }
-                  updateMutation.mutate({ condition, isFoil, isFirstEdition, status: availableForTrade ? "AVAILABLE" : "UNAVAILABLE", notes: notes || undefined, quantity });
+                  const parsedAskingPrice = askingPrice !== "" ? parseFloat(askingPrice) : null;
+                  updateMutation.mutate({ condition, isFoil, isFirstEdition, status: availableForTrade ? "AVAILABLE" : "UNAVAILABLE", notes: notes || undefined, quantity, askingValueOverride: parsedAskingPrice });
                 }
               }}
               disabled={updateMutation.isPending}

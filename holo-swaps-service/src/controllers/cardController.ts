@@ -111,7 +111,6 @@ export const getCardHolders = async (req: Request, res: Response): Promise<void>
   const where = {
     cardId: card.id,
     status: CardStatus.AVAILABLE,
-    isOpenListing: undefined as boolean | undefined,
     // Respect collection visibility — only return items from PUBLIC collections
     user: {
       isBanned: false,
@@ -156,8 +155,6 @@ export const getCardHolders = async (req: Request, res: Response): Promise<void>
       skip,
       take: limit,
       orderBy: [
-        // Prioritise open listings first, then sort by price ascending
-        { isOpenListing: "desc" },
         { askingValueOverride: "asc" },
         { currentMarketValue: "asc" },
       ],

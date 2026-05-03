@@ -9,7 +9,6 @@ import {
   addCollectionMedia,
   deleteCollectionMedia,
 } from "@/controllers/collectionController";
-import { toggleListing } from "@/controllers/listingController";
 import { getCollectionValue } from "@/controllers/setController";
 
 const router = Router();
@@ -22,7 +21,6 @@ router.post("/", addToCollection);
 router.get("/:itemId", getCollectionItem);
 router.patch("/:itemId", updateCollectionItem);
 router.delete("/:itemId", removeFromCollection);
-router.patch("/:itemId/listing", toggleListing);
 router.post("/:itemId/media", addCollectionMedia);
 router.delete("/:itemId/media/:mediaId", deleteCollectionMedia);
 

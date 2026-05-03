@@ -21,7 +21,7 @@ export interface CreateCollectionItemData {
   photos?: string[];
   notes?: string;
   availableForTrade?: boolean;
-  askingValueOverride?: number;
+  askingValueOverride?: number | null;
   quantity?: number;
 }
 
@@ -33,6 +33,6 @@ export interface UpdateCollectionItemData {
   photos?: string[];
   notes?: string;
   availableForTrade?: boolean;
-  askingValueOverride?: number;
+  askingValueOverride?: number | null;
   quantity?: number;
 }

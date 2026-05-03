@@ -65,14 +65,12 @@ function listingToCollectionItem(listing: Listing): CollectionItem {
     isFirstEdition: listing.isFirstEdition,
     language: listing.language,
     media: listing.media,
-    notes: listing.listingDescription,
+    notes: null,
     status: "AVAILABLE",
     askingValueOverride: listing.askingValueOverride,
     currentMarketValue: listing.currentMarketValue,
     createdAt: listing.updatedAt,
     quantity: 1,
-    isOpenListing: true,
-    listingDescription: listing.listingDescription,
   };
 }
 
@@ -638,13 +636,6 @@ function ListingCard({
           )}
         </div>
 
-        {/* Description */}
-        {listing.listingDescription && (
-          <p className="text-base text-slate-400 line-clamp-2 leading-relaxed">
-            {listing.listingDescription}
-          </p>
-        )}
-
         {/* CTA */}
         {isAuthenticated && !isOwnListing ? (
           <button
@@ -812,14 +803,6 @@ function ListingDetailModal({
                 <p className="text-slate-400 text-base">No price set</p>
               )}
             </div>
-
-            {/* Description */}
-            {listing.listingDescription && (
-              <div>
-                <p className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Description</p>
-                <p className="text-base text-slate-300 leading-relaxed">{listing.listingDescription}</p>
-              </div>
-            )}
 
             {/* Language */}
             {listing.language && listing.language !== "EN" && (

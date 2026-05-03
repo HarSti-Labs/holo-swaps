@@ -24,7 +24,8 @@
       "Bash(find /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-service -name *.prisma -o -name tradeController* -o -name tradeRoute*)",
       "Bash(curl:*)",
       "WebFetch(domain:tcgapi.dev)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(grep -n \"showCancelModal\\\\|CancelModal\\\\|cancel modal\\\\|Cancel modal\" /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-ui/src/app/trades/[tradeId]/page.tsx)"
     ]
   }
 }

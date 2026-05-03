@@ -11,7 +11,6 @@ export interface Listing {
   language: string;
   currentMarketValue: number | null;
   askingValueOverride: number | null;
-  listingDescription: string | null;
   status: "AVAILABLE";
   card: Card;
   user: {

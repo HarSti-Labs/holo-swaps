@@ -4,16 +4,11 @@ import { sendSuccess, sendCreated } from "@/utils/response";
 import { ApiError } from "@/utils/ApiError";
 import { z } from "zod";
 import { prisma } from "@/config/prisma";
+// z is used by makeListingOfferSchema below
 import { CardStatus, Prisma } from "@prisma/client";
 import { TradeService } from "@/services/implementations/TradeService";
 
 const tradeService = new TradeService();
-
-const toggleListingSchema = z.object({
-  list: z.boolean(),
-  description: z.string().max(1000).optional(),
-  askingPrice: z.number().min(0).optional(),
-});
 
 const makeListingOfferSchema = z.object({
   offererCollectionItemIds: z.array(z.string().uuid()).min(1),
@@ -49,8 +44,8 @@ export const getListings = async (req: AuthenticatedRequest, res: Response): Pro
   const hasPriceFilter = minPrice !== undefined || maxPrice !== undefined;
 
   const where: Prisma.UserCollectionWhereInput = {
-    isOpenListing: true,
     status: CardStatus.AVAILABLE,
+    media: { some: {} },
     ...(req.user && { userId: { not: req.user.id } }),
   };
 
@@ -100,7 +95,7 @@ export const getListings = async (req: AuthenticatedRequest, res: Response): Pro
 // GET /api/listings/games
 export const getListingGames = async (req: Request, res: Response): Promise<void> => {
   const items = await prisma.userCollection.findMany({
-    where: { isOpenListing: true, status: CardStatus.AVAILABLE },
+    where: { status: CardStatus.AVAILABLE, media: { some: {} } },
     select: { card: { select: { game: true } } },
     distinct: ["cardId"],
   });
@@ -117,7 +112,7 @@ export const getListingRarities = async (req: Request, res: Response): Promise<v
     where: {
       ...(game && { game: game as never }),
       rarity: { not: null },
-      collectionItems: { some: { isOpenListing: true, status: CardStatus.AVAILABLE } },
+      collectionItems: { some: { status: CardStatus.AVAILABLE, media: { some: {} } } },
     },
     select: { rarity: true },
     distinct: ["rarity"],
@@ -127,46 +122,6 @@ export const getListingRarities = async (req: Request, res: Response): Promise<v
   sendSuccess(res, cards.map((c) => c.rarity).filter(Boolean));
 };
 
-// PATCH /api/collection/:itemId/listing
-export const toggleListing = async (
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> => {
-  const item = await prisma.userCollection.findUnique({
-    where: { id: req.params.itemId },
-  });
-
-  if (!item) throw ApiError.notFound("Collection item not found");
-  if (item.userId !== req.user!.id) throw ApiError.forbidden();
-  if (item.status === CardStatus.IN_TRADE) {
-    throw ApiError.badRequest("Cannot toggle listing for a card that is currently in a trade");
-  }
-
-  const parsed = toggleListingSchema.safeParse(req.body);
-  if (!parsed.success) {
-    throw ApiError.badRequest("Validation failed", parsed.error.errors.map((e) => e.message));
-  }
-
-  const updated = await prisma.userCollection.update({
-    where: { id: req.params.itemId },
-    data: parsed.data.list
-      ? {
-          isOpenListing: true,
-          listingDescription: parsed.data.description ?? item.listingDescription,
-          askingValueOverride: parsed.data.askingPrice ?? item.askingValueOverride,
-        }
-      : {
-          isOpenListing: false,
-          askingValueOverride: null,
-        },
-  });
-
-  sendSuccess(
-    res,
-    updated,
-    parsed.data.list ? "Card listed as open to offers" : "Card removed from open listings"
-  );
-};
 
 // POST /api/listings/:itemId/offer
 export const makeListingOffer = async (
@@ -181,7 +136,6 @@ export const makeListingOffer = async (
   });
 
   if (!listedItem) throw ApiError.notFound("Listing not found");
-  if (!listedItem.isOpenListing) throw ApiError.badRequest("This card is not open for offers");
   if (listedItem.status !== CardStatus.AVAILABLE) {
     throw ApiError.badRequest("This card is no longer available");
   }
