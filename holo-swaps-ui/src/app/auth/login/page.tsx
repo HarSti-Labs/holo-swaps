@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { Eye, EyeOff, LogIn, CheckCircle } from "lucide-react";
+import { FloatingLabelInput } from "@/components/ui/FloatingLabelInput";
 
 function LoginPageContent() {
   const router = useRouter();
@@ -69,41 +70,31 @@ function LoginPageContent() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-base font-bold text-white mb-2">Email or Username</label>
-              <input
-                type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
-                placeholder="ProfessorOak"
-                className="w-full px-4 py-3.5 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
-              />
-            </div>
+            <FloatingLabelInput
+              label="Email or Username"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              required
+            />
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-base font-bold text-white">Password</label>
+              <FloatingLabelInput
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                rightElement={
+                  <button type="button" onClick={() => setShowPassword((v) => !v)} className="text-slate-400 hover:text-white transition-colors">
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                }
+              />
+              <div className="flex justify-end mt-2">
                 <Link href="/auth/forgot-password" className="text-base text-blue-400 hover:text-blue-300 transition-colors">
                   Forgot password?
                 </Link>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
               </div>
             </div>
 

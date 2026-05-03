@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { authApi } from "@/lib/api/auth";
 import { Eye, EyeOff, UserPlus, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { FloatingLabelInput } from "@/components/ui/FloatingLabelInput";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -144,20 +145,14 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
             <div>
-              <label className="block text-base font-bold text-white mb-2">Email</label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  required
-                  placeholder="you@example.com"
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  {getValidationIcon(emailStatus)}
-                </div>
-              </div>
+              <FloatingLabelInput
+                label="Email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                required
+                rightElement={getValidationIcon(emailStatus)}
+              />
               {emailMessage && (
                 <p className={`text-base mt-2 ${emailStatus === "available" ? "text-green-400" : "text-red-400"}`}>
                   {emailMessage}
@@ -167,82 +162,56 @@ export default function RegisterPage() {
 
             {/* Username Field */}
             <div>
-              <label className="block text-base font-bold text-white mb-2">Username</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={form.username}
-                  onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-                  required
-                  placeholder="ProfessorOak"
-                  minLength={3}
-                  maxLength={20}
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  {getValidationIcon(usernameStatus)}
-                </div>
-              </div>
+              <FloatingLabelInput
+                label="Username"
+                type="text"
+                value={form.username}
+                onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
+                required
+                minLength={3}
+                maxLength={20}
+                rightElement={getValidationIcon(usernameStatus)}
+              />
               {usernameMessage ? (
                 <p className={`text-base mt-2 ${usernameStatus === "available" ? "text-green-400" : "text-red-400"}`}>
                   {usernameMessage}
                 </p>
               ) : (
-                <p className="text-base text-slate-400 mt-2">
-                  3–20 characters, letters, numbers, underscores only
-                </p>
+                <p className="text-base text-slate-400 mt-2">3–20 characters, letters, numbers, underscores only</p>
               )}
             </div>
 
             {/* Password Field */}
-            <div>
-              <label className="block text-base font-bold text-white mb-2">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                  required
-                  placeholder="Min. 8 characters"
-                  minLength={8}
-                  className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                >
+            <FloatingLabelInput
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+              required
+              minLength={8}
+              rightElement={
+                <button type="button" onClick={() => setShowPassword((v) => !v)} className="text-slate-400 hover:text-white transition-colors">
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
-              </div>
-            </div>
+              }
+            />
 
             {/* Confirm Password Field */}
             <div>
-              <label className="block text-base font-bold text-white mb-2">Confirm Password</label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={form.confirmPassword}
-                  onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
-                  required
-                  placeholder="Re-enter your password"
-                  className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${
-                    passwordsMismatch
-                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                      : passwordsMatch
-                      ? "border-green-500 focus:ring-green-500 focus:border-green-500"
-                      : "border-slate-700 focus:ring-blue-500 focus:border-blue-500"
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword((v) => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
+              <FloatingLabelInput
+                label="Confirm Password"
+                type={showConfirmPassword ? "text" : "password"}
+                value={form.confirmPassword}
+                onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
+                required
+                error={passwordsMismatch}
+                success={passwordsMatch}
+                rightElement={
+                  <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} className="text-slate-400 hover:text-white transition-colors">
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                }
+              />
               {passwordsMismatch && (
                 <p className="text-base mt-2 text-red-400 flex items-center gap-1">
                   <XCircle size={12} /> Passwords do not match

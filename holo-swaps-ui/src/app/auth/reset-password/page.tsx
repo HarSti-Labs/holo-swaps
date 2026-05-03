@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { authApi } from "@/lib/api/auth";
+import { FloatingLabelInput } from "@/components/ui/FloatingLabelInput";
 
 function ResetPasswordPageContent() {
   const searchParams = useSearchParams();
@@ -104,53 +105,35 @@ function ResetPasswordPageContent() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-base font-bold text-white mb-2">New password</label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      minLength={8}
-                      placeholder="Min. 8 characters"
-                      className="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-slate-700 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                    >
+                <FloatingLabelInput
+                  label="New password"
+                  type={showPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  rightElement={
+                    <button type="button" onClick={() => setShowPassword((v) => !v)} className="text-slate-400 hover:text-white transition-colors">
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
-                  </div>
-                </div>
+                  }
+                />
 
                 <div>
-                  <label className="block text-base font-bold text-white mb-2">Confirm new password</label>
-                  <div className="relative">
-                    <input
-                      type={showConfirm ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      placeholder="Re-enter your password"
-                      className={`w-full px-4 py-3.5 pr-12 rounded-xl border-2 bg-slate-950/50 text-white text-base focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${
-                        passwordsMismatch
-                          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                          : passwordsMatch
-                          ? "border-green-500 focus:ring-green-500 focus:border-green-500"
-                          : "border-slate-700 focus:ring-blue-500 focus:border-blue-500"
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirm((v) => !v)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                    >
-                      {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
-                  </div>
+                  <FloatingLabelInput
+                    label="Confirm new password"
+                    type={showConfirm ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    error={passwordsMismatch}
+                    success={passwordsMatch}
+                    rightElement={
+                      <button type="button" onClick={() => setShowConfirm((v) => !v)} className="text-slate-400 hover:text-white transition-colors">
+                        {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    }
+                  />
                   {passwordsMismatch && (
                     <p className="text-base mt-2 text-red-400 flex items-center gap-1">
                       <XCircle size={12} /> Passwords do not match
