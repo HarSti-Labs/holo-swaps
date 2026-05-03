@@ -2720,6 +2720,10 @@ video {
 .fill-yellow-400 {
   fill: #facc15;
 }
+.object-contain {
+  -o-object-fit: contain;
+     object-fit: contain;
+}
 .object-cover {
   -o-object-fit: cover;
      object-fit: cover;
@@ -4508,6 +4512,10 @@ video {
 }
 
 @media (min-width: 768px) {
+
+  .md\:col-span-4 {
+    grid-column: span 4 / span 4;
+  }
 
   .md\:block {
     display: block;

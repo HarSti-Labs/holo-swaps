@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useMemo, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { collectionApi } from "@/lib/api/collection";
 import { searchCards } from "@/lib/api/cards";
 import { api } from "@/lib/api/client";
@@ -1472,11 +1472,35 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
   const [isFoil, setIsFoil] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  const { data: searchResults } = useQuery({
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const {
+    data: searchResults,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["card-search", searchQuery],
-    queryFn: () => searchCards({ q: searchQuery, limit: 20 }),
+    queryFn: ({ pageParam }) => searchCards({ q: searchQuery, limit: 20, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     enabled: searchQuery.length > 2,
   });
+
+  const allCards = searchResults?.pages.flatMap((p) => p.data) ?? [];
+  const totalCards = searchResults?.pages[0]?.total ?? 0;
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    }, { threshold: 0.1 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const addMutation = useMutation({
     mutationFn: (data: { cardId: string; condition: CardCondition; isFoil: boolean; quantity: number }) =>
@@ -1513,8 +1537,11 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
                   autoFocus
                 />
               </div>
+              {totalCards > 0 && (
+                <p className="text-base text-slate-400 mb-3">{totalCards} result{totalCards !== 1 ? "s" : ""} found</p>
+              )}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto">
-                {searchResults?.data.map((card) => (
+                {allCards.map((card) => (
                   <button
                     key={card.id}
                     onClick={() => { setSelectedCard(card); setStep("details"); }}
@@ -1530,6 +1557,9 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
                     <p className="text-base text-slate-400">{card.setName}</p>
                   </button>
                 ))}
+                <div ref={sentinelRef} className="col-span-2 md:col-span-4 py-2 flex justify-center">
+                  {isFetchingNextPage && <Loader2 size={20} className="animate-spin text-slate-400" />}
+                </div>
               </div>
             </div>
           )}
@@ -1615,11 +1645,35 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const { data: searchResults } = useQuery({
+  const wantSentinelRef = useRef<HTMLDivElement>(null);
+
+  const {
+    data: searchResults,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["card-search", searchQuery],
-    queryFn: () => searchCards({ q: searchQuery, limit: 20 }),
+    queryFn: ({ pageParam }) => searchCards({ q: searchQuery, limit: 20, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     enabled: searchQuery.length > 2,
   });
+
+  const allCards = searchResults?.pages.flatMap((p) => p.data) ?? [];
+  const totalCards = searchResults?.pages[0]?.total ?? 0;
+
+  useEffect(() => {
+    const el = wantSentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    }, { threshold: 0.1 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const addMutation = useMutation({
     mutationFn: () => collectionApi.addToWants({ cardId: selectedCard!.id, maxCondition, priority, notes: notes || undefined }),
@@ -1664,18 +1718,26 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
                   autoFocus
                 />
               </div>
+              {totalCards > 0 && (
+                <p className="text-base text-slate-400 mb-3">{totalCards} result{totalCards !== 1 ? "s" : ""} found</p>
+              )}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto">
-                {searchResults?.data.map((card) => (
+                {allCards.map((card) => (
                   <button
                     key={card.id}
                     onClick={() => { setSelectedCard(card); setStep("details"); }}
                     className="text-left bg-slate-800/50 rounded-lg p-3 hover:bg-slate-800 transition-colors border border-slate-700 hover:border-pink-500/50"
                   >
-                    <div className="aspect-[2/3] bg-slate-700 rounded mb-2" />
+                    <div className="aspect-[2/3] bg-slate-700 rounded mb-2 overflow-hidden">
+                      {card.imageUrl && <img src={card.imageUrl} alt={card.name} className="w-full h-full object-contain" />}
+                    </div>
                     <p className="font-semibold text-white text-base line-clamp-2">{card.name}</p>
                     <p className="text-base text-slate-400">{card.setName}</p>
                   </button>
                 ))}
+                <div ref={wantSentinelRef} className="col-span-2 md:col-span-4 py-2 flex justify-center">
+                  {isFetchingNextPage && <Loader2 size={20} className="animate-spin text-slate-400" />}
+                </div>
               </div>
             </div>
           )}
@@ -1683,6 +1745,9 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
           {step === "details" && selectedCard && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                {selectedCard.imageUrl && (
+                  <img src={selectedCard.imageUrl} alt={selectedCard.name} className="w-12 h-16 object-contain rounded flex-shrink-0" />
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-white">{selectedCard.name}</p>
                   <p className="text-base text-slate-400 mt-0.5">{selectedCard.setName}</p>

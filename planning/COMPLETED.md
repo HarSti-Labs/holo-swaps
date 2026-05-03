@@ -336,69 +336,130 @@
 - [x] Axios API client with interceptors (`/lib/api/client.ts`)
 - [x] Zustand state management for auth (`/lib/hooks/useAuth.ts`)
 - [x] Environment config (`.env.local` with `NEXT_PUBLIC_API_URL`)
+- [x] `FloatingLabelInput` component (`/components/ui/FloatingLabelInput.tsx`) — Facebook-style floating label, `forwardRef`, supports `rightElement`, `error`, `success` props
 
 ### Authentication
-- [x] `/auth/login` - Login page with vibrant gradient styling
-- [x] `/auth/register` - Registration page with real-time username/email availability checking
-- [x] Username validation with 500ms debouncing
-- [x] Email validation with 500ms debouncing
-- [x] Visual feedback (spinner, checkmark, X icons)
-- [x] Auth API client (`/lib/api/auth.ts`)
-  - [x] `register()`
-  - [x] `login()`
-  - [x] `me()`
-  - [x] `checkUsername()`
-  - [x] `checkEmail()`
-  - [x] `resendVerificationEmail()`
+- [x] `/auth/login` — FloatingLabelInput fields, identifier + password, forgot password link
+- [x] `/auth/register` — FloatingLabelInput fields, real-time username/email availability (500ms debounce), password match validation, terms checkbox
+- [x] `/auth/forgot-password` — FloatingLabelInput email field, success state
+- [x] `/auth/reset-password` — FloatingLabelInput password fields, match validation, token-from-URL, auto-redirect on success
+- [x] `/verify-email` — email verification landing page (token-from-URL)
+- [x] Auth API client (`/lib/api/auth.ts`): `register`, `login`, `me`, `checkUsername`, `checkEmail`, `resendVerificationEmail`, `forgotPassword`, `resetPassword`
 
-### Email Verification ✅
-- [x] Backend: `POST /api/auth/resend-verification` endpoint
-- [x] Backend: `AuthService.resendVerificationEmail()` method
-- [x] Frontend: `EmailVerificationBanner` component
-- [x] Frontend: Banner displays on dashboard if `!user.isEmailVerified`
-- [x] Frontend: "Resend Email" button with loading state
-- [x] ⚠️ Note: Emails log to console (need Resend account for production)
+### Email Verification
+- [x] `EmailVerificationBanner` component shown on dashboard when `!user.isEmailVerified`
+- [x] "Resend Email" button with loading state
 
-### Card Browsing
-- [x] `/cards` - Card browsing page with search and pagination
-- [x] Grid layout with hover effects and holographic card styling
-- [x] Search functionality with debouncing
-- [x] Pagination controls
-- [x] Gradient animated header with pulsing orbs
-- [x] Cards API client (`/lib/api/cards.ts`)
-  - [x] `searchCards()`
-
-### Collection Management
-- [x] `/collection` - User collection page
-- [x] Grid/list view toggle
-- [x] AddCardDialog component with two-step process:
-  - [x] Step 1: Search for card
-  - [x] Step 2: Set condition, foil, quantity
-- [x] Condition selector (MINT, NEAR_MINT, LIGHTLY_PLAYED, etc.)
-- [x] Foil checkbox
-- [x] Empty state with friendly UI
-- [x] Collection API client (`/lib/api/collection.ts`)
+### Landing Page
+- [x] `/` — public hero, feature highlights, CTA buttons, responsive
 
 ### Dashboard
-- [x] `/dashboard` - Main dashboard page
-- [x] Welcome message with username
-- [x] Stats cards (Total Trades, Active Trades, Completed, Reputation)
-- [x] Recent trades section with TradeCard component
-- [x] Quick actions sidebar
-- [x] Email verification banner integration
+- [x] `/dashboard` — welcome, stats cards (Total/Active/Completed Trades, Reputation), recent trades, quick actions, email verification banner
+- [x] Stat cards link to `/trades`, `/trades?filter=active`, `/trades?filter=completed`
+
+### Card Browsing
+- [x] `/cards` — compact grid (4-col), rarity color badges, shimmer hover
+- [x] Available Traders sticky sidebar — shows holders for selected card
+- [x] `+` button on card hover opens `CardDetailModal` (add to collection/wants)
+- [x] Mass selection mode — checkbox overlay, select all/clear/exit
+- [x] `BulkAddModal` — collection mode (condition, foil, 1st ed, availability) + wants mode (max condition + priority); per-card progress bar
+- [x] `MultiCardTradersPanel` — card filter, condition filter, parallel holder fetches, propose trade per row
+- [x] Cards API client (`/lib/api/cards.ts`): `searchCards`
+
+### Collection Management
+- [x] `/collection` — two tabs: **Collection** and **Want List** (URL param `?tab=wants`)
+- [x] Grid/list view toggle, search, condition/set/foil/sort filters
+- [x] `AddCardDialog` — two-step (search → set condition/foil/quantity/asking price)
+- [x] `EditCardDialog` — edit condition, foil, 1st edition, notes, quantity stepper, asking price (`$` prefix); IN_TRADE amber warning locks all fields except quantity
+- [x] Card tiles: uploaded photo shown (falls back to stock image), asking price in footer, IN_TRADE amber overlay + "In Active Trade" footer
+- [x] "Mark Available" blocked until card has an uploaded photo — photo-required modal (centered popup, amber camera icon)
+- [x] Want List tab — add/edit/delete wants, priority + condition filters, grid/list view, bulk delete with select mode
+- [x] Collection API client (`/lib/api/collection.ts`): full CRUD + media upload
+
+### Listings
+- [x] `/listings` — public listing feed, game filter tabs, debounced search, 6-col grid, pagination
+- [x] Card tile: uploaded photo (not stock image), condition badge, teal "ASKING" price badge or green market price
+- [x] "Make Offer" opens `TradeProposalModal` pre-loaded with listed card; "Your listing" label for own cards
+- [x] `Listings API client` (`/lib/api/listings.ts`)
+
+### Trades
+- [x] `/trades` — paginated trade list, status filter tabs (reads `?filter=` from URL), TradeCard rows
+- [x] `/trades/[tradeId]` — full trade detail:
+  - Trade header: status badge, trade code, "with [username]" clickable link
+  - Both sides of the trade (cards + images + values + asking price indicator)
+  - Stripe payment section (ACCEPTED): per-party "Complete My Payment" button, green "payment complete" badge, shipping gated until both pay
+  - Tracking number submission form
+  - Receipt confirmation button
+  - In-trade messaging thread (auto-scroll on new messages, `messageCountRef`)
+  - `CounterOfferModal` (full-screen, card add/remove, cash input, trade balance)
+  - Styled decline modal (matches app modal pattern)
+  - Styled cancel modal + mutual cancel request flow
+  - Review section (COMPLETED status) — 5-star selector + comment, submit once
+  - `?payment=success/cancelled` banner detection
+- [x] `TradeProposalModal` — directional Trade Balance indicator, owner price (teal) vs market price (green)
+- [x] Trades API client (`/lib/api/trades.ts`): full CRUD + counter + accept/decline/cancel + tracking + receipt + review + checkout URL
+
+### Matches
+- [x] `/matches` — mutual match suggestions, match cards with "You have / They want / They have / You want", propose trade button (opens `TradeProposalModal`)
+
+### Profile
+- [x] `/profile/[username]` — avatar, username, bio, location, stats (trades, reputation, tier badge), tabs: Collection | Reviews
+- [x] Collection tab: browseable AVAILABLE cards with uploaded photos, search + condition + set + foil + sort filters, "Propose Trade" per card
+- [x] Reviews tab: star rating display, paginated reviews
+- [x] Follow/Unfollow button; "⋮" dropdown: Block/Unblock + Report
+- [x] Report modal — reason dropdown (6 options) + optional details + success state
+- [x] "You've blocked this user" badge when blocked
+- [x] `/profile/[username]/followers` and `/profile/[username]/following` — follower/following lists
+- [x] Users API client (`/lib/api/users.ts`): `getProfile`, `getUserCollection`, `getReviews`, `follow`, `unfollow`, `block`, `unblock`, `report`
+
+### Friends
+- [x] `/friends` — search users by username, follow/unfollow, tier badge, link to profile
+
+### Settings
+- [x] `/settings` — full settings page with sections:
+  - **Profile**: edit username (availability check), bio, location
+  - **Email Notifications**: toggles for Trade Proposed/Countered/Accepted/Declined/Cancelled/Message
+  - **Address Book**: add/edit/delete addresses, Google Places autocomplete on line1, US state dropdown, set default
+  - **Payments**: Stripe customer setup badge, Stripe Connect Express onboarding, `?setup=success` detection
+  - **Account**: delete account flow (password confirmation modal)
+
+### Support
+- [x] `/support` — support ticket form: category dropdown (8 categories), urgency selector (Normal/High/Critical), trade ID field (for trade-related categories), subject + message, submit → creates ticket + shows ticket number
+- [x] `/support/tickets/[ticketNumber]` — ticket detail: status, messages thread, reply composer
+- [x] Support API client (`/lib/api/support.ts`)
+
+### Static / Info Pages
+- [x] `/faq` — FAQ accordion page
+- [x] `/how-it-works` — step-by-step explainer
+- [x] `/shipping-guide` — shipping instructions and recommendations
+- [x] `/card-condition-guide` — condition grading reference
+- [x] `/legal/tos` — Terms of Service
+- [x] `/legal/privacy` — Privacy Policy
+
+### Admin
+- [x] `/admin/trades` — admin trade list, filterable by status
+- [x] `/admin/trades/[tradeId]` — admin trade detail (verify, complete, dispute)
+- [x] `/admin/reports` — reports list, resolve button, "show resolved" toggle, pagination
+- [x] `/admin/reports/[reportId]` — report detail: reporter/reported info, message thread, reply composer (emails reporter), resolve with optional note
+- [x] `/admin/support` — support ticket admin dashboard
 
 ### Navigation
-- [x] Navbar component with authenticated/unauthenticated states
-- [x] Links: Dashboard, My Collection, My Trades, Matches
-- [x] Logout functionality
-- [x] Vibrant gradient styling matching overall theme
+- [x] Navbar: authenticated (Dashboard, Browse Cards, Listings, My Cards, Trades, Matches, Friends, Notifications bell, avatar dropdown) + unauthenticated (Sign In, Get Started)
+- [x] Admin nav: Admin Trades, Support Board, Reports
+- [x] Mobile nav (hamburger menu)
+- [x] Footer component
 
 ### UI Components
-- [x] Input component (Tailwind-styled)
-- [x] Button component
-- [x] Card component
-- [x] TradeCard component
-- [x] EmailVerificationBanner component
+- [x] `FloatingLabelInput` — floating label input with focus/value animations
+- [x] `TradeCard` — trade summary row
+- [x] `TradeStatusBadge` — color-coded status pill
+- [x] `TradeProposalModal` — full trade builder
+- [x] `CounterOfferModal` — full-screen counter offer
+- [x] `CardDetailModal` — add card to collection or wants
+- [x] `BulkAddModal` — bulk add selected cards
+- [x] `CollectionCard` — card tile (grid/list)
+- [x] `EmailVerificationBanner`
+- [x] `Navbar`, `Footer`, `Providers`
 
 ### Database Seeding
 - [x] CSV import script (`seedCardsFromCSV.ts`)
@@ -407,7 +468,7 @@
 
 ### API Integration
 - [x] TCGAPIs integration (replaced TCGplayer)
-- [x] CORS configuration fixed (frontend port 3001)
+- [x] CORS configuration fixed
 - [x] Environment variables configured
 
 ---

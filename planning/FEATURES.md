@@ -415,9 +415,34 @@ Tiers are calculated from tradeCount + reputationScore combined.
 
 ---
 
+## ✅ Core Features (Completed)
+
+- Trade proposal, counter, accept, decline, cancel, mutual cancel ✅
+- Trade messaging thread ✅
+- Post-trade reviews (5-star + comment) ✅
+- Listings feed (AVAILABLE + has photo) ✅
+- Collection management (add/edit/delete/photo upload/quantity/asking price) ✅
+- Want list (integrated in collection page, wants tab) ✅
+- Matches page ✅
+- Friends page ✅
+- Profile pages (collection, reviews, follow/block/report) ✅
+- Settings (profile, email prefs, address book with Google Places, payments, delete account) ✅
+- Support ticket system ✅
+- Legal pages (ToS, Privacy) ✅
+- Admin panel (trades, reports, support) ✅
+- Auth flows (login, register, forgot/reset password, email verification) ✅
+- Stripe Checkout (two-session model, per-party fees) ✅
+
+---
+
 ## 🚀 Next Priority Features (Roadmap)
 
-### Option 2: Trade Proposal Flow (HIGH PRIORITY - Core Feature)
+### Dispute Opening UI (Missing Frontend)
+**Goal:** Allow users to open a dispute from the trade page
+- Backend fully built (`POST /api/trades/:id/dispute`, `POST /api/disputes/:id/evidence`, `PATCH /api/disputes/:id/resolve`)
+- Frontend missing: "Open Dispute" button on trade page (BOTH_RECEIVED or later), evidence submission form, dispute status display
+
+### Option 2: Trade Proposal Flow (HIGH PRIORITY - Core Feature) ✅ DONE
 **Goal:** Enable users to propose trades with each other
 
 **Backend Implementation:**
