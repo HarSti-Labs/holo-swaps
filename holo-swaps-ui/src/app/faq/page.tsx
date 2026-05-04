@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackButton } from "@/components/ui/BackButton";
 import { HelpCircle, ChevronRight, MessageSquare } from "lucide-react";
 
 const faqs = [
@@ -89,6 +90,9 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
       <main>
+        <div className="container mx-auto px-4 pt-8">
+          <BackButton />
+        </div>
         {/* Hero */}
         <section className="relative overflow-hidden py-20 px-4 text-center">
           <div className="absolute -top-20 -left-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />

@@ -1,7 +1,9 @@
 {
-  "/dashboard/page": "app/dashboard/page.js",
   "/cards/page": "app/cards/page.js",
-  "/how-it-works/page": "app/how-it-works/page.js",
-  "/card-condition-guide/page": "app/card-condition-guide/page.js",
-  "/collection/page": "app/collection/page.js"
+  "/settings/page": "app/settings/page.js",
+  "/faq/page": "app/faq/page.js",
+  "/collection/page": "app/collection/page.js",
+  "/profile/[username]/page": "app/profile/[username]/page.js",
+  "/trades/page": "app/trades/page.js",
+  "/trades/[tradeId]/page": "app/trades/[tradeId]/page.js"
 }

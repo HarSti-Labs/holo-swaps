@@ -86,14 +86,14 @@ export function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-1 flex-nowrap">
           {user?.isAdmin ? (
             /* Admin nav */
             <>
               <Link
                 href="/admin/trades"
                 className={cn(
-                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
                   pathname.startsWith("/admin/trades")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -105,7 +105,7 @@ export function Navbar() {
               <Link
                 href="/admin/support"
                 className={cn(
-                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
                   pathname.startsWith("/admin/support")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -117,7 +117,7 @@ export function Navbar() {
               <Link
                 href="/admin/reports"
                 className={cn(
-                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
                   pathname.startsWith("/admin/reports")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -133,7 +133,7 @@ export function Navbar() {
               <Link
                 href="/cards"
                 className={cn(
-                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
                   pathname.startsWith("/cards")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -147,7 +147,7 @@ export function Navbar() {
               <Link
                 href="/listings"
                 className={cn(
-                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
                   pathname.startsWith("/listings")
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -163,7 +163,7 @@ export function Navbar() {
                   key={href}
                   href={href}
                   className={cn(
-                    "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
                     pathname.startsWith(href)
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -219,7 +219,7 @@ export function Navbar() {
             <>
               <Link
                 href={`/profile/${user.username}`}
-                className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors"
+                className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors whitespace-nowrap"
               >
                 <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
                   <span className="text-sm font-bold text-primary">
@@ -230,14 +230,14 @@ export function Navbar() {
               </Link>
               <Link
                 href="/settings"
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
               >
                 <Settings size={16} />
                 Settings
               </Link>
               <button
                 onClick={handleLogout}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
               >
                 <LogOut size={16} />
                 Sign out

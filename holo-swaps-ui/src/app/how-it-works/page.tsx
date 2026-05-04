@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackButton } from "@/components/ui/BackButton";
 import { HeroSection } from "./HeroSection";
 import {
   BookMarked,
@@ -151,6 +152,9 @@ export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
       <main>
+        <div className="container mx-auto px-4 pt-8">
+          <BackButton />
+        </div>
         {/* Hero */}
         <HeroSection>
           <section className="relative overflow-hidden py-20 px-4 text-center">

@@ -7,23 +7,23 @@ const footerLinks = [
   {
     heading: "Platform",
     links: [
-      { label: "Browse Cards", href: "/cards" },
-      { label: "How It Works", href: "/how-it-works" },
-      { label: "Card Condition Guide", href: "/card-condition-guide" },
-      { label: "FAQ", href: "/how-it-works#faq" },
+      { label: "Browse Cards", href: "/cards?ref=footer" },
+      { label: "How It Works", href: "/how-it-works?ref=footer" },
+      { label: "Card Condition Guide", href: "/card-condition-guide?ref=footer" },
+      { label: "FAQ", href: "/faq?ref=footer" },
     ],
   },
   {
     heading: "Support",
     links: [
-      { label: "Submit a Ticket", href: "/support" },
+      { label: "Submit a Ticket", href: "/support?ref=footer" },
     ],
   },
   {
     heading: "Legal",
     links: [
-      { label: "Terms of Service", href: "/legal/tos" },
-      { label: "Privacy Policy", href: "/legal/privacy" },
+      { label: "Terms of Service", href: "/legal/tos?ref=footer" },
+      { label: "Privacy Policy", href: "/legal/privacy?ref=footer" },
     ],
   },
 ];
@@ -90,8 +90,8 @@ export function Footer() {
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-base text-muted-foreground">
           <p>© {new Date().getFullYear()} {COMPANY}. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link href="/legal/tos" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="/legal/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="/legal/tos?ref=footer" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link href="/legal/privacy?ref=footer" className="hover:text-foreground transition-colors">Privacy</Link>
           </div>
         </div>
       </div>

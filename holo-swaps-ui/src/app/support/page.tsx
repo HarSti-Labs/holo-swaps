@@ -9,6 +9,7 @@ import {
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { supportApi } from "@/lib/api/support";
 import { cn } from "@/lib/utils";
+import { BackButton } from "@/components/ui/BackButton";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -128,6 +129,7 @@ export default function SupportPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
       <main className="container mx-auto px-4 py-12 max-w-2xl">
+        <BackButton />
 
         {/* Header */}
         <div className="text-center mb-10">

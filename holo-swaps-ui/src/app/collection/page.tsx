@@ -1776,13 +1776,22 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
               <div>
                 <label className="block text-base font-medium text-slate-300 mb-1.5">Max Acceptable Condition</label>
                 <p className="text-base text-slate-400 mb-1.5">The worst condition you'd accept for this card</p>
-                <select
-                  value={maxCondition}
-                  onChange={(e) => setMaxCondition(e.target.value as CardCondition)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500 text-base"
-                >
-                  {Object.entries(CONDITION_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  {(Object.entries(CONDITION_LABELS) as [CardCondition, string][]).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setMaxCondition(value)}
+                      className={`py-2.5 px-3 rounded-lg text-base font-medium border transition-colors text-center ${
+                        maxCondition === value
+                          ? "bg-pink-500/20 border-pink-500 text-pink-300"
+                          : "bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <label className="block text-base font-medium text-slate-300 mb-1.5">Notes <span className="text-slate-400 font-normal">(optional)</span></label>

@@ -76,7 +76,7 @@ export const addToCollection = async (
   const item = await collectionRepo.create({
     userId: req.user!.id,
     ...rest,
-    availableForTrade: status !== CardStatus.UNAVAILABLE,
+    availableForTrade: status === CardStatus.AVAILABLE,
   });
 
   // Fire-and-forget: fetch market price immediately so listings show a value

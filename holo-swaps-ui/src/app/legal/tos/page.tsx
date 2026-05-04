@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackButton } from "@/components/ui/BackButton";
 
 const EFFECTIVE_DATE = "April 19, 2025";
 const COMPANY = "Harsti Labs LLC";
@@ -9,6 +10,7 @@ export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
       <main className="container mx-auto px-4 py-12 max-w-4xl">
+        <BackButton />
         {/* Title */}
         <div className="mb-12 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-base font-medium mb-6">
