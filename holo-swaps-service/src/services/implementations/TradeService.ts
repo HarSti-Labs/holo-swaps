@@ -402,20 +402,6 @@ export class TradeService implements ITradeService {
       throw ApiError.badRequest("This trade cannot be accepted at this stage");
     }
 
-    // High-value trades (combined card value > $500) require both parties to be identity verified
-    const HIGH_VALUE_THRESHOLD_USD = 500;
-    const combinedValue = trade.proposerMarketValue + trade.receiverMarketValue;
-    if (combinedValue > HIGH_VALUE_THRESHOLD_USD) {
-      const [proposer, receiver] = await Promise.all([
-        prisma.user.findUnique({ where: { id: trade.proposerId }, select: { isIdentityVerified: true } }),
-        prisma.user.findUnique({ where: { id: trade.receiverId }, select: { isIdentityVerified: true } }),
-      ]);
-      if (!proposer?.isIdentityVerified || !receiver?.isIdentityVerified) {
-        throw ApiError.badRequest(
-          `This trade exceeds $${HIGH_VALUE_THRESHOLD_USD} in card value. Both parties must complete identity verification before accepting.`
-        );
-      }
-    }
 
     const PLATFORM_FEE_PERCENT = 0.10;
     const RETURN_SHIPPING_CENTS = 499; // $4.99 flat — covers return shipping back to trader
