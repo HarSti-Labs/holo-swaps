@@ -78,9 +78,17 @@ export class TradeService implements ITradeService {
 
   // ─── Helper: unlock a set of collection items ────────────────────────────
   private async unlockCards(collectionItemIds: string[]): Promise<void> {
+    if (collectionItemIds.length === 0) return;
+    // Restore each card to AVAILABLE (they were AVAILABLE before being locked — IN_TRADE
+    // cards can only have been locked from AVAILABLE status since acceptTrade validates this)
     await prisma.userCollection.updateMany({
-      where: { id: { in: collectionItemIds } },
+      where: { id: { in: collectionItemIds }, status: CardStatus.IN_TRADE },
       data: { status: CardStatus.AVAILABLE, lockedByTradeId: null },
+    });
+    // Also clear any stale lockedByTradeId on cards that aren't IN_TRADE (safety net)
+    await prisma.userCollection.updateMany({
+      where: { id: { in: collectionItemIds }, lockedByTradeId: { not: null } },
+      data: { lockedByTradeId: null },
     });
   }
 

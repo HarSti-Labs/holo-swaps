@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { tradesApi } from "@/lib/api/trades";
@@ -78,6 +79,7 @@ export default function TradeDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuthStore();
+  const queryClient = useQueryClient();
   const tradeId = params.tradeId as string;
 
   const [trade, setTrade] = useState<Trade | null>(null);
@@ -256,6 +258,7 @@ export default function TradeDetailPage() {
     setIsDeclining(true);
     try {
       await tradesApi.decline(tradeId);
+      queryClient.invalidateQueries({ queryKey: ["myCollection"] });
       await loadTrade();
     } catch (err: any) {
       setActionError(err.response?.data?.message || "Failed to decline trade");
@@ -272,6 +275,7 @@ export default function TradeDetailPage() {
     setIsCancelling(true);
     try {
       await tradesApi.cancel(tradeId);
+      queryClient.invalidateQueries({ queryKey: ["myCollection"] });
       await loadTrade();
     } catch (err: any) {
       setActionError(err.response?.data?.message || "Failed to cancel trade");

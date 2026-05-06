@@ -3,6 +3,7 @@ import { Syne, DM_Sans, DM_Mono } from "next/font/google";
 import { Providers } from "@/components/shared/Providers";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
+import Script from "next/script";
 import "@/styles/globals.css";
 
 const syne = Syne({
@@ -45,6 +46,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`dark ${syne.variable} ${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
+      <head>
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-6T3480Y2P0" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-6T3480Y2P0');
+        `}</Script>
+      </head>
       <body className="dark">
         <Providers>
           <Navbar />

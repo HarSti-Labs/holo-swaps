@@ -110,6 +110,12 @@ export class CollectionRepository implements ICollectionRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await prisma.userCollection.delete({ where: { id } });
+    await prisma.$transaction([
+      prisma.tradeMatchItem.deleteMany({ where: { collectionItemId: id } }),
+      prisma.cardVerification.deleteMany({ where: { collectionItemId: id } }),
+      prisma.tradeItem.deleteMany({ where: { collectionItemId: id } }),
+      prisma.cardOwnershipHistory.deleteMany({ where: { collectionItemId: id } }),
+      prisma.userCollection.delete({ where: { id } }),
+    ]);
   }
 }

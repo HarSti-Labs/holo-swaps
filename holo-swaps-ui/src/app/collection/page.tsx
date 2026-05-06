@@ -1906,6 +1906,9 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
       queryClient.invalidateQueries({ queryKey: ["myCollection"] });
       onClose();
     },
+    onError: () => {
+      setConfirmDelete(false);
+    },
   });
 
   return (
@@ -1931,26 +1934,6 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
             </div>
           )}
 
-          {confirmDelete && (
-            <div className="p-4 rounded-lg bg-red-900/20 border border-red-800/50">
-              <p className="text-base text-red-300 font-medium mb-3">Remove &quot;{item.card.name}&quot; from your collection?</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setConfirmDelete(false)}
-                  className="flex-1 px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors text-base font-medium"
-                >
-                  Keep it
-                </button>
-                <button
-                  onClick={() => deleteMutation.mutate()}
-                  disabled={deleteMutation.isPending}
-                  className="flex-1 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors text-base font-medium disabled:opacity-50"
-                >
-                  {deleteMutation.isPending ? "Removing..." : "Yes, remove"}
-                </button>
-              </div>
-            </div>
-          )}
 
           <div>
             <label className="block text-base font-medium text-slate-300 mb-1.5">Condition</label>
@@ -1984,10 +1967,10 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
               Asking Price <span className="text-slate-400 font-normal">(optional)</span>
             </label>
             <p className="text-base text-slate-400 mb-2">
-              Leave blank to use the market price{item.currentMarketValue != null ? ` ($${item.currentMarketValue.toFixed(2)})` : ""}
+              Leave blank to use the market price{item.currentMarketValue != null ? <span className="whitespace-nowrap"> (${item.currentMarketValue.toFixed(2)})</span> : ""}
             </p>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+            <div className="flex items-center rounded-lg border border-slate-700 bg-slate-800 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500">
+              <span className="pl-3 text-slate-400 flex-shrink-0">$</span>
               <input
                 type="number"
                 min="0"
@@ -1996,7 +1979,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
                 onChange={(e) => setAskingPrice(e.target.value)}
                 disabled={item.status === "IN_TRADE"}
                 placeholder="0.00"
-                className="w-full pl-7 pr-3 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex-1 px-2 py-2.5 bg-transparent text-white focus:outline-none text-base disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -2079,7 +2062,28 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-5 border-t border-slate-700 flex-shrink-0">
+        <div className="flex-shrink-0 border-t border-slate-700">
+          {confirmDelete && (
+            <div className="px-5 py-4 bg-red-900/20 border-b border-red-800/50">
+              <p className="text-base text-red-300 font-medium mb-3">Remove &quot;{item.card.name}&quot; from your collection?</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="flex-1 px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors text-base font-medium"
+                >
+                  Keep it
+                </button>
+                <button
+                  onClick={() => deleteMutation.mutate()}
+                  disabled={deleteMutation.isPending}
+                  className="flex-1 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors text-base font-medium disabled:opacity-50"
+                >
+                  {deleteMutation.isPending ? "Removing..." : deleteMutation.isError ? "Try again" : "Yes, remove"}
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center justify-between p-5">
           <button
             onClick={() => setConfirmDelete(true)}
             disabled={deleteMutation.isPending}
@@ -2108,6 +2112,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
             >
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </button>
+          </div>
           </div>
         </div>
       </div>

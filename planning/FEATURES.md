@@ -415,6 +415,30 @@ Tiers are calculated from tradeCount + reputationScore combined.
 
 ---
 
+## 📊 Analytics & SEO (To Do)
+
+### Google Analytics Conversion Events
+- [ ] **User Registered** — fire `gtag('event', 'sign_up')` on successful registration
+- [ ] **Trade Proposed** — fire `gtag('event', 'trade_proposed')` when a trade is submitted
+- [ ] **Trade Accepted** — fire `gtag('event', 'trade_accepted')` when a trade is accepted
+- [ ] **Trade Completed** — fire `gtag('event', 'trade_completed')` when admin marks a trade complete
+- [ ] Mark the above as Conversions in Analytics → Admin → Conversions
+
+### Google Search Console
+- [ ] Verify domain at search.google.com/search-console
+- [ ] Link to Google Analytics property
+- [ ] Submit sitemap so Google indexes all pages
+
+### Favicon
+- [ ] Add a proper favicon (H logo) — currently browser tab shows blank icon
+- [ ] Add `apple-touch-icon` for iOS home screen
+
+### OG / Social Preview Tags
+- [ ] Add `og:image` to layout metadata so links shared on Twitter/Discord/iMessage show a preview card with the HoloSwaps logo and description
+- [ ] Test with opengraph.xyz after deploying
+
+---
+
 ## ✅ Core Features (Completed)
 
 - Trade proposal, counter, accept, decline, cancel, mutual cancel ✅
