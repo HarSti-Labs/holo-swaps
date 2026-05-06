@@ -10,7 +10,7 @@ import { useAuthStore } from "@/lib/hooks/useAuth";
 import {
   Plus, Search, Filter, Grid3x3, List, Trash2, Edit2,
   ArrowLeftRight, X, Star, BookMarked, Heart, CheckSquare, Square, Lock, Trophy,
-  Camera, ImagePlus, Loader2,
+  Camera, ImagePlus, Loader2, AlertTriangle,
 } from "lucide-react";
 import { Card as CardType, CollectionItem, CardCondition, WantItem, WantPriority } from "@/types";
 import { CONDITION_LABELS } from "@/types";
@@ -530,7 +530,7 @@ function MyCardsPageContent() {
 
             {/* Filter Panel */}
             {showFilters && (
-              <div className="mb-6 p-6 bg-slate-900/80 backdrop-blur-xl border-2 border-slate-700 rounded-2xl relative z-10 space-y-5">
+              <div className="mb-6 p-6 bg-slate-900 border-2 border-slate-700 rounded-2xl relative z-10 space-y-5">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white">Filter Cards</h3>
                   {activeFilterCount > 0 && (
@@ -833,7 +833,7 @@ function MyCardsPageContent() {
 
             {/* Filter Panel */}
             {showWantFilters && (
-              <div className="mb-6 p-6 bg-slate-900/80 backdrop-blur-xl border-2 border-slate-700 rounded-2xl relative z-10 space-y-5">
+              <div className="mb-6 p-6 bg-slate-900 border-2 border-slate-700 rounded-2xl relative z-10 space-y-5">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white">Filter Want List</h3>
                   {wantActiveFilterCount > 0 && (
@@ -969,7 +969,7 @@ function MyCardsPageContent() {
       </main>
 
       {noPhotoError && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setNoPhotoError(null)}>
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setNoPhotoError(null)}>
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-slate-700">
               <div className="flex items-center gap-3">
@@ -1136,13 +1136,13 @@ function CollectionCard({
   return (
     <div
       onClick={selectMode ? onToggleSelect : undefined}
-      className={`group relative bg-slate-900/50 backdrop-blur-sm border-2 rounded-3xl overflow-hidden transition-all duration-300 flex flex-col ${
-        selectMode ? "cursor-pointer" : "hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-105 hover:-translate-y-2 duration-500"
+      className={`group relative bg-slate-900 border-2 rounded-3xl overflow-hidden transition-all duration-300 flex flex-col will-change-transform ${
+        selectMode ? "cursor-pointer" : "hover:shadow-xl hover:shadow-blue-500/20 hover:scale-105 hover:-translate-y-2 duration-500"
       } ${selected ? "border-blue-500 shadow-lg shadow-blue-500/30" : "border-slate-700/50 hover:border-blue-500/70"}`}
     >
       {/* IN_TRADE lock overlay */}
       {item.status === "IN_TRADE" && (
-        <div className="absolute inset-0 z-30 bg-black/60 backdrop-blur-[1px] flex flex-col items-center justify-center rounded-3xl">
+        <div className="absolute inset-0 z-30 bg-black/70 flex flex-col items-center justify-center rounded-3xl">
           <Lock className="h-8 w-8 text-amber-400 mb-2" />
           <span className="text-amber-400 text-base font-bold">In Trade</span>
         </div>
@@ -1247,8 +1247,8 @@ function WantCard({ want, viewMode, onEdit, onRemove, selectMode = false, select
     return (
       <div
         onClick={selectMode ? onToggleSelect : undefined}
-        className={`group relative bg-slate-900/50 backdrop-blur-sm border-2 rounded-3xl overflow-hidden transition-all duration-300 ${
-          selectMode ? "cursor-pointer" : "hover:shadow-2xl hover:shadow-pink-500/30 hover:scale-105 hover:-translate-y-2 duration-500"
+        className={`group relative bg-slate-900 border-2 rounded-3xl overflow-hidden transition-all duration-300 will-change-transform ${
+          selectMode ? "cursor-pointer" : "hover:shadow-xl hover:shadow-pink-500/20 hover:scale-105 hover:-translate-y-2 duration-500"
         } ${selected ? "border-pink-500 shadow-lg shadow-pink-500/30" : "border-slate-700/50 hover:border-pink-500/70"}`}
       >
         <div className="aspect-[2/3] bg-gradient-to-br from-pink-950 via-purple-950 to-slate-950 flex items-center justify-center relative">
@@ -1380,7 +1380,7 @@ function EditWantDialog({
   const [notes, setNotes] = useState(want.notes ?? "");
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700">
@@ -1512,7 +1512,7 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700 flex-shrink-0">
@@ -1688,7 +1688,7 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700 flex-shrink-0">
@@ -1846,6 +1846,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
   const [notes, setNotes] = useState(item.notes || "");
   const [quantity, setQuantity] = useState(item.quantity ?? 1);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmLastPhotoMediaId, setConfirmLastPhotoMediaId] = useState<string | null>(null);
   const [media, setMedia] = useState(item.media ?? []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -1881,10 +1882,33 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
     }
   };
 
-  const handleDeletePhoto = async (mediaId: string) => {
+  const handleDeletePhoto = (mediaId: string) => {
+    if (media.length === 1 && item.status === "AVAILABLE") {
+      setConfirmLastPhotoMediaId(mediaId);
+      return;
+    }
+    doDeletePhoto(mediaId);
+  };
+
+  const doDeletePhoto = async (mediaId: string) => {
     try {
       await collectionApi.deleteCollectionMedia(item.id, mediaId);
       setMedia((prev) => prev.filter((m) => m.id !== mediaId));
+      queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+    } catch {
+      setPhotoError("Failed to delete photo.");
+    }
+  };
+
+  const handleConfirmLastPhotoDelete = async () => {
+    if (!confirmLastPhotoMediaId) return;
+    const mediaId = confirmLastPhotoMediaId;
+    setConfirmLastPhotoMediaId(null);
+    try {
+      await collectionApi.deleteCollectionMedia(item.id, mediaId);
+      await collectionApi.updateCollectionItem(item.id, { status: "UNAVAILABLE" });
+      setMedia([]);
+      setAvailableForTrade(false);
       queryClient.invalidateQueries({ queryKey: ["myCollection"] });
     } catch {
       setPhotoError("Failed to delete photo.");
@@ -1912,7 +1936,39 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
   });
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
+
+      {/* Last-photo warning modal */}
+      {confirmLastPhotoMediaId && (
+        <div className="absolute inset-0 bg-black/60 z-10 flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6 flex flex-col gap-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+                <AlertTriangle size={18} className="text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-white">Remove listing?</h3>
+                <p className="text-sm text-slate-400 mt-1">This is your only photo. Deleting it will remove <span className="text-white font-medium">{item.card.name}</span> from trading. Other traders won't be able to see or propose it.</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmLastPhotoMediaId(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors"
+              >
+                Keep photo
+              </button>
+              <button
+                onClick={handleConfirmLastPhotoDelete}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium transition-colors"
+              >
+                Delete &amp; delist
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700 flex-shrink-0">
