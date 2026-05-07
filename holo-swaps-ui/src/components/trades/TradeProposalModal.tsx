@@ -114,7 +114,7 @@ export function TradeProposalModal({
   };
 
   const PLATFORM_FEE_RATE = 0.10;
-  const RETURN_SHIPPING = 4.99;
+  const RETURN_SHIPPING = currentUser?.freeShipping ? 0 : 4.99;
 
   const myTotal = calculateTotalValue(myCards);
   const theirTotal = calculateTotalValue(theirCards);
@@ -142,6 +142,7 @@ export function TradeProposalModal({
         message: message || undefined,
       });
 
+      window.gtag?.("event", "trade_proposed");
       router.push(`/trades/${trade.id}`);
       onClose();
     } catch (err: any) {
@@ -484,7 +485,11 @@ export function TradeProposalModal({
                     </div>
                     <div className="flex items-center justify-between text-base">
                       <p className="text-slate-400">Return Shipping</p>
-                      <span className="font-semibold text-slate-300">${RETURN_SHIPPING.toFixed(2)}</span>
+                      {RETURN_SHIPPING === 0 ? (
+                        <span className="font-semibold text-green-400">Free</span>
+                      ) : (
+                        <span className="font-semibold text-slate-300">${RETURN_SHIPPING.toFixed(2)}</span>
+                      )}
                     </div>
                     <div className="flex items-center justify-between text-base pt-1 border-t border-slate-700">
                       <p className="font-semibold text-slate-300">Your Total Due</p>
@@ -537,7 +542,10 @@ export function TradeProposalModal({
             <p className="text-base text-slate-400 mb-3">
               By proposing this trade, you agree to a{" "}
               <span className="text-purple-400 font-medium">${myFee.toFixed(2)} platform fee</span>
-              {" "}+ <span className="text-slate-300 font-medium">$4.99 return shipping</span>
+              {RETURN_SHIPPING > 0
+                ? <>{" "}+ <span className="text-slate-300 font-medium">${RETURN_SHIPPING.toFixed(2)} return shipping</span></>
+                : <>{" "}+ <span className="text-green-400 font-medium">free shipping</span></>
+              }
               {" "}= <span className="text-white font-medium">${(myFee + RETURN_SHIPPING).toFixed(2)} total</span>, collected when the trade is accepted.
             </p>
           )}

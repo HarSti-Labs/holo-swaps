@@ -83,6 +83,24 @@ PATCH or DELETE /api/collection/:itemId
   → Otherwise: update or delete
 ```
 
+### 2e. Deleting a Collection Item (Cascade)
+`CollectionRepository.delete` uses a `prisma.$transaction` to delete dependent rows before the item itself:
+1. `TradeMatchItem` — match suggestions referencing this item
+2. `CardVerification` — verification records
+3. `TradeItem` — trade line items (only safe to delete if trade is already resolved)
+4. `CardOwnershipHistory` — provenance records
+5. `userCollection` — the item itself
+
+**Note:** Step 3 only works cleanly when the card is AVAILABLE (not IN_TRADE). The IN_TRADE guard in step 2c prevents this path from being reached on locked cards.
+
+### 2f. Last-Photo Delete Warning
+When a user deletes a photo and it is the **last photo** on a card that is currently `AVAILABLE` (i.e. listed for trading), the UI intercepts the delete and shows a warning modal. If confirmed:
+1. The card is delisted: `isOpenListing: false`
+2. The card status is set to `UNAVAILABLE`
+3. The photo is then deleted
+
+If cancelled, nothing changes. This prevents cards from appearing in the listings feed without any photos.
+
 ### 2d. Add to Want List
 ```
 User submits cardId + condition preference + priority
@@ -504,7 +522,22 @@ A user must have both a `stripeCustomerId` (to pay) and a verified `stripeAccoun
 
 ---
 
-## 19. Blocking & Reporting
+## 19. Free Shipping (Admin-Controlled)
+
+The `User` model has a `freeShipping Boolean @default(false)` field. When true, the platform waives the return shipping fee for that user in `TradeService.acceptTrade`.
+
+```
+On trade accept:
+  → proposer.freeShipping = true → proposer's shippingCents = 0
+  → receiver.freeShipping = true → receiver's shippingCents = 0
+  → Otherwise: shippingCents = RETURN_SHIPPING_CENTS (default flat rate)
+```
+
+Admin can toggle this via `PATCH /api/admin/users/:userId/free-shipping` (no request body needed — it flips the current value). See `scripts/admin-api.md` for curl example.
+
+---
+
+## 20. Blocking & Reporting
 
 ```
 POST /api/users/:userId/block
@@ -520,7 +553,7 @@ POST /api/users/:userId/report
 
 ---
 
-## 20. Admin — User Bans
+## 21. Admin — User Bans
 
 ```
 PATCH /api/admin/users/:id/ban
@@ -535,7 +568,7 @@ PATCH /api/admin/users/:id/unban
 
 ---
 
-## 21. Complete Trade Status Lifecycle
+## 22. Complete Trade Status Lifecycle
 
 ```
 PROPOSED
@@ -556,7 +589,7 @@ PROPOSED
 
 ---
 
-## 22. Who Gets Charged What — Summary
+## 23. Who Gets Charged What — Summary
 
 | Scenario | Proposer | Receiver | Platform |
 |---|---|---|---|

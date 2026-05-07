@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTradeMatches } from "@/lib/hooks/useTrades";
 import { formatCurrency, getInitials, cn } from "@/lib/utils";
 import {
@@ -181,6 +181,10 @@ export default function MatchesPage() {
   const { data: allMatches, isLoading } = useTradeMatches();
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [sortBy, setSortBy] = useState<SortKey>("matchScore");
+
+  useEffect(() => {
+    window.gtag?.("event", "match_viewed");
+  }, []);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [proposalTarget, setProposalTarget] = useState<TradeMatch | null>(null);

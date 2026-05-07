@@ -26,7 +26,10 @@
       "WebFetch(domain:tcgapi.dev)",
       "Bash(xargs sed:*)",
       "Bash(grep -n \"showCancelModal\\\\|CancelModal\\\\|cancel modal\\\\|Cancel modal\" /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-ui/src/app/trades/[tradeId]/page.tsx)",
-      "Bash(npx ts-node:*)"
+      "Bash(npx ts-node:*)",
+      "Bash(node:*)",
+      "Bash(grep -n \"useAuthStore\\\\|currentUser\\\\|authUser\" /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-ui/src/app/trades/[tradeId]/page.tsx)",
+      "Bash(grep:*)"
     ]
   }
 }

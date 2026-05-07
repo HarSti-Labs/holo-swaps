@@ -41,6 +41,7 @@ export interface User {
   emailOnTradeDeclined: boolean;
   emailOnTradeCancelled: boolean;
   emailOnTradeMessage: boolean;
+  freeShipping: boolean;
   createdAt: string;
   tier?: string | null;
   followerCount?: number;

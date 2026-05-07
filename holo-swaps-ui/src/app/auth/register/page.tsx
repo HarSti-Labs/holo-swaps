@@ -93,6 +93,7 @@ export default function RegisterPage() {
 
     try {
       await register(form.email, form.username, form.password);
+      window.gtag?.("event", "sign_up", { method: "email" });
       router.push("/dashboard");
     } catch (err: unknown) {
       const apiErrors =

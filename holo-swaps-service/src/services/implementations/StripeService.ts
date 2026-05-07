@@ -157,15 +157,18 @@ export class StripeService implements IStripeService {
         },
         quantity: 1,
       },
-      {
+    ];
+
+    if (data.shippingCents > 0) {
+      lineItems.push({
         price_data: {
           currency: data.currency,
           product_data: { name: "Shipping & handling" },
           unit_amount: Math.round(data.shippingCents),
         },
         quantity: 1,
-      },
-    ];
+      });
+    }
 
     if (data.cashCents > 0 && data.cashRecipientUsername) {
       lineItems.push({

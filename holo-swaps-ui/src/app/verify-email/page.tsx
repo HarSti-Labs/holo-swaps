@@ -32,6 +32,7 @@ function VerifyEmailPageContent() {
         await api.get(`/auth/verify-email?token=${token}`);
         setStatus("success");
         setMessage("Your email has been verified successfully! You can now start trading.");
+        window.gtag?.("event", "email_verified");
 
         // If user is logged in, refresh their data to update verification status
         if (isAuthenticated) {

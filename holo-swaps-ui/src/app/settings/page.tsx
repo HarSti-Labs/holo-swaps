@@ -212,6 +212,7 @@ function SettingsPageContent() {
       await api.post("/stripe/setup-customer");
       await loadUser();
       setPaymentsSuccess("Payment method set up successfully.");
+      window.gtag?.("event", "payment_method_added");
     } catch (err: any) {
       setPaymentsError(err.response?.data?.message || "Failed to set up payment method");
     } finally {

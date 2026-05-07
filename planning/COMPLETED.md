@@ -621,6 +621,73 @@
 
 ---
 
+---
+
+## Session — 2026-05-06 (Bug Fixes, Free Shipping, Duplicate Detection, Analytics)
+
+### Bug Fixes
+
+- [x] **Remove card from collection failing silently** — FK constraint violations: `TradeMatchItem`, `CardVerification`, `TradeItem`, and `CardOwnershipHistory` all reference `UserCollection` without cascade deletes. Fixed `CollectionRepository.delete` to use `prisma.$transaction` that deletes all dependent rows before deleting the collection item.
+  - Files: `holo-swaps-service/src/repositories/implementations/CollectionRepository.ts`
+
+- [x] **Card staying locked after trade cancel/decline** — two root causes: (1) React Query `staleTime: 1 minute` serving stale IN_TRADE status from cache; (2) `unlockCards` setting all cards to AVAILABLE regardless of original status. Fixed by calling `queryClient.invalidateQueries({ queryKey: ["myCollection"] })` in `confirmCancel` and `confirmDecline`, and adding `status: IN_TRADE` filter to `unlockCards` with a second pass to clear stale `lockedByTradeId`.
+  - Files: `holo-swaps-ui/src/app/trades/[tradeId]/page.tsx`, `holo-swaps-service/src/services/implementations/TradeService.ts`
+
+- [x] **Delete confirmation panel not visible** — confirm panel was rendered at top of scrollable body; user couldn't see it when scrolled down. Moved to sticky footer area so it's always visible.
+  - Files: `holo-swaps-ui/src/app/collection/page.tsx`
+
+- [x] **Mouse lag in Chrome on collection page** — `backdrop-blur-sm` on every card in the grid caused one GPU compositor layer per card. Removed from all card elements; changed to `bg-slate-900 will-change-transform`.
+  - Files: `holo-swaps-ui/src/app/collection/page.tsx`
+
+- [x] **Lag when opening edit card modal** — `backdrop-blur-sm` on full-screen overlay caused frame drop on open. Removed from all `fixed inset-0 bg-black/80` overlays.
+  - Files: `holo-swaps-ui/src/app/collection/page.tsx`
+
+- [x] **Duplicate card detection** — adding a card with identical (userId, cardId, condition, isFoil, isFirstEdition, language) created a duplicate row. Fixed: `addToCollection` now runs a `findFirst` check before creating; if a match exists, increments quantity (capped at 99) and returns updated item with 200.
+  - Files: `holo-swaps-service/src/controllers/collectionController.ts`
+
+### New Features
+
+- [x] **Last-photo warning modal** — deleting the last photo from an AVAILABLE (listed) card now shows a warning modal. If confirmed, the photo is deleted and the card is delisted (`isOpenListing: false`, status set to UNAVAILABLE). Cancel aborts the delete.
+  - State: `confirmLastPhotoMediaId`; functions: `doDeletePhoto`, `handleConfirmLastPhotoDelete`, `handleCancelLastPhotoDelete`
+  - Files: `holo-swaps-ui/src/app/collection/page.tsx`
+
+- [x] **Free shipping for whitelisted users** — admin-controlled flag waives the return shipping fee at trade acceptance.
+  - Schema: `freeShipping Boolean @default(false)` on `User` model; `prisma db push` applied
+  - Backend: `TradeService.acceptTrade` checks `(proposer|receiver).freeShipping`; sets `shippingCents: 0` when true
+  - Admin route: `PATCH /api/admin/users/:userId/free-shipping` — toggles the flag, returns updated user
+  - Files: `holo-swaps-service/prisma/schema.prisma`, `holo-swaps-service/src/services/implementations/TradeService.ts`, `holo-swaps-service/src/routes/adminRoutes.ts`
+
+- [x] **Admin API reference doc** — `scripts/admin-api.md` with curl examples for all admin-only operations: login, find user by username, toggle free shipping, ban/unban user, force-set trade status, complete trade.
+  - Files: `holo-swaps/scripts/admin-api.md`
+
+### Google Analytics — Full Event Tracking
+
+Added comprehensive GA4 event tracking across the entire app. TypeScript global type declaration added at `holo-swaps-ui/src/types/globals.d.ts` (declares `window.gtag?` so all calls are type-safe). All events use `window.gtag?.("event", ...)` with optional chaining (safe when GA not loaded).
+
+| Event | File | Trigger |
+|---|---|---|
+| `sign_up` | `auth/register/page.tsx` | Successful registration |
+| `email_verified` | `verify-email/page.tsx` | Email verification success |
+| `payment_method_added` | `settings/page.tsx` | Stripe customer setup complete |
+| `card_added_to_collection` | `collection/page.tsx` (AddCardDialog) | Card added |
+| `first_card_added` | `collection/page.tsx` (AddCardDialog) | First-ever card (collectionCount === 0) |
+| `first_photo_uploaded` | `collection/page.tsx` (EditCardDialog) | First photo on any card |
+| `card_listed_for_trade` | `collection/page.tsx` (EditCardDialog) | Card set to AVAILABLE |
+| `card_added_to_wantlist` | `collection/page.tsx` (AddWantDialog) | Want added |
+| `trade_proposed` | `TradeProposalModal.tsx` | Trade proposal submitted |
+| `trade_countered` | `CounterOfferModal.tsx` | Counter offer sent |
+| `trade_viewed` | `trades/[tradeId]/page.tsx` | Trade detail initial load |
+| `trade_accepted` | `trades/[tradeId]/page.tsx` | Trade accepted |
+| `trade_declined` | `trades/[tradeId]/page.tsx` | Trade declined |
+| `trade_cancelled` | `trades/[tradeId]/page.tsx` | Trade cancelled |
+| `checkout_started` | `trades/[tradeId]/page.tsx` | "Complete My Payment" clicked |
+| `checkout_completed` | `trades/[tradeId]/page.tsx` | Return with `?payment=success` |
+| `listing_viewed` | `listings/page.tsx` | Listing detail modal opened |
+| `profile_viewed` | `profile/[username]/page.tsx` | Non-own profile loaded |
+| `match_viewed` | `matches/page.tsx` | Matches page mounted |
+
+---
+
 ## Bug Fixes & Issues Resolved
 
 ### CORS Error

@@ -126,6 +126,7 @@ export default function TradeDetailPage() {
     const payment = searchParams.get("payment");
     if (payment === "success" || payment === "cancelled") {
       setPaymentBanner(payment);
+      if (payment === "success") window.gtag?.("event", "checkout_completed", { trade_id: tradeId });
       // Remove query param from URL without navigating
       const url = new URL(window.location.href);
       url.searchParams.delete("payment");
@@ -135,7 +136,7 @@ export default function TradeDetailPage() {
 
   useEffect(() => {
     if (user) {
-      loadTrade();
+      loadTrade(true);
       loadMessages();
       // Poll messages every 5 s; poll trade status every 10 s so stepper/verification updates live
       const msgInterval = setInterval(loadMessages, 5000);
@@ -182,12 +183,13 @@ export default function TradeDetailPage() {
     }
   };
 
-  const loadTrade = async () => {
+  const loadTrade = async (isInitialLoad = false) => {
     setIsLoading(true);
     loadSnapshots();
     try {
       const data = await tradesApi.getById(tradeId);
       setTrade(data);
+      if (isInitialLoad) window.gtag?.("event", "trade_viewed", { trade_id: tradeId });
     } catch (err: any) {
       console.error("Failed to load trade:", err);
       if (err.response?.status === 404 || err.response?.status === 403) {
@@ -242,6 +244,7 @@ export default function TradeDetailPage() {
     setIsAccepting(true);
     try {
       await tradesApi.accept(tradeId);
+      window.gtag?.("event", "trade_accepted", { trade_id: tradeId });
       await loadTrade();
     } catch (err: any) {
       setActionError(err.response?.data?.message || "Failed to accept trade");
@@ -258,6 +261,7 @@ export default function TradeDetailPage() {
     setIsDeclining(true);
     try {
       await tradesApi.decline(tradeId);
+      window.gtag?.("event", "trade_declined", { trade_id: tradeId });
       queryClient.invalidateQueries({ queryKey: ["myCollection"] });
       await loadTrade();
     } catch (err: any) {
@@ -275,6 +279,7 @@ export default function TradeDetailPage() {
     setIsCancelling(true);
     try {
       await tradesApi.cancel(tradeId);
+      window.gtag?.("event", "trade_cancelled", { trade_id: tradeId });
       queryClient.invalidateQueries({ queryKey: ["myCollection"] });
       await loadTrade();
     } catch (err: any) {
@@ -340,6 +345,7 @@ const handleSubmitTracking = async (e: React.FormEvent) => {
     setIsLoadingCheckout(true);
     try {
       const checkoutUrl = await tradesApi.getCheckoutUrl(tradeId);
+      window.gtag?.("event", "checkout_started", { trade_id: tradeId });
       window.location.href = checkoutUrl;
     } catch (err: any) {
       setActionError(err.response?.data?.message || "Failed to load payment page");
@@ -664,6 +670,7 @@ if (!user) {
               {/* Trade Summary — always aligned at the bottom */}
               {(() => {
                 const PLATFORM_FEE_RATE = 0.10;
+                const RETURN_SHIPPING = user.freeShipping ? 0 : 4.99;
                 const getItemValue = (item: typeof trade.items[0]) => {
                   const c = (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
                   return (c?.askingValueOverride ?? c?.currentMarketValue ?? 0) as number;
@@ -730,7 +737,11 @@ if (!user) {
                       </div>
                       <div className="flex items-center justify-between px-1">
                         <span className="text-base text-slate-400">Shipping &amp; handling</span>
-                        <span className="text-base font-semibold text-purple-400">$4.99</span>
+                        {RETURN_SHIPPING === 0 ? (
+                          <span className="text-base font-semibold text-green-400">Free</span>
+                        ) : (
+                          <span className="text-base font-semibold text-purple-400">${RETURN_SHIPPING.toFixed(2)}</span>
+                        )}
                       </div>
                       {iPayCash && trade.cashDifference > 0 && (
                         <div className="flex items-center justify-between px-1">
@@ -1363,7 +1374,7 @@ if (!user) {
 
               const myReceiveValue = theirCardsValue + (theyAreCashPayer ? trade.cashDifference : 0);
               const myFee = myReceiveValue * PLATFORM_FEE_RATE;
-              const RETURN_SHIPPING = 4.99;
+              const RETURN_SHIPPING = user.freeShipping ? 0 : 4.99;
               const myTotal = myFee + RETURN_SHIPPING + (iCashPayer ? trade.cashDifference : 0);
 
               const myIntentId = myIsProposer ? trade.stripeProposerIntentId : trade.stripeReceiverIntentId;
@@ -1388,7 +1399,11 @@ if (!user) {
                         </div>
                         <div className="flex items-center justify-between px-4 py-2.5">
                           <span className="text-base text-slate-300">Shipping &amp; handling <span className="text-slate-500">(return delivery after verification)</span></span>
-                          <span className="text-base font-medium text-white">${RETURN_SHIPPING.toFixed(2)}</span>
+                          {RETURN_SHIPPING === 0 ? (
+                            <span className="text-base font-medium text-green-400">Free</span>
+                          ) : (
+                            <span className="text-base font-medium text-white">${RETURN_SHIPPING.toFixed(2)}</span>
+                          )}
                         </div>
                         {iCashPayer && trade.cashDifference > 0 && (
                           <div className="flex items-center justify-between px-4 py-2.5">

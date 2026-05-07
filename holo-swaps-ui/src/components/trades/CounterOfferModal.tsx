@@ -148,6 +148,7 @@ export function CounterOfferModal({ isOpen, onClose, trade, currentUserId, onSuc
         ...payload,
         message: counterMessage.trim() || undefined,
       });
+      window.gtag?.("event", "trade_countered");
       onSuccess();
       onClose();
     } catch (err: any) {

@@ -997,7 +997,7 @@ function MyCardsPageContent() {
         </div>
       )}
 
-      {showAddDialog && <AddCardDialog onClose={() => setShowAddDialog(false)} />}
+      {showAddDialog && <AddCardDialog onClose={() => setShowAddDialog(false)} collectionCount={collection.length} />}
       {editingItem && <EditCardDialog item={editingItem} onClose={() => setEditingItem(null)} />}
       {showAddWantDialog && <AddWantDialog onClose={() => setShowAddWantDialog(false)} />}
       {editingWant && (
@@ -1462,7 +1462,7 @@ function EditWantDialog({
 // Add Card dialog (collection)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function AddCardDialog({ onClose }: { onClose: () => void }) {
+function AddCardDialog({ onClose, collectionCount }: { onClose: () => void; collectionCount: number }) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const [step, setStep] = useState<"search" | "details">("search");
@@ -1505,8 +1505,10 @@ function AddCardDialog({ onClose }: { onClose: () => void }) {
   const addMutation = useMutation({
     mutationFn: (data: { cardId: string; condition: CardCondition; isFoil: boolean; quantity: number }) =>
       collectionApi.addToCollection(data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+      window.gtag?.("event", "card_added_to_collection");
+      if (collectionCount === 0) window.gtag?.("event", "first_card_added");
       onClose();
     },
   });
@@ -1679,6 +1681,7 @@ function AddWantDialog({ onClose }: { onClose: () => void }) {
     mutationFn: () => collectionApi.addToWants({ cardId: selectedCard!.id, maxCondition, priority, notes: notes || undefined }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["myWants"] });
+      window.gtag?.("event", "card_added_to_wantlist");
       onClose();
     },
     onError: (err: any) => {
@@ -1871,7 +1874,11 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
     try {
       const url = await collectionApi.uploadFile(file);
       const newMedia = await collectionApi.addCollectionMedia(item.id, url, "FRONT");
-      setMedia((prev) => [...prev, newMedia]);
+      setMedia((prev) => {
+        const updated = [...prev, newMedia];
+        if (updated.length === 1) window.gtag?.("event", "first_photo_uploaded");
+        return updated;
+      });
       queryClient.invalidateQueries({ queryKey: ["myCollection"] });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -1918,8 +1925,9 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
   const updateMutation = useMutation({
     mutationFn: (data: Parameters<typeof collectionApi.updateCollectionItem>[1]) =>
       collectionApi.updateCollectionItem(item.id, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+      if ((variables as any).status === "AVAILABLE") window.gtag?.("event", "card_listed_for_trade");
       onClose();
     },
   });

@@ -415,14 +415,14 @@ Tiers are calculated from tradeCount + reputationScore combined.
 
 ---
 
-## 📊 Analytics & SEO (To Do)
+## 📊 Analytics & SEO
 
-### Google Analytics Conversion Events
-- [ ] **User Registered** — fire `gtag('event', 'sign_up')` on successful registration
-- [ ] **Trade Proposed** — fire `gtag('event', 'trade_proposed')` when a trade is submitted
-- [ ] **Trade Accepted** — fire `gtag('event', 'trade_accepted')` when a trade is accepted
-- [ ] **Trade Completed** — fire `gtag('event', 'trade_completed')` when admin marks a trade complete
-- [ ] Mark the above as Conversions in Analytics → Admin → Conversions
+### Google Analytics Conversion Events — ✅ DONE
+All 19 GA4 events are instrumented across the app. Mark the key ones as "Key Events" in the GA4 dashboard:
+- `sign_up`, `trade_proposed`, `trade_accepted`, `checkout_completed` — mark as Key Events (Conversions)
+- All others track engagement and funnel behavior
+
+Events live: `sign_up`, `email_verified`, `payment_method_added`, `card_added_to_collection`, `first_card_added`, `first_photo_uploaded`, `card_listed_for_trade`, `card_added_to_wantlist`, `trade_proposed`, `trade_countered`, `trade_viewed`, `trade_accepted`, `trade_declined`, `trade_cancelled`, `checkout_started`, `checkout_completed`, `listing_viewed`, `profile_viewed`, `match_viewed`
 
 ### Google Search Console
 - [ ] Verify domain at search.google.com/search-console
@@ -465,6 +465,20 @@ Tiers are calculated from tradeCount + reputationScore combined.
 **Goal:** Allow users to open a dispute from the trade page
 - Backend fully built (`POST /api/trades/:id/dispute`, `POST /api/disputes/:id/evidence`, `PATCH /api/disputes/:id/resolve`)
 - Frontend missing: "Open Dispute" button on trade page (BOTH_RECEIVED or later), evidence submission form, dispute status display
+
+### Trade Auto-Expiry (Backend Done — Background Job Running)
+- 7-day auto-cancel for PROPOSED/COUNTERED trades is live
+- 24-hour warning notification implemented
+- No frontend action needed — already works
+
+### Collection Visibility Toggle in Settings
+- Backend already enforces visibility rules on `GET /api/users/:username/collection`
+- Settings page (`/settings`) does not yet expose the dropdown for users to change their `collectionVisibility`
+- Add dropdown to Profile section in settings: PUBLIC / PRIVATE / FOLLOWERS_ONLY
+
+### Favicon & OG Tags (Pre-Launch Polish)
+- Favicon: blank browser tab — add `/app/favicon.ico` or configure in `layout.tsx`
+- OG/social preview tags: add `og:image`, `og:title`, `og:description` to root `layout.tsx` metadata
 
 ### Option 2: Trade Proposal Flow (HIGH PRIORITY - Core Feature) ✅ DONE
 **Goal:** Enable users to propose trades with each other

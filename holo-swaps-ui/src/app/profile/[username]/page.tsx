@@ -59,6 +59,9 @@ export default function ProfilePage() {
         setUser(profileData);
         setIsFollowing(profileData.isFollowing ?? false);
         setIsBlocked(profileData.isBlocked ?? false);
+        if (currentUser?.username !== username) {
+          window.gtag?.("event", "profile_viewed", { username });
+        }
 
         if (currentUser?.username === username) {
           try {

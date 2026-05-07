@@ -468,7 +468,10 @@ export default function ListingsPage() {
                 listing={listing}
                 isAuthenticated={isAuthenticated}
                 isOwnListing={user?.id === listing.user.id}
-                onDetail={() => setDetailListing(listing)}
+                onDetail={() => {
+                  setDetailListing(listing);
+                  window.gtag?.("event", "listing_viewed", { card_name: listing.card.name, card_id: listing.cardId });
+                }}
                 onOffer={() => handleOffer(listing)}
               />
             ))}
