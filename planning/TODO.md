@@ -19,12 +19,13 @@ _(move items here when actively working on them)_
 - Files: `holo-swaps-ui/src/app/settings/page.tsx`, `holo-swaps-service/src/controllers/userController.ts`
 
 
-### 4. Post-Trade Review Prompt
-- Backend: `POST /api/trades/:tradeId/reviews` exists
-- `GET /api/users/:username/reviews` exists but profile page shows "No reviews yet" placeholder
-- Need: review modal shown on trade detail page when status = COMPLETED and user hasn't reviewed yet
-- Need: profile Stats tab to actually render reviews from the API
-- Files: `holo-swaps-ui/src/app/trades/[tradeId]/page.tsx`, `holo-swaps-ui/src/app/profile/[username]/page.tsx`
+### 4. Post-Trade Review Prompt ✅ DONE
+- Added `reviews` to `tradeInclude` in `TradeRepository.ts` — trade object now includes all submitted reviews
+- `reviewSubmitted` initialized from `trade.reviews` on load (persists across page reloads)
+- Review section replaced with a prominent yellow banner when COMPLETED + not yet reviewed
+- Shows all submitted reviews below the form (or thank-you state) with star ratings, author, comment, date
+- `review_submitted` GA event fires on submit
+- Profile page: fixed bug where switching profiles while on Stats tab didn't reload reviews
 
 ---
 

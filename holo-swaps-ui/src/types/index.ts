@@ -120,6 +120,13 @@ export interface Trade {
   offers: TradeOffer[];
   shipments: Shipment[];
   verifications: CardVerification[];
+  reviews: {
+    authorId: string;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    author: { username: string; avatarUrl: string | null };
+  }[];
   createdAt: string;
   updatedAt: string;
 }

@@ -20,6 +20,15 @@ const tradeInclude = {
   shipments: true,
   verifications: { include: { media: true } },
   offers: { include: { offeredBy: { select: selectSafeUser } } },
+  reviews: {
+    select: {
+      authorId: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      author: { select: { username: true, avatarUrl: true } },
+    },
+  },
 };
 
 export class TradeRepository implements ITradeRepository {

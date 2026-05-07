@@ -85,6 +85,11 @@ export default function ProfilePage() {
     setReviewsLoaded(false);
     setReviews([]);
     setReviewsTotal(0);
+    // If already on the stats tab when navigating to a new profile, reload reviews
+    if (activeTab === "stats") {
+      loadReviews();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
 
   // Load collection when user is loaded (collection tab is shown by default)

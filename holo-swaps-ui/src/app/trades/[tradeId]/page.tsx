@@ -189,6 +189,7 @@ export default function TradeDetailPage() {
     try {
       const data = await tradesApi.getById(tradeId);
       setTrade(data);
+      setReviewSubmitted(data.reviews?.some((r) => r.authorId === user?.id) ?? false);
       if (isInitialLoad) window.gtag?.("event", "trade_viewed", { trade_id: tradeId });
     } catch (err: any) {
       console.error("Failed to load trade:", err);
@@ -360,7 +361,9 @@ const handleSubmitTracking = async (e: React.FormEvent) => {
     setIsSubmittingReview(true);
     try {
       await tradesApi.submitReview(tradeId, { rating: reviewRating, comment: reviewComment || undefined });
+      window.gtag?.("event", "review_submitted", { rating: reviewRating });
       setReviewSubmitted(true);
+      await loadTrade();
     } catch (err: any) {
       setActionError(err.response?.data?.message || "Failed to submit review");
     } finally {
@@ -1171,55 +1174,99 @@ if (!user) {
 
           {/* ── Review section (COMPLETED) ── */}
           {trade.status === "COMPLETED" && (
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-              <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-                <Star size={20} className="text-yellow-400" />
-                Leave a Review
-              </h2>
-              {reviewSubmitted ? (
-                <div className="flex items-center gap-2 text-green-400 text-base">
-                  <CheckCircle size={16} />
-                  Thanks! Your review has been submitted.
-                </div>
-              ) : (
-                <form onSubmit={handleSubmitReview} className="space-y-4">
-                  <div>
-                    <p className="text-base text-slate-400 mb-2">How was your experience trading with <span className="text-white">{otherUser.username}</span>?</p>
-                    <div className="flex gap-2">
+            <div className="space-y-4">
+              {/* Review prompt — only if current user hasn't reviewed yet */}
+              {!reviewSubmitted && (
+                <div className="bg-yellow-950/30 border border-yellow-500/40 rounded-xl p-6">
+                  <h2 className="text-lg font-bold flex items-center gap-2 mb-1 text-yellow-300">
+                    <Star size={18} className="text-yellow-400" />
+                    How was your trade?
+                  </h2>
+                  <p className="text-base text-slate-400 mb-4">
+                    Leave a review for <span className="text-white font-medium">{otherUser.username}</span> — it helps build trust in the community.
+                  </p>
+                  <form onSubmit={handleSubmitReview} className="space-y-4">
+                    <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
                           type="button"
                           onClick={() => setReviewRating(star)}
-                          className={`text-2xl transition-colors ${star <= reviewRating ? "text-yellow-400" : "text-slate-400 hover:text-yellow-600"}`}
+                          className={`text-3xl transition-colors ${star <= reviewRating ? "text-yellow-400" : "text-slate-600 hover:text-yellow-500"}`}
                         >
                           ★
                         </button>
                       ))}
                       {reviewRating > 0 && (
-                        <span className="text-base text-slate-400 self-center ml-1">
+                        <span className="text-base text-slate-400 ml-2">
                           {["", "Poor", "Fair", "Good", "Great", "Excellent"][reviewRating]}
                         </span>
                       )}
                     </div>
-                  </div>
-                  <textarea
-                    value={reviewComment}
-                    onChange={(e) => setReviewComment(e.target.value)}
-                    placeholder="Share details about your experience (optional)"
-                    rows={3}
-                    maxLength={500}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSubmittingReview || reviewRating === 0}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
-                  >
-                    {isSubmittingReview ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
-                    Submit Review
-                  </button>
-                </form>
+                    <textarea
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      placeholder="Share details about your experience (optional)"
+                      rows={3}
+                      maxLength={500}
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSubmittingReview || reviewRating === 0}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-semibold transition-colors"
+                    >
+                      {isSubmittingReview ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
+                      Submit Review
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* Submitted reviews */}
+              {trade.reviews && trade.reviews.length > 0 && (
+                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 space-y-4">
+                  <h2 className="text-base font-semibold text-slate-300 flex items-center gap-2">
+                    <Star size={15} className="text-yellow-400" />
+                    Trade Reviews
+                  </h2>
+                  {trade.reviews.map((r) => (
+                    <div key={r.authorId} className="flex gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                        {r.author.avatarUrl ? (
+                          <img src={r.author.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        ) : (
+                          <span className="text-white text-xs font-bold">{r.author.username[0].toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-base font-medium text-white">{r.author.username}</span>
+                          <div className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <span key={s} className={`text-sm ${s <= r.rating ? "text-yellow-400" : "text-slate-600"}`}>★</span>
+                            ))}
+                          </div>
+                          {r.authorId === user?.id && (
+                            <span className="text-base text-slate-500">(you)</span>
+                          )}
+                        </div>
+                        {r.comment && <p className="text-base text-slate-300">{r.comment}</p>}
+                        <p className="text-base text-slate-500 mt-0.5">
+                          {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Already reviewed — show thank-you if no reviews loaded yet (edge case) */}
+              {reviewSubmitted && (!trade.reviews || trade.reviews.length === 0) && (
+                <div className="flex items-center gap-2 text-green-400 text-base bg-green-950/30 border border-green-500/30 rounded-xl px-5 py-4">
+                  <CheckCircle size={16} />
+                  Thanks! Your review has been submitted.
+                </div>
               )}
             </div>
           )}

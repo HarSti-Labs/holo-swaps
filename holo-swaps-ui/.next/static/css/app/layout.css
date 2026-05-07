@@ -2460,6 +2460,9 @@ video {
 .bg-yellow-900\/20 {
   background-color: rgb(113 63 18 / 0.2);
 }
+.bg-yellow-950\/30 {
+  background-color: rgb(66 32 6 / 0.3);
+}
 .bg-gradient-to-b {
   background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
 }
@@ -3997,6 +4000,11 @@ video {
   color: rgb(202 138 4 / var(--tw-text-opacity, 1));
 }
 
+.hover\:text-yellow-500:hover {
+  --tw-text-opacity: 1;
+  color: rgb(234 179 8 / var(--tw-text-opacity, 1));
+}
+
 .hover\:underline:hover {
   text-decoration-line: underline;
 }
@@ -4112,6 +4120,11 @@ video {
 
 .focus\:ring-red-500\/50:focus {
   --tw-ring-color: rgb(239 68 68 / 0.5);
+}
+
+.focus\:ring-yellow-500:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(234 179 8 / var(--tw-ring-opacity, 1));
 }
 
 .focus-visible\:outline-none:focus-visible {
