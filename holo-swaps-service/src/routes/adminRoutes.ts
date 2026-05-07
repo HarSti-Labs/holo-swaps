@@ -76,6 +76,20 @@ router.patch("/users/:userId/unban", async (req: Request, res: Response) => {
   sendSuccess(res, updated, "User unbanned");
 });
 
+// PATCH /api/admin/users/:userId/free-shipping  — toggle free shipping for a user
+router.patch("/users/:userId/free-shipping", async (req: Request, res: Response) => {
+  const user = await prisma.user.findUnique({ where: { id: req.params.userId } });
+  if (!user) throw ApiError.notFound("User not found");
+
+  const updated = await prisma.user.update({
+    where: { id: req.params.userId },
+    data: { freeShipping: !(user as any).freeShipping },
+    select: { id: true, username: true, email: true, freeShipping: true },
+  });
+
+  sendSuccess(res, updated, `Free shipping ${(updated as any).freeShipping ? "enabled" : "disabled"} for ${updated.username}`);
+});
+
 // GET /api/admin/trades?status=&page=&limit=
 router.get("/trades", async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;

@@ -171,6 +171,7 @@ model User {
   stripeAccountVerified Boolean   @default(false)
   isAdmin               Boolean   @default(false)
   isBanned              Boolean   @default(false)
+  freeShipping          Boolean   @default(false)
   bannedAt              DateTime?
   emailVerificationToken     String?   @unique
   emailVerificationExpiresAt DateTime?

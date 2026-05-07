@@ -467,7 +467,7 @@ export class TradeService implements ITradeService {
 
     const proposerSession = await this.stripeService.createCheckoutSession({
       platformFeeCents: proposerFeeCents,
-      shippingCents: RETURN_SHIPPING_CENTS,
+      shippingCents: (proposer as any).freeShipping ? 0 : RETURN_SHIPPING_CENTS,
       cashCents: proposerIsCashPayer ? cashAmountCents : 0,
       cashRecipientUsername: proposerIsCashPayer ? (receiver.username ?? null) : null,
       currency: "usd",
@@ -481,7 +481,7 @@ export class TradeService implements ITradeService {
 
     const receiverSession = await this.stripeService.createCheckoutSession({
       platformFeeCents: receiverFeeCents,
-      shippingCents: RETURN_SHIPPING_CENTS,
+      shippingCents: (receiver as any).freeShipping ? 0 : RETURN_SHIPPING_CENTS,
       cashCents: receiverIsCashPayer ? cashAmountCents : 0,
       cashRecipientUsername: receiverIsCashPayer ? (proposer.username ?? null) : null,
       currency: "usd",
