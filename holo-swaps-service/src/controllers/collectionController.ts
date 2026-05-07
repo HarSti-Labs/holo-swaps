@@ -73,6 +73,33 @@ export const addToCollection = async (
   }
 
   const { status, gradingCompany, gradingScore, gradingCertNumber, ...rest } = parsed.data;
+
+  // If an identical card (same card, condition, foil, edition, language) already exists,
+  // increment its quantity instead of creating a duplicate entry.
+  const existing = await prisma.userCollection.findFirst({
+    where: {
+      userId: req.user!.id,
+      cardId: rest.cardId,
+      condition: rest.condition,
+      isFoil: rest.isFoil ?? false,
+      isFirstEdition: rest.isFirstEdition ?? false,
+      language: rest.language ?? "English",
+    },
+    include: { card: true, media: { orderBy: { order: "asc" } } },
+  });
+
+  if (existing) {
+    const addQty = rest.quantity ?? 1;
+    const newQty = Math.min((existing.quantity ?? 1) + addQty, 99);
+    const updated = await prisma.userCollection.update({
+      where: { id: existing.id },
+      data: { quantity: newQty },
+      include: { card: true, media: { orderBy: { order: "asc" } } },
+    });
+    sendSuccess(res, updated, `Quantity updated to ${newQty}`);
+    return;
+  }
+
   const item = await collectionRepo.create({
     userId: req.user!.id,
     ...rest,
