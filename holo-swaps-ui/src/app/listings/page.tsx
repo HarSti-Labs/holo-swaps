@@ -95,6 +95,7 @@ function listingUserToUser(listing: Listing): User {
     emailOnTradeDeclined: true,
     emailOnTradeCancelled: true,
     emailOnTradeMessage: true,
+    freeShipping: false,
     createdAt: "",
   };
 }
