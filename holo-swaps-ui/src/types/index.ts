@@ -17,7 +17,8 @@ export type TradeStatus =
   | "VERIFIED"
   | "COMPLETED"
   | "DISPUTED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "DECLINED";
 
 export type WantPriority = "HIGH" | "MEDIUM" | "LOW";
 
@@ -88,6 +89,7 @@ export interface CollectionItem {
   askingValueOverride: number | null;
   currentMarketValue: number | null;
   createdAt: string;
+  tradeItems?: { tradeId: string }[];
 }
 
 export interface WantItem {
@@ -261,4 +263,5 @@ export const TRADE_STATUS_LABELS: Record<TradeStatus, string> = {
   COMPLETED: "Completed",
   DISPUTED: "Disputed",
   CANCELLED: "Cancelled",
+  DECLINED: "Declined",
 };

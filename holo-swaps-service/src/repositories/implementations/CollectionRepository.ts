@@ -10,6 +10,7 @@ import { PaginatedResult, PaginationParams } from "@/types";
 const collectionInclude = {
   card: true,
   media: { orderBy: { order: "asc" as const } },
+  tradeItems: { select: { tradeId: true } },
 };
 
 export class CollectionRepository implements ICollectionRepository {

@@ -554,7 +554,7 @@ export class TradeService implements ITradeService {
     }
 
     const itemIds = await this.getTradeItemIds(tradeId);
-    const updated = await this.tradeRepository.updateStatus(tradeId, TradeStatus.CANCELLED);
+    const updated = await this.tradeRepository.updateStatus(tradeId, TradeStatus.DECLINED);
     await this.unlockCards(itemIds);
 
     // Notify proposer

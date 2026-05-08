@@ -57,6 +57,9 @@ function MyCardsPageContent() {
   const [collectionSelectMode, setCollectionSelectMode] = useState(false);
   const [selectedCollectionIds, setSelectedCollectionIds] = useState<Set<string>>(new Set());
   const [isBulkCollectionLoading, setIsBulkCollectionLoading] = useState(false);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [showBulkWantDeleteConfirm, setShowBulkWantDeleteConfirm] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
   const [noPhotoError, setNoPhotoError] = useState<string | null>(null);
 
   // ── Want list state ───────────────────────────────────────────────
@@ -172,7 +175,6 @@ function MyCardsPageContent() {
   };
 
   const bulkDeleteCollection = async () => {
-    if (!confirm(`Delete ${selectedCollectionIds.size} card(s)? This cannot be undone.`)) return;
     setIsBulkCollectionLoading(true);
     try {
       await Promise.all([...selectedCollectionIds].map((id) => collectionApi.removeFromCollection(id)));
@@ -180,6 +182,7 @@ function MyCardsPageContent() {
       exitCollectionSelect();
     } finally {
       setIsBulkCollectionLoading(false);
+      setShowBulkDeleteConfirm(false);
     }
   };
 
@@ -217,7 +220,6 @@ function MyCardsPageContent() {
   };
 
   const bulkDeleteWants = async () => {
-    if (!confirm(`Remove ${selectedWantIds.size} item(s) from your want list?`)) return;
     setIsBulkWantLoading(true);
     try {
       await Promise.all([...selectedWantIds].map((id) => collectionApi.removeFromWants(id)));
@@ -225,6 +227,7 @@ function MyCardsPageContent() {
       exitWantSelect();
     } finally {
       setIsBulkWantLoading(false);
+      setShowBulkWantDeleteConfirm(false);
     }
   };
 
@@ -485,6 +488,7 @@ function MyCardsPageContent() {
 
             {/* Collection bulk action bar */}
             {collectionSelectMode && (
+              <>
               <div className="mb-4 flex flex-wrap items-center gap-3 p-4 bg-slate-900/90 border-2 border-blue-500/50 rounded-2xl relative z-10">
                 <button onClick={toggleSelectAllCollection} className="text-base font-bold text-blue-400 hover:text-blue-300 transition-colors">
                   {selectedCollectionIds.size === filteredCollection.length ? "Deselect All" : "Select All"}
@@ -513,7 +517,15 @@ function MyCardsPageContent() {
                       Mark Unavailable
                     </button>
                     <button
-                      onClick={bulkDeleteCollection}
+                      onClick={() => {
+                        const lockedCount = collection.filter(i => selectedCollectionIds.has(i.id) && i.status === "IN_TRADE").length;
+                        if (lockedCount > 0) {
+                          setBulkDeleteError(`${lockedCount} selected card${lockedCount !== 1 ? "s are" : " is"} locked in an active trade. Cancel the trade${lockedCount !== 1 ? "s" : ""} first before deleting.`);
+                          return;
+                        }
+                        setBulkDeleteError(null);
+                        setShowBulkDeleteConfirm(true);
+                      }}
                       disabled={isBulkCollectionLoading}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 text-base font-bold hover:bg-red-600/30 disabled:opacity-50 transition-colors"
                     >
@@ -522,10 +534,17 @@ function MyCardsPageContent() {
                     </button>
                   </>
                 )}
-                <button onClick={exitCollectionSelect} className="ml-auto text-base text-slate-400 hover:text-slate-300 transition-colors">
+                <button onClick={() => { exitCollectionSelect(); setBulkDeleteError(null); }} className="ml-auto text-base text-slate-400 hover:text-slate-300 transition-colors">
                   Cancel
                 </button>
               </div>
+              {bulkDeleteError && (
+                <div className="flex items-start gap-2 mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                  <AlertTriangle size={15} className="flex-shrink-0 mt-0.5" />
+                  <span>{bulkDeleteError}</span>
+                </div>
+              )}
+              </>
             )}
 
             {/* Filter Panel */}
@@ -787,7 +806,7 @@ function MyCardsPageContent() {
                   <span className="text-base text-slate-400">{selectedWantIds.size} selected</span>
                   {selectedWantIds.size > 0 && (
                     <button
-                      onClick={bulkDeleteWants}
+                      onClick={() => setShowBulkWantDeleteConfirm(true)}
                       disabled={isBulkWantLoading}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-600/50 text-red-400 text-base font-bold hover:bg-red-600/30 disabled:opacity-50 transition-colors"
                     >
@@ -1008,6 +1027,76 @@ function MyCardsPageContent() {
           isSaving={updateWantMutation.isPending}
         />
       )}
+
+      {/* Bulk delete collection confirm */}
+      {showBulkDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowBulkDeleteConfirm(false)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <Trash2 className="h-5 w-5 text-red-400" />
+                </div>
+                <h2 className="text-lg font-bold text-white">Delete {selectedCollectionIds.size} Card{selectedCollectionIds.size !== 1 ? "s" : ""}?</h2>
+              </div>
+              <button onClick={() => setShowBulkDeleteConfirm(false)} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-5">
+              <p className="text-base text-slate-300">This will permanently remove {selectedCollectionIds.size} card{selectedCollectionIds.size !== 1 ? "s" : ""} from your collection. This cannot be undone.</p>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-700">
+              <button onClick={() => setShowBulkDeleteConfirm(false)} className="px-4 py-2 rounded-lg text-base text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={bulkDeleteCollection}
+                disabled={isBulkCollectionLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                {isBulkCollectionLoading ? "Deleting..." : "Yes, delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk delete wants confirm */}
+      {showBulkWantDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowBulkWantDeleteConfirm(false)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <Trash2 className="h-5 w-5 text-red-400" />
+                </div>
+                <h2 className="text-lg font-bold text-white">Remove {selectedWantIds.size} Want{selectedWantIds.size !== 1 ? "s" : ""}?</h2>
+              </div>
+              <button onClick={() => setShowBulkWantDeleteConfirm(false)} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-5">
+              <p className="text-base text-slate-300">This will remove {selectedWantIds.size} item{selectedWantIds.size !== 1 ? "s" : ""} from your want list. This cannot be undone.</p>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-700">
+              <button onClick={() => setShowBulkWantDeleteConfirm(false)} className="px-4 py-2 rounded-lg text-base text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={bulkDeleteWants}
+                disabled={isBulkWantLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                {isBulkWantLoading ? "Removing..." : "Yes, remove"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1105,6 +1194,15 @@ function CollectionCard({
                   <Lock size={12} />
                   In Trade
                 </span>
+                {item.tradeItems?.[0]?.tradeId && (
+                  <a
+                    href={`/trades/${item.tradeItems[0].tradeId}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600/20 border border-blue-500/40 text-blue-400 text-xs font-bold hover:bg-blue-600/30 transition-colors"
+                  >
+                    View Trade
+                  </a>
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -1142,9 +1240,18 @@ function CollectionCard({
     >
       {/* IN_TRADE lock overlay */}
       {item.status === "IN_TRADE" && (
-        <div className="absolute inset-0 z-30 bg-black/70 flex flex-col items-center justify-center rounded-3xl">
-          <Lock className="h-8 w-8 text-amber-400 mb-2" />
+        <div className="absolute inset-0 z-30 bg-black/70 flex flex-col items-center justify-center rounded-3xl gap-3">
+          <Lock className="h-8 w-8 text-amber-400" />
           <span className="text-amber-400 text-base font-bold">In Trade</span>
+          {item.tradeItems?.[0]?.tradeId && (
+            <a
+              href={`/trades/${item.tradeItems[0].tradeId}`}
+              onClick={(e) => e.stopPropagation()}
+              className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors"
+            >
+              View Trade
+            </a>
+          )}
         </div>
       )}
 
@@ -1201,9 +1308,20 @@ function CollectionCard({
       </div>
       {!selectMode && (
         item.status === "IN_TRADE" ? (
-          <div className="border-t-2 border-amber-500/30 bg-amber-500/10 py-2 text-center text-base font-bold text-amber-400 flex items-center justify-center gap-1.5">
-            <Lock size={11} />
-            In Active Trade
+          <div className="border-t-2 border-amber-500/30 bg-amber-500/10 py-2 flex items-center justify-center gap-3">
+            <span className="text-base font-bold text-amber-400 flex items-center gap-1.5">
+              <Lock size={11} />
+              In Active Trade
+            </span>
+            {item.tradeItems?.[0]?.tradeId && (
+              <a
+                href={`/trades/${item.tradeItems[0].tradeId}`}
+                onClick={(e) => e.stopPropagation()}
+                className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors"
+              >
+                View Trade
+              </a>
+            )}
           </div>
         ) : (
           <div className="flex border-t-2 border-slate-700/50">
@@ -1849,6 +1967,7 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
   const [notes, setNotes] = useState(item.notes || "");
   const [quantity, setQuantity] = useState(item.quantity ?? 1);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [confirmLastPhotoMediaId, setConfirmLastPhotoMediaId] = useState<string | null>(null);
   const [media, setMedia] = useState(item.media ?? []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -2125,31 +2244,64 @@ function EditCardDialog({ item, onClose }: { item: CollectionItem; onClose: () =
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex-shrink-0 border-t border-slate-700">
-          {confirmDelete && (
-            <div className="px-5 py-4 bg-red-900/20 border-b border-red-800/50">
-              <p className="text-base text-red-300 font-medium mb-3">Remove &quot;{item.card.name}&quot; from your collection?</p>
-              <div className="flex gap-2">
+        {/* Delete confirmation modal */}
+        {confirmDelete && (
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-10 flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-5 border-b border-slate-700">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <Trash2 className="h-5 w-5 text-red-400" />
+                  </div>
+                  <h2 className="text-lg font-bold text-white">Remove Card</h2>
+                </div>
+                <button onClick={() => setConfirmDelete(false)} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-5">
+                <p className="text-base text-slate-300">
+                  Remove <span className="text-white font-medium">{item.card.name}</span> from your collection? This cannot be undone.
+                </p>
+              </div>
+              <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-700">
                 <button
                   onClick={() => setConfirmDelete(false)}
-                  className="flex-1 px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors text-base font-medium"
+                  className="px-4 py-2 rounded-lg text-base text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   Keep it
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate()}
                   disabled={deleteMutation.isPending}
-                  className="flex-1 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors text-base font-medium disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
                 >
-                  {deleteMutation.isPending ? "Removing..." : deleteMutation.isError ? "Try again" : "Yes, remove"}
+                  <Trash2 className="h-4 w-4" />
+                  {deleteMutation.isPending ? "Removing..." : "Yes, remove"}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="flex-shrink-0 border-t border-slate-700">
+          {deleteError && (
+            <div className="flex items-start gap-2 mx-5 mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+              <AlertTriangle size={15} className="flex-shrink-0 mt-0.5" />
+              <span>{deleteError}</span>
             </div>
           )}
           <div className="flex items-center justify-between p-5">
           <button
-            onClick={() => setConfirmDelete(true)}
+            onClick={() => {
+              if (item.status === "IN_TRADE") {
+                setDeleteError("This card is locked in an active trade. Cancel the trade first before removing it.");
+                return;
+              }
+              setDeleteError(null);
+              setConfirmDelete(true);
+            }}
             disabled={deleteMutation.isPending}
             className="px-4 py-2 border border-red-500/60 text-red-400 hover:bg-red-500/10 rounded-lg text-base font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5"
           >

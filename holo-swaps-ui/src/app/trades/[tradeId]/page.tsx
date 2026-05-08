@@ -43,6 +43,7 @@ const STATUS_LABELS: Record<TradeStatus, string> = {
   COMPLETED: "Completed",
   DISPUTED: "Disputed",
   CANCELLED: "Cancelled",
+  DECLINED: "Declined",
 };
 
 // Human-readable shipment status labels shown to users
@@ -72,6 +73,7 @@ const STATUS_COLORS: Record<TradeStatus, string> = {
   COMPLETED: "bg-green-600/20 text-green-400 border-green-600/30",
   DISPUTED: "bg-red-500/20 text-red-400 border-red-500/30",
   CANCELLED: "bg-slate-500/20 text-slate-400 border-slate-500/30",
+  DECLINED: "bg-orange-500/20 text-orange-400 border-orange-500/30",
 };
 
 export default function TradeDetailPage() {
@@ -515,11 +517,29 @@ if (!user) {
             { label: "Complete",  statuses: ["COMPLETED"] },
           ];
           const currentIdx = steps.findIndex((s) => s.statuses.includes(trade.status));
-          if (trade.status === "CANCELLED" || trade.status === "DISPUTED") {
+          if (trade.status === "CANCELLED" || trade.status === "DECLINED" || trade.status === "DISPUTED") {
+            const actionBy = trade.lastActionById === trade.proposer.id
+              ? trade.proposer.username
+              : trade.lastActionById === trade.receiver.id
+                ? trade.receiver.username
+                : null;
             return (
-              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-base font-medium ${trade.status === "DISPUTED" ? "bg-red-950/30 border-red-500/30 text-red-400" : "bg-slate-800/50 border-slate-700 text-slate-400"}`}>
-                <AlertCircle size={14} />
-                {trade.status === "DISPUTED" ? "This trade is under dispute" : "This trade was cancelled"}
+              <div className="flex items-start gap-3 px-4 py-3 rounded-xl border bg-red-950/30 border-red-500/30 text-red-400">
+                <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-base font-medium">
+                    {trade.status === "DISPUTED"
+                      ? "This trade is under dispute"
+                      : trade.status === "DECLINED"
+                      ? "This trade was declined"
+                      : "This trade was cancelled"}
+                  </p>
+                  {(trade.status === "CANCELLED" || trade.status === "DECLINED") && actionBy && (
+                    <p className="text-sm text-red-400/70 mt-0.5">
+                      {trade.status === "DECLINED" ? "Declined" : "Cancelled"} by {actionBy} · {new Date(trade.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  )}
+                </div>
               </div>
             );
           }
@@ -574,6 +594,12 @@ if (!user) {
                     You're Trading
                   </h3>
                   <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                    {myItems.length === 0 && (
+                      <div className="flex items-center gap-2 px-3 py-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-slate-400 text-sm italic">
+                        <Package size={14} className="flex-shrink-0" />
+                        No cards for trade
+                      </div>
+                    )}
                     {myItems.map((item) => {
                       const card =
                         (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;
@@ -637,6 +663,12 @@ if (!user) {
                     You're Receiving
                   </h3>
                   <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                    {theirItems.length === 0 && (
+                      <div className="flex items-center gap-2 px-3 py-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-slate-400 text-sm italic">
+                        <Package size={14} className="flex-shrink-0" />
+                        No cards for trade
+                      </div>
+                    )}
                     {theirItems.map((item) => {
                       const card =
                         (item as any).collectionItem ?? item.proposerCollection ?? item.receiverCollection;

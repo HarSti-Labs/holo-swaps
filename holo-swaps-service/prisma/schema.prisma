@@ -46,6 +46,7 @@ enum TradeStatus {
   COMPLETED
   DISPUTED
   CANCELLED
+  DECLINED
 }
 
 enum DisputeStatus {

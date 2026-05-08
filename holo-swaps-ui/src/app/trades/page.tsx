@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { tradesApi } from "@/lib/api/trades";
 import { Trade, TradeStatus } from "@/types";
-import { Loader2, Package, ArrowRight, Clock } from "lucide-react";
+import { Loader2, Package, ArrowRight, Clock, XCircle } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 
 const STATUS_LABELS: Record<TradeStatus, string> = {
@@ -20,6 +20,7 @@ const STATUS_LABELS: Record<TradeStatus, string> = {
   COMPLETED: "Completed",
   DISPUTED: "Disputed",
   CANCELLED: "Cancelled",
+  DECLINED: "Declined",
 };
 
 const STATUS_COLORS: Record<TradeStatus, string> = {
@@ -34,6 +35,7 @@ const STATUS_COLORS: Record<TradeStatus, string> = {
   COMPLETED: "bg-green-600/20 text-green-400 border-green-600/30",
   DISPUTED: "bg-red-500/20 text-red-400 border-red-500/30",
   CANCELLED: "bg-slate-500/20 text-slate-400 border-slate-500/30",
+  DECLINED: "bg-orange-500/20 text-orange-400 border-orange-500/30",
 };
 
 function TradesPageContent() {
@@ -43,9 +45,9 @@ function TradesPageContent() {
 
   const [trades, setTrades] = useState<Trade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const initialFilter = (searchParams.get("filter") as "all" | "active" | "completed" | "cancelled") ?? "all";
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "cancelled">(
-    ["all", "active", "completed", "cancelled"].includes(initialFilter) ? initialFilter : "all"
+  const initialFilter = (searchParams.get("filter") as "all" | "active" | "completed" | "cancelled" | "declined") ?? "all";
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "cancelled" | "declined">(
+    ["all", "active", "completed", "cancelled", "declined"].includes(initialFilter) ? initialFilter : "all"
   );
 
   useEffect(() => {
@@ -68,6 +70,8 @@ function TradesPageContent() {
         filtered = filtered.filter((t) => t.status === "COMPLETED");
       } else if (filter === "cancelled") {
         filtered = filtered.filter((t) => ["CANCELLED", "DISPUTED"].includes(t.status));
+      } else if (filter === "declined") {
+        filtered = filtered.filter((t) => t.status === "DECLINED");
       }
 
       setTrades(filtered);
@@ -147,6 +151,16 @@ function TradesPageContent() {
           >
             Cancelled
           </button>
+          <button
+            onClick={() => setFilter("declined")}
+            className={`px-4 py-2 font-medium transition-colors ${
+              filter === "declined"
+                ? "text-blue-400 border-b-2 border-blue-400"
+                : "text-slate-400 hover:text-slate-300"
+            }`}
+          >
+            Declined
+          </button>
         </div>
 
         {/* Trades List */}
@@ -165,6 +179,8 @@ function TradesPageContent() {
                 ? "You don't have any active trades"
                 : filter === "completed"
                 ? "You haven't completed any trades yet"
+                : filter === "declined"
+                ? "You don't have any declined trades"
                 : "You don't have any cancelled trades"}
             </p>
           </div>
@@ -269,6 +285,23 @@ function TradesPageContent() {
                     <div className="mt-4 flex items-center gap-2 text-base text-yellow-400">
                       <Clock className="h-4 w-4" />
                       {trade.status === "COUNTERED" ? "Action needed: Review counter offer" : "Action needed: Review and respond"}
+                    </div>
+                  )}
+
+                  {/* Cancelled / Declined by */}
+                  {(trade.status === "CANCELLED" || trade.status === "DECLINED") && trade.lastActionById && (
+                    <div className="mt-4 flex items-center gap-2 text-base text-red-400">
+                      <XCircle className="h-4 w-4 flex-shrink-0" />
+                      <span>
+                        {trade.status === "DECLINED" ? "Declined" : "Cancelled"} by{" "}
+                        <span className="font-medium">
+                          {trade.lastActionById === trade.proposer.id
+                            ? trade.proposer.username
+                            : trade.receiver.username}
+                        </span>
+                        {" · "}
+                        {new Date(trade.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
                     </div>
                   )}
                 </div>

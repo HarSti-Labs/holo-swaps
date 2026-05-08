@@ -124,7 +124,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 glass border-b border-border/60">
-      <div className="container mx-auto flex items-center justify-between h-16 px-4">
+      <div className="container mx-auto flex items-center h-16 px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
@@ -135,8 +135,10 @@ export function Navbar() {
           </span>
         </Link>
 
+        <div className="hidden lg:block w-px h-6 bg-border/60 mx-4 flex-shrink-0" />
+
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1 flex-nowrap">
+        <nav className="hidden lg:flex flex-1 justify-center items-center gap-1 flex-nowrap">
           {user?.isAdmin ? (
             /* Admin nav */
             <>
@@ -239,10 +241,12 @@ export function Navbar() {
           )}
         </nav>
 
+        <div className="hidden lg:block w-px h-6 bg-border/60 mx-4 flex-shrink-0" />
+
         {/* Right side */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto lg:ml-0">
           {/* Help dropdown — desktop (hidden for admins) */}
-          <div ref={helpRef} className={cn("relative hidden md:block", user?.isAdmin && "!hidden")}>
+          <div ref={helpRef} className={cn("relative hidden lg:block", user?.isAdmin && "!hidden")}>
             <button
               onClick={() => setHelpOpen((v) => !v)}
               className={cn(
@@ -277,9 +281,9 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Notification bell — authenticated non-admins only */}
+          {/* Notification bell */}
           {isAuthenticated && user && !user.isAdmin && (
-            <div ref={notifRef} className="relative hidden md:block">
+            <div ref={notifRef} className="relative">
               <button
                 onClick={() => { setNotifOpen((v) => !v); if (!notifOpen) fetchNotifications(); }}
                 className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -334,7 +338,7 @@ export function Navbar() {
             <>
               <Link
                 href={`/profile/${user.username}`}
-                className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors whitespace-nowrap"
+                className="hidden lg:flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors whitespace-nowrap"
               >
                 <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
                   <span className="text-sm font-bold text-primary">
@@ -345,21 +349,21 @@ export function Navbar() {
               </Link>
               <Link
                 href="/settings"
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
+                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
               >
                 <Settings size={16} />
                 Settings
               </Link>
               <button
                 onClick={handleLogout}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
+                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
               >
                 <LogOut size={16} />
                 Sign out
               </button>
             </>
           ) : (
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2">
               <Link
                 href="/auth/login"
                 className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -378,7 +382,7 @@ export function Navbar() {
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileOpen((v) => !v)}
-            className="md:hidden relative p-2 rounded-lg hover:bg-muted transition-colors"
+            className="lg:hidden relative p-2 rounded-lg hover:bg-muted transition-colors"
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             {!mobileOpen && unreadCount > 0 && !user?.isAdmin && (
@@ -392,7 +396,7 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-card px-4 py-3 space-y-1">
+        <div className="lg:hidden border-t border-border bg-card px-4 py-3 space-y-1">
           {user?.isAdmin ? (
             <>
               <Link
@@ -509,31 +513,6 @@ export function Navbar() {
             </>
           )}
 
-          {/* Notifications section in mobile — authenticated non-admins */}
-          {isAuthenticated && !user?.isAdmin && notifications.length > 0 && (
-            <div className="pt-2 border-t border-border mt-2">
-              <div className="flex items-center justify-between px-3 py-1">
-                <p className="text-base font-semibold text-muted-foreground uppercase tracking-wider">Notifications</p>
-                {unreadCount > 0 && (
-                  <button onClick={handleMarkAllRead} className="text-xs text-primary">Mark all read</button>
-                )}
-              </div>
-              {notifications.slice(0, 5).map((notif) => (
-                <a
-                  key={notif.id}
-                  href={getNotifLink(notif)}
-                  onClick={() => { if (!notif.isRead) handleMarkOneRead(notif.id); setMobileOpen(false); }}
-                  className={`flex items-start gap-2 px-3 py-2.5 rounded-lg transition-colors ${!notif.isRead ? "bg-primary/5" : ""}`}
-                >
-                  <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${!notif.isRead ? "bg-primary" : "bg-transparent"}`} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground leading-snug">{notif.title}</p>
-                    <p className="text-xs text-muted-foreground">{notif.body}</p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
 
           {/* Help section in mobile — hidden for admins */}
           {!user?.isAdmin && (
