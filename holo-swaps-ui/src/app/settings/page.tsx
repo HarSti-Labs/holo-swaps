@@ -55,6 +55,7 @@ function SettingsPageContent() {
     username: user?.username || "",
     bio: user?.bio || "",
     location: user?.location || "",
+    collectionVisibility: (user?.collectionVisibility ?? "PUBLIC") as "PUBLIC" | "PRIVATE" | "FOLLOWERS_ONLY",
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [usernameAvailability, setUsernameAvailability] = useState<{
@@ -183,6 +184,7 @@ function SettingsPageContent() {
         username: user.username || "",
         bio: user.bio || "",
         location: user.location || "",
+        collectionVisibility: (user.collectionVisibility ?? "PUBLIC") as "PUBLIC" | "PRIVATE" | "FOLLOWERS_ONLY",
       });
       setEmailPrefs({
         emailOnTradeProposed: user.emailOnTradeProposed ?? true,
@@ -540,6 +542,23 @@ function SettingsPageContent() {
                   placeholder="City, State"
                 />
               </div>
+              <div>
+                <label className="block text-base text-slate-400 mb-1">Collection Visibility</label>
+                <div className="relative">
+                  <select
+                    value={profileForm.collectionVisibility}
+                    onChange={(e) => setProfileForm({ ...profileForm, collectionVisibility: e.target.value as "PUBLIC" | "PRIVATE" | "FOLLOWERS_ONLY" })}
+                    className="w-full px-4 py-2 pr-10 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                  >
+                    <option value="PUBLIC">Public — anyone can browse your collection</option>
+                    <option value="FOLLOWERS_ONLY">Followers only — only people you approve</option>
+                    <option value="PRIVATE">Private — only you can see it</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                    <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+                </div>
+              </div>
               <div className="flex gap-3">
                 <button
                   onClick={handleSaveProfile}
@@ -555,6 +574,7 @@ function SettingsPageContent() {
                       username: user?.username || "",
                       bio: user?.bio || "",
                       location: user?.location || "",
+                      collectionVisibility: (user?.collectionVisibility ?? "PUBLIC") as "PUBLIC" | "PRIVATE" | "FOLLOWERS_ONLY",
                     });
                     setError("");
                   }}
@@ -577,6 +597,14 @@ function SettingsPageContent() {
               <div>
                 <label className="text-base text-slate-400">Location</label>
                 <p className="text-white">{user?.location || <span className="text-slate-400">No location set</span>}</p>
+              </div>
+              <div>
+                <label className="text-base text-slate-400">Collection Visibility</label>
+                <p className="text-white">
+                  {user?.collectionVisibility === "PRIVATE" ? "Private" :
+                   user?.collectionVisibility === "FOLLOWERS_ONLY" ? "Followers only" :
+                   "Public"}
+                </p>
               </div>
             </div>
           )}

@@ -707,3 +707,36 @@ Added comprehensive GA4 event tracking across the entire app. TypeScript global 
 - ✅ Fixed: Ran `npm install` in `holo-swaps-ui` directory
 
 ---
+
+## Session — 2026-05-07
+
+### Backend — FOLLOWERS_ONLY collection visibility fix
+- `userController.ts` `getPublicCollection`: replaced TODO with real follower check using `prisma.userFollow.findUnique` on `followerId_followingId` compound unique key
+- Route already used `optionalAuthenticate` so `req.user` is available when logged in
+- Unauthenticated users still get 403; followers get through
+
+### Backend — `collectionVisibility` exposed in API responses
+- Added `collectionVisibility: true` to `selectSafeUser` in `UserRepository.ts`
+- Added `collectionVisibility: true` to hardcoded select in `authController.ts` `GET /api/auth/me`
+
+### Frontend — Collection visibility in Settings
+- Added `collectionVisibility` to `User` interface in `types/index.ts`
+- Settings page (`settings/page.tsx`): added dropdown to profile form (PUBLIC / FOLLOWERS_ONLY / PRIVATE) — saves via existing `PATCH /api/users/me`; shows current value in read-only view
+
+### Frontend — Admin Disputes page (`/admin/disputes`)
+- Created `src/app/admin/disputes/page.tsx` — lists all disputes from `GET /api/admin/disputes`
+- Filter tabs: Open / Under Review / Resolved (Proposer/Receiver/Mutual) / All
+- Each row shows reason, trade code, parties, opened-by, evidence count, creation date
+- "View Trade" links to `/admin/trades/:tradeId` for admin action
+- Open count badge on filter tab
+- Added "Disputes" link to admin navbar (desktop + mobile) with `AlertTriangle` icon
+
+### Frontend — Notification bell in Navbar
+- `Navbar.tsx`: added `Bell` icon button (desktop) for authenticated non-admin users
+- Fetches `GET /api/notifications?limit=10` on mount and polls every 30 seconds
+- Red badge shows unread count (capped at "9+")
+- Dropdown shows up to 10 recent notifications; unread ones highlighted with primary-colored dot
+- Click a notification → navigates to trade page (via `data.tradeId`) + marks as read
+- "Mark all read" button calls `PATCH /api/notifications/read-all`
+- Mobile menu: shows unread badge on hamburger icon; notifications section in mobile drawer
+

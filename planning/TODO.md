@@ -12,11 +12,10 @@ _(move items here when actively working on them)_
 
 ## Up Next
 
-### 2. Collection Visibility Setting UI
-- Settings page needs a dropdown to change `collectionVisibility` (PUBLIC / PRIVATE / FOLLOWERS_ONLY)
-- Backend `PATCH /api/users/me` already accepts it
-- The backend `GET /:username/collection` already enforces it but the FOLLOWERS_ONLY branch has a TODO (needs follower check wired in)
-- Files: `holo-swaps-ui/src/app/settings/page.tsx`, `holo-swaps-service/src/controllers/userController.ts`
+### 2. Collection Visibility Setting UI ✅ DONE
+- Settings dropdown added (PUBLIC / FOLLOWERS_ONLY / PRIVATE)
+- FOLLOWERS_ONLY follower check wired in backend (`userController.ts`)
+- `collectionVisibility` added to `selectSafeUser`, `authController` select, and `User` type
 
 
 ### 4. Post-Trade Review Prompt ✅ DONE

@@ -30,6 +30,7 @@ export const selectSafeUser = {
   emailOnTradeCancelled: true,
   emailOnTradeMessage: true,
   freeShipping: true,
+  collectionVisibility: true,
   createdAt: true,
   updatedAt: true,
   passwordHash: false,

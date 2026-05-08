@@ -495,8 +495,12 @@ export const getPublicCollection = async (
   }
 
   if (targetUser.collectionVisibility === "FOLLOWERS_ONLY") {
-    // TODO: check if the requesting user follows this user once followers feature is built
-    throw ApiError.forbidden("This collection is only visible to followers");
+    const requestingUserId = (req as any).user?.id;
+    if (!requestingUserId) throw ApiError.forbidden("This collection is only visible to followers");
+    const follows = await prisma.userFollow.findUnique({
+      where: { followerId_followingId: { followerId: requestingUserId, followingId: targetUser.id } },
+    });
+    if (!follows) throw ApiError.forbidden("This collection is only visible to followers");
   }
 
   const page = parseInt(req.query.page as string) || 1;

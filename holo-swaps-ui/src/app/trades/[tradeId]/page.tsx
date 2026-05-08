@@ -110,6 +110,12 @@ export default function TradeDetailPage() {
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   const [paymentBanner, setPaymentBanner] = useState<"success" | "cancelled" | null>(null);
 
+  // Dispute state
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeDetails, setDisputeDetails] = useState("");
+  const [isSubmittingDispute, setIsSubmittingDispute] = useState(false);
+
   // Receipt / review state
   const [isConfirmingReceipt, setIsConfirmingReceipt] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
@@ -371,6 +377,24 @@ const handleSubmitTracking = async (e: React.FormEvent) => {
     }
   };
 
+  const handleOpenDispute = async () => {
+    if (!disputeReason) return;
+    setIsSubmittingDispute(true);
+    setActionError(null);
+    try {
+      await tradesApi.openDispute(tradeId, { reason: disputeReason, details: disputeDetails || undefined });
+      window.gtag?.("event", "dispute_opened", { trade_id: tradeId });
+      setShowDisputeModal(false);
+      setDisputeReason("");
+      setDisputeDetails("");
+      await loadTrade();
+    } catch (err: any) {
+      setActionError(err.response?.data?.message || "Failed to open dispute");
+    } finally {
+      setIsSubmittingDispute(false);
+    }
+  };
+
 if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
@@ -408,6 +432,7 @@ if (!user) {
   const canCancel = ["PROPOSED", "COUNTERED"].includes(trade.status) ||
     (trade.status === "ACCEPTED" && neitherPaid);
   const canCounter = ["PROPOSED", "COUNTERED"].includes(trade.status);
+  const canDispute = ["BOTH_SHIPPED", "A_RECEIVED", "B_RECEIVED", "BOTH_RECEIVED", "VERIFIED"].includes(trade.status);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
@@ -1295,6 +1320,25 @@ if (!user) {
               </button>
             </div>
           )}
+
+          {/* Open Dispute */}
+          {canDispute && trade.status !== "DISPUTED" && (
+            <div className="border border-orange-500/30 bg-orange-950/20 rounded-xl p-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-base font-semibold text-orange-400">Something went wrong?</p>
+                <p className="text-base text-slate-400 mt-0.5">
+                  If you received the wrong cards, cards in worse condition than described, or have another issue, you can open a dispute for our team to review.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowDisputeModal(true)}
+                className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-orange-700 hover:bg-orange-600 text-white rounded-lg text-base font-medium transition-colors"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                Open Dispute
+              </button>
+            </div>
+          )}
           </div>
 
           {/* Messages + Payment - Right Side */}
@@ -1598,6 +1642,80 @@ if (!user) {
               >
                 <X className="h-4 w-4" />
                 Yes, Cancel Trade
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dispute Modal */}
+      {showDisputeModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowDisputeModal(false)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-orange-500/20 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-orange-400" />
+                </div>
+                <h2 className="text-lg font-bold text-white">Open a Dispute</h2>
+              </div>
+              <button onClick={() => setShowDisputeModal(false)} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-base text-slate-300">
+                Our team will review your dispute and reach out within 1–2 business days.
+              </p>
+              {actionError && (
+                <p className="text-base text-red-400">{actionError}</p>
+              )}
+              <div>
+                <label className="text-base text-slate-400 mb-1.5 block">Reason for dispute</label>
+                <div className="relative">
+                  <select
+                    value={disputeReason}
+                    onChange={(e) => setDisputeReason(e.target.value)}
+                    className="w-full px-3 py-2 pr-8 bg-slate-800 border border-slate-700 rounded-lg text-base text-white focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
+                  >
+                    <option value="">Select a reason...</option>
+                    <option value="WRONG_CARDS">Wrong cards received</option>
+                    <option value="CONDITION_MISMATCH">Cards in worse condition than described</option>
+                    <option value="MISSING_CARDS">Missing cards</option>
+                    <option value="DAMAGED_IN_TRANSIT">Cards damaged in transit</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                    <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="text-base text-slate-400 mb-1.5 block">Additional details <span className="text-slate-500">(optional)</span></label>
+                <textarea
+                  value={disputeDetails}
+                  onChange={(e) => setDisputeDetails(e.target.value)}
+                  placeholder="Describe the issue in more detail..."
+                  rows={3}
+                  maxLength={1000}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-700">
+              <button
+                onClick={() => { setShowDisputeModal(false); setDisputeReason(""); setDisputeDetails(""); }}
+                className="px-4 py-2 rounded-lg text-base text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleOpenDispute}
+                disabled={!disputeReason || isSubmittingDispute}
+                className="flex items-center gap-2 px-4 py-2 bg-orange-700 hover:bg-orange-600 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-base font-medium transition-colors"
+              >
+                {isSubmittingDispute ? <Loader2 className="h-4 w-4 animate-spin" /> : <AlertTriangle className="h-4 w-4" />}
+                Submit Dispute
               </button>
             </div>
           </div>

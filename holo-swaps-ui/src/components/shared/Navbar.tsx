@@ -23,8 +23,11 @@ import {
   Tag,
   Truck,
   Users,
+  Bell,
+  AlertTriangle,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { api } from "@/lib/api/client";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -48,23 +51,70 @@ export function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const helpRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     logout();
     router.push("/");
   };
 
-  // Close help dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (helpRef.current && !helpRef.current.contains(e.target as Node)) {
-        setHelpOpen(false);
-      }
+      if (helpRef.current && !helpRef.current.contains(e.target as Node)) setHelpOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // Fetch notifications when authenticated
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get("/notifications", { params: { limit: 10 } });
+      setNotifications(res.data.data.data);
+      setUnreadCount(res.data.data.unreadCount);
+    } catch {
+      // silent
+    }
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated || user?.isAdmin) return;
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user]);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await api.patch("/notifications/read-all");
+      setUnreadCount(0);
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch {
+      // silent
+    }
+  };
+
+  const handleMarkOneRead = async (id: string) => {
+    try {
+      await api.patch(`/notifications/${id}/read`);
+      setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
+      setUnreadCount((c) => Math.max(0, c - 1));
+    } catch {
+      // silent
+    }
+  };
+
+  const getNotifLink = (notif: any): string => {
+    const data = notif.data ?? {};
+    if (data.tradeId) return `/trades/${data.tradeId}`;
+    return "#";
+  };
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -113,6 +163,18 @@ export function Navbar() {
               >
                 <Headphones size={16} />
                 Support Board
+              </Link>
+              <Link
+                href="/admin/disputes"
+                className={cn(
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
+                  pathname.startsWith("/admin/disputes")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <AlertTriangle size={16} />
+                Disputes
               </Link>
               <Link
                 href="/admin/reports"
@@ -215,6 +277,59 @@ export function Navbar() {
             )}
           </div>
 
+          {/* Notification bell — authenticated non-admins only */}
+          {isAuthenticated && user && !user.isAdmin && (
+            <div ref={notifRef} className="relative hidden md:block">
+              <button
+                onClick={() => { setNotifOpen((v) => !v); if (!notifOpen) fetchNotifications(); }}
+                className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border bg-card shadow-xl shadow-black/20 overflow-hidden z-50">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                    <p className="text-sm font-semibold text-foreground">Notifications</p>
+                    {unreadCount > 0 && (
+                      <button onClick={handleMarkAllRead} className="text-xs text-primary hover:underline">
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-8">No notifications yet</p>
+                    ) : (
+                      notifications.map((notif) => (
+                        <a
+                          key={notif.id}
+                          href={getNotifLink(notif)}
+                          onClick={() => { if (!notif.isRead) handleMarkOneRead(notif.id); setNotifOpen(false); }}
+                          className={`flex items-start gap-3 px-4 py-3 hover:bg-muted transition-colors border-b border-border/50 last:border-0 ${!notif.isRead ? "bg-primary/5" : ""}`}
+                        >
+                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!notif.isRead ? "bg-primary" : "bg-transparent"}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground leading-snug">{notif.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{notif.body}</p>
+                            <p className="text-xs text-muted-foreground/60 mt-1">
+                              {new Date(notif.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
+                        </a>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {isAuthenticated && user ? (
             <>
               <Link
@@ -263,9 +378,14 @@ export function Navbar() {
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileOpen((v) => !v)}
-            className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+            className="md:hidden relative p-2 rounded-lg hover:bg-muted transition-colors"
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            {!mobileOpen && unreadCount > 0 && !user?.isAdmin && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -296,6 +416,17 @@ export function Navbar() {
               >
                 <Headphones size={16} />
                 Support Board
+              </Link>
+              <Link
+                href="/admin/disputes"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg text-base font-medium transition-colors",
+                  pathname.startsWith("/admin/disputes") ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                )}
+              >
+                <AlertTriangle size={16} />
+                Disputes
               </Link>
               <Link
                 href="/admin/reports"
@@ -376,6 +507,32 @@ export function Navbar() {
               <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-base">Sign in</Link>
               <Link href="/auth/register" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-base font-medium text-primary">Get started</Link>
             </>
+          )}
+
+          {/* Notifications section in mobile — authenticated non-admins */}
+          {isAuthenticated && !user?.isAdmin && notifications.length > 0 && (
+            <div className="pt-2 border-t border-border mt-2">
+              <div className="flex items-center justify-between px-3 py-1">
+                <p className="text-base font-semibold text-muted-foreground uppercase tracking-wider">Notifications</p>
+                {unreadCount > 0 && (
+                  <button onClick={handleMarkAllRead} className="text-xs text-primary">Mark all read</button>
+                )}
+              </div>
+              {notifications.slice(0, 5).map((notif) => (
+                <a
+                  key={notif.id}
+                  href={getNotifLink(notif)}
+                  onClick={() => { if (!notif.isRead) handleMarkOneRead(notif.id); setMobileOpen(false); }}
+                  className={`flex items-start gap-2 px-3 py-2.5 rounded-lg transition-colors ${!notif.isRead ? "bg-primary/5" : ""}`}
+                >
+                  <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${!notif.isRead ? "bg-primary" : "bg-transparent"}`} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground leading-snug">{notif.title}</p>
+                    <p className="text-xs text-muted-foreground">{notif.body}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
           )}
 
           {/* Help section in mobile — hidden for admins */}

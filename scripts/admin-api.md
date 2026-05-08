@@ -35,6 +35,21 @@ curl -X PATCH https://api.holoswaps.com/api/admin/users/USER_ID/free-shipping \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
+### Manually set reputation score and tier
+Useful for seeding demo accounts. Run directly against the DB (no API endpoint for this):
+```bash
+cd holo-swaps-service && node -e "
+const { PrismaClient } = require('./node_modules/@prisma/client');
+const prisma = new PrismaClient();
+prisma.user.update({
+  where: { username: 'USERNAME' },
+  data: { reputationScore: 5.0, tier: 'GOLD' },
+  select: { username: true, reputationScore: true, tier: true }
+}).then(u => { console.log(u); return prisma.\$disconnect(); });
+"
+```
+Valid tiers: `BRONZE`, `SILVER`, `GOLD`, `DIAMOND`
+
 ### Ban a user
 ```bash
 curl -X PATCH https://api.holoswaps.com/api/admin/users/USER_ID/ban \

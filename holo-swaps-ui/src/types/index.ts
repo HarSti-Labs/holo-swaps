@@ -42,6 +42,7 @@ export interface User {
   emailOnTradeCancelled: boolean;
   emailOnTradeMessage: boolean;
   freeShipping: boolean;
+  collectionVisibility: "PUBLIC" | "PRIVATE" | "FOLLOWERS_ONLY";
   createdAt: string;
   tier?: string | null;
   followerCount?: number;

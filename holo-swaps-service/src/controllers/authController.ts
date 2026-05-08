@@ -96,6 +96,7 @@ export const me = async (req: AuthenticatedRequest, res: Response): Promise<void
       emailOnTradeCancelled: true,
       emailOnTradeMessage: true,
       freeShipping: true,
+      collectionVisibility: true,
       createdAt: true,
     },
   });

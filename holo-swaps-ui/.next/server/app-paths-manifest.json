@@ -1,7 +1,8 @@
 {
   "/profile/[username]/page": "app/profile/[username]/page.js",
-  "/page": "app/page.js",
+  "/profile/[username]/following/page": "app/profile/[username]/following/page.js",
   "/friends/page": "app/friends/page.js",
-  "/how-it-works/page": "app/how-it-works/page.js",
-  "/dashboard/page": "app/dashboard/page.js"
+  "/auth/login/page": "app/auth/login/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/trades/[tradeId]/page": "app/trades/[tradeId]/page.js"
 }

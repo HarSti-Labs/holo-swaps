@@ -138,4 +138,8 @@ export const tradesApi = {
     const res = await api.post<ApiResponse<any>>(`/trades/${tradeId}/messages`, { body });
     return res.data.data!;
   },
+  openDispute: async (tradeId: string, data: { reason: string; details?: string }): Promise<any> => {
+    const res = await api.post<ApiResponse<any>>(`/trades/${tradeId}/dispute`, data);
+    return res.data.data!;
+  },
 };
