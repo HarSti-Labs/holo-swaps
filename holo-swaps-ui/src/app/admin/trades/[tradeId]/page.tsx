@@ -66,6 +66,10 @@ export default function AdminTradeDetailPage() {
   const [showDisputeForm, setShowDisputeForm] = useState(false);
   const [isForcing, setIsForcing] = useState(false);
   const [forceStatusPending, setForceStatusPending] = useState<"BOTH_RECEIVED" | "VERIFIED" | null>(null);
+  const [showResolveForm, setShowResolveForm] = useState(false);
+  const [resolveStatus, setResolveStatus] = useState<"RESOLVED_FOR_PROPOSER" | "RESOLVED_FOR_RECEIVER" | "RESOLVED_MUTUAL" | "CLOSED">("RESOLVED_MUTUAL");
+  const [resolveNotes, setResolveNotes] = useState("");
+  const [isResolving, setIsResolving] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || !user.isAdmin)) router.replace("/");
@@ -215,6 +219,26 @@ export default function AdminTradeDetailPage() {
       setActionError(err.response?.data?.message || "Failed to open dispute");
     } finally {
       setIsDisputing(false);
+    }
+  };
+
+  const handleResolveDispute = async () => {
+    const dispute = (trade as any).dispute;
+    if (!dispute || !resolveNotes.trim()) return;
+    setIsResolving(true);
+    setActionError(null);
+    try {
+      await api.patch(`/disputes/${dispute.id}/resolve`, {
+        resolution: resolveNotes.trim(),
+        status: resolveStatus,
+      });
+      setShowResolveForm(false);
+      setResolveNotes("");
+      await loadTrade();
+    } catch (err: any) {
+      setActionError(err.response?.data?.message || "Failed to resolve dispute");
+    } finally {
+      setIsResolving(false);
     }
   };
 
@@ -603,36 +627,113 @@ export default function AdminTradeDetailPage() {
                   </div>
                 )}
 
-                {!showDisputeForm ? (
-                  <button
-                    onClick={() => setShowDisputeForm(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-red-950/40 hover:bg-red-900/40 border border-red-500/30 text-red-400 rounded-lg text-base font-medium transition-colors"
-                  >
-                    <AlertTriangle size={14} />
-                    Open Dispute
-                  </button>
+                {trade.status === "DISPUTED" ? (
+                  /* ── Dispute resolution ── */
+                  (() => {
+                    const dispute = (trade as any).dispute;
+                    const isResolved = dispute && !["OPENED", "EVIDENCE_SUBMITTED", "UNDER_REVIEW"].includes(dispute.status);
+                    return (
+                      <div className="space-y-3 p-4 bg-red-950/20 border border-red-500/30 rounded-lg">
+                        <p className="text-base font-semibold text-red-400">Dispute Active</p>
+                        {dispute && (
+                          <div className="space-y-1 text-base text-slate-400">
+                            <p>Opened by <span className="text-slate-200">{dispute.openedBy?.username}</span> · {new Date(dispute.createdAt).toLocaleDateString()}</p>
+                            {dispute.reason && <p>Reason: <span className="text-slate-200">{dispute.reason.replace(/_/g, " ")}</span></p>}
+                            {dispute.details && <p className="text-slate-300 italic">"{dispute.details}"</p>}
+                            {dispute.evidence?.length > 0 && <p>{dispute.evidence.length} evidence item{dispute.evidence.length !== 1 ? "s" : ""} submitted</p>}
+                            {isResolved && <p className="text-green-400 font-medium">Resolved: {dispute.status.replace(/_/g, " ")}</p>}
+                            {isResolved && dispute.resolution && <p className="text-slate-300">"{dispute.resolution}"</p>}
+                          </div>
+                        )}
+                        {!isResolved && (
+                          !showResolveForm ? (
+                            <button
+                              onClick={() => setShowResolveForm(true)}
+                              className="flex items-center gap-2 px-4 py-2 bg-orange-700 hover:bg-orange-600 text-white rounded-lg text-base font-medium transition-colors"
+                            >
+                              <CheckCircle size={14} />
+                              Resolve Dispute
+                            </button>
+                          ) : (
+                            <div className="space-y-3 pt-2 border-t border-red-500/20">
+                              <div>
+                                <label className="text-base text-slate-400 mb-1.5 block">Resolution outcome</label>
+                                <div className="relative">
+                                  <select
+                                    value={resolveStatus}
+                                    onChange={(e) => setResolveStatus(e.target.value as typeof resolveStatus)}
+                                    className="w-full px-3 py-2 pr-8 bg-slate-800 border border-slate-700 rounded-lg text-base text-white focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none"
+                                  >
+                                    <option value="RESOLVED_FOR_PROPOSER">Resolved for {trade.proposer.username} (proposer)</option>
+                                    <option value="RESOLVED_FOR_RECEIVER">Resolved for {trade.receiver.username} (receiver)</option>
+                                    <option value="RESOLVED_MUTUAL">Mutual resolution</option>
+                                    <option value="CLOSED">Closed (no action)</option>
+                                  </select>
+                                  <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                    <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                  </div>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-base text-slate-400 mb-1.5 block">Resolution notes <span className="text-slate-500">(shown to both parties)</span></label>
+                                <textarea
+                                  value={resolveNotes}
+                                  onChange={(e) => setResolveNotes(e.target.value)}
+                                  placeholder="Explain the decision..."
+                                  rows={3}
+                                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                                />
+                              </div>
+                              <div className="flex gap-3">
+                                <button onClick={() => setShowResolveForm(false)} className="px-4 py-2 text-slate-400 hover:text-white text-base transition-colors">Cancel</button>
+                                <button
+                                  onClick={handleResolveDispute}
+                                  disabled={isResolving || !resolveNotes.trim()}
+                                  className="flex items-center gap-2 px-4 py-2 bg-orange-700 hover:bg-orange-600 disabled:opacity-50 text-white rounded-lg text-base font-medium transition-colors"
+                                >
+                                  {isResolving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                                  Confirm Resolution
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    );
+                  })()
                 ) : (
-                  <div className="space-y-3 p-4 bg-red-950/20 border border-red-500/20 rounded-lg">
-                    <p className="text-base font-semibold text-red-400">Open a dispute</p>
-                    <textarea
-                      value={disputeNotes}
-                      onChange={(e) => setDisputeNotes(e.target.value)}
-                      placeholder="Describe the issue..."
-                      rows={3}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
-                    />
-                    <div className="flex gap-3">
-                      <button onClick={() => setShowDisputeForm(false)} className="px-4 py-2 text-slate-400 hover:text-white text-base transition-colors">Cancel</button>
-                      <button
-                        onClick={handleDispute}
-                        disabled={isDisputing || !disputeNotes.trim()}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg text-base font-medium transition-colors"
-                      >
-                        {isDisputing ? <Loader2 size={14} className="animate-spin" /> : <AlertTriangle size={14} />}
-                        Confirm Dispute
-                      </button>
+                  /* ── Open dispute (non-disputed trades only) ── */
+                  !showDisputeForm ? (
+                    <button
+                      onClick={() => setShowDisputeForm(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-red-950/40 hover:bg-red-900/40 border border-red-500/30 text-red-400 rounded-lg text-base font-medium transition-colors"
+                    >
+                      <AlertTriangle size={14} />
+                      Open Dispute
+                    </button>
+                  ) : (
+                    <div className="space-y-3 p-4 bg-red-950/20 border border-red-500/20 rounded-lg">
+                      <p className="text-base font-semibold text-red-400">Open a dispute</p>
+                      <textarea
+                        value={disputeNotes}
+                        onChange={(e) => setDisputeNotes(e.target.value)}
+                        placeholder="Describe the issue..."
+                        rows={3}
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+                      />
+                      <div className="flex gap-3">
+                        <button onClick={() => setShowDisputeForm(false)} className="px-4 py-2 text-slate-400 hover:text-white text-base transition-colors">Cancel</button>
+                        <button
+                          onClick={handleDispute}
+                          disabled={isDisputing || !disputeNotes.trim()}
+                          className="flex items-center gap-2 px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg text-base font-medium transition-colors"
+                        >
+                          {isDisputing ? <Loader2 size={14} className="animate-spin" /> : <AlertTriangle size={14} />}
+                          Confirm Dispute
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )
                 )}
               </div>
             )}

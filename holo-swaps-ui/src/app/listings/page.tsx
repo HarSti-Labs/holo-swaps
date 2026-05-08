@@ -96,6 +96,7 @@ function listingUserToUser(listing: Listing): User {
     emailOnTradeCancelled: true,
     emailOnTradeMessage: true,
     freeShipping: false,
+    collectionVisibility: "PUBLIC" as const,
     createdAt: "",
   };
 }

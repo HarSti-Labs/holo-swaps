@@ -29,6 +29,12 @@ const tradeInclude = {
       author: { select: { username: true, avatarUrl: true } },
     },
   },
+  dispute: {
+    include: {
+      openedBy: { select: { username: true, avatarUrl: true } },
+      evidence: true,
+    },
+  },
 };
 
 export class TradeRepository implements ITradeRepository {

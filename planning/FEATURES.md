@@ -443,42 +443,55 @@ Events live: `sign_up`, `email_verified`, `payment_method_added`, `card_added_to
 
 - Trade proposal, counter, accept, decline, cancel, mutual cancel ✅
 - Trade messaging thread ✅
-- Post-trade reviews (5-star + comment) ✅
+- Post-trade reviews (5-star + comment, shown on trade page + profile) ✅
 - Listings feed (AVAILABLE + has photo) ✅
 - Collection management (add/edit/delete/photo upload/quantity/asking price) ✅
 - Want list (integrated in collection page, wants tab) ✅
 - Matches page ✅
 - Friends page ✅
 - Profile pages (collection, reviews, follow/block/report) ✅
-- Settings (profile, email prefs, address book with Google Places, payments, delete account) ✅
+- Settings (profile, collection visibility, email prefs, address book with Google Places, payments, delete account) ✅
 - Support ticket system ✅
 - Legal pages (ToS, Privacy) ✅
-- Admin panel (trades, reports, support) ✅
+- Admin panel (trades, disputes, reports, support) ✅
 - Auth flows (login, register, forgot/reset password, email verification) ✅
-- Stripe Checkout (two-session model, per-party fees) ✅
+- Stripe Checkout (two-session model, per-party fees, free shipping support) ✅
+- Dispute opening UI (button + modal on trade page, DISPUTED status display) ✅
+- Notification bell (navbar, unread badge, dropdown, mark-all-read, 30s polling) ✅
+- Trade auto-expiry (7-day background job, 24-hour warning notification) ✅
+- GA4 analytics (19 events, key conversions marked) ✅
+- Free shipping toggle (admin-controlled per user, wired end-to-end) ✅
 
 ---
 
-## 🚀 Next Priority Features (Roadmap)
+## 🚀 Pre-Launch Checklist
 
-### Dispute Opening UI (Missing Frontend)
-**Goal:** Allow users to open a dispute from the trade page
-- Backend fully built (`POST /api/trades/:id/dispute`, `POST /api/disputes/:id/evidence`, `PATCH /api/disputes/:id/resolve`)
-- Frontend missing: "Open Dispute" button on trade page (BOTH_RECEIVED or later), evidence submission form, dispute status display
+### Favicon & OG Tags
+- Favicon: blank browser tab — add `favicon.ico` to `/holo-swaps-ui/src/app/`
+- OG tags: add `og:image`, `og:title`, `og:type` to root `layout.tsx` metadata
+- Test with opengraph.xyz
 
-### Trade Auto-Expiry (Backend Done — Background Job Running)
-- 7-day auto-cancel for PROPOSED/COUNTERED trades is live
-- 24-hour warning notification implemented
-- No frontend action needed — already works
+### Admin Dispute Resolution UI
+- Admins can view disputes at `/admin/disputes` but cannot resolve from the UI
+- Need resolve form on `/admin/trades/[tradeId]` when trade is DISPUTED
+- Backend: `PATCH /api/disputes/:id/resolve` with `{ resolution, notes }`
 
-### Collection Visibility Toggle in Settings
-- Backend already enforces visibility rules on `GET /api/users/:username/collection`
-- Settings page (`/settings`) does not yet expose the dropdown for users to change their `collectionVisibility`
-- Add dropdown to Profile section in settings: PUBLIC / PRIVATE / FOLLOWERS_ONLY
+### Avatar in Navbar
+- Navbar shows initials even when `user.avatarUrl` is set — show the actual photo
 
-### Favicon & OG Tags (Pre-Launch Polish)
-- Favicon: blank browser tab — add `/app/favicon.ico` or configure in `layout.tsx`
-- OG/social preview tags: add `og:image`, `og:title`, `og:description` to root `layout.tsx` metadata
+### Sitemap + robots.txt + Google Search Console
+- Add sitemap.xml and robots.txt
+- Verify domain in Search Console, link GA, submit sitemap
+
+## 🟡 Next Priority (Post-Launch)
+
+### Price Alerts UI
+- Full backend exists (`priceAlertRoutes.ts`), zero frontend
+- Add "Alert me when price drops below $X" to card/collection item detail
+
+### Google Sign-In
+- See Auth & Security section above for full implementation spec
+- ~2-3 hours, free, high conversion impact
 
 ### Option 2: Trade Proposal Flow (HIGH PRIORITY - Core Feature) ✅ DONE
 **Goal:** Enable users to propose trades with each other
