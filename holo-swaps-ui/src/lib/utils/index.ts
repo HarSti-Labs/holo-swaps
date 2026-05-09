@@ -70,6 +70,7 @@ export function getTradeStatusColor(status: TradeStatus): string {
     COMPLETED: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
     DISPUTED: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
     CANCELLED: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+    DECLINED: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
   };
   return colors[status] ?? "bg-muted text-muted-foreground";
 }
