@@ -1,7 +1,5 @@
 {
-  "/dashboard/page": "app/dashboard/page.js",
-  "/trades/[tradeId]/page": "app/trades/[tradeId]/page.js",
-  "/cards/page": "app/cards/page.js",
-  "/trades/page": "app/trades/page.js",
-  "/profile/[username]/page": "app/profile/[username]/page.js"
+  "/page": "app/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/trades/[tradeId]/page": "app/trades/[tradeId]/page.js"
 }
