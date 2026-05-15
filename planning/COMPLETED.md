@@ -13,6 +13,9 @@
 - [x] Prisma ORM configured with PostgreSQL (Supabase)
 - [x] Environment config validation on startup
 
+### Authentication
+- [x] Google OAuth sign-in — `POST /api/auth/google` verifies access token via Google userinfo API; auto-links existing email accounts (sets `googleId`, auto-verifies email); new users get a 10-min `pendingGoogleToken` JWT and must pick a username via `POST /api/auth/google/complete`. Schema: `googleId String? @unique`, `passwordHash String?`. Login guards against Google-only users trying to use password. `deleteAccount` skips password check for Google-only users.
+
 ### Database Schema (Prisma)
 - [x] `User` — full user model with Stripe, reputation, bans, admin flag
 - [x] `UserAddress` — address book per user

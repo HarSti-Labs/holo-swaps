@@ -53,4 +53,7 @@ export const config = {
     apiKey: process.env.RESEND_API_KEY || "",
     from: process.env.EMAIL_FROM || "Holo Swaps <noreply@holoswaps.com>",
   },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || "",
+  },
 };

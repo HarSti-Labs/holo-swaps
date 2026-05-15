@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/lib/hooks/useAuth";
 import { Eye, EyeOff, LogIn, CheckCircle } from "lucide-react";
 import { FloatingLabelInput } from "@/components/ui/FloatingLabelInput";
+import { GoogleSignInButton } from "@/components/ui/GoogleSignInButton";
 
 function LoginPageContent() {
   const router = useRouter();
@@ -111,6 +112,16 @@ function LoginPageContent() {
               Sign in
             </button>
           </form>
+
+          <div className="mt-6 flex items-center gap-3">
+            <div className="flex-1 h-px bg-slate-700" />
+            <span className="text-slate-500 text-sm">or</span>
+            <div className="flex-1 h-px bg-slate-700" />
+          </div>
+
+          <div className="mt-4">
+            <GoogleSignInButton label="Sign in with Google" />
+          </div>
 
           <p className="text-center text-base text-slate-400 mt-6">
             Don't have an account?{" "}

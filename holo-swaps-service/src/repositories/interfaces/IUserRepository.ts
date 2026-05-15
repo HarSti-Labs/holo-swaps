@@ -14,9 +14,11 @@ export interface IUserRepository {
 export interface CreateUserData {
   email: string;
   username: string;
-  passwordHash: string;
+  passwordHash?: string;
+  googleId?: string;
   avatarUrl?: string;
   location?: string;
+  isEmailVerified?: boolean;
 }
 
 export interface UpdateUserData {

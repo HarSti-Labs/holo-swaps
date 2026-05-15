@@ -16,6 +16,8 @@ import {
   LoginResult,
   TokenPayload,
   TwoFactorTokenPayload,
+  GoogleAuthResult,
+  PendingGooglePayload,
 } from "@/services/interfaces/IAuthService";
 import { EmailService } from "@/services/implementations/EmailService";
 import { StripeService } from "@/services/implementations/StripeService";
@@ -88,6 +90,7 @@ export class AuthService implements IAuthService {
         });
     if (!user) throw ApiError.unauthorized("Invalid email or password");
     if (user.isBanned) throw ApiError.forbidden("Your account has been suspended");
+    if (!user.passwordHash) throw ApiError.unauthorized("This account uses Google sign-in. Please sign in with Google.");
 
     const isValid = await bcrypt.compare(data.password, user.passwordHash);
     if (!isValid) throw ApiError.unauthorized("Invalid email or password");
@@ -343,6 +346,110 @@ export class AuthService implements IAuthService {
     return token;
   }
 
+  async googleAuth(accessToken: string, deviceInfo?: string): Promise<GoogleAuthResult> {
+    // Verify token with Google and get user profile
+    const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) throw ApiError.unauthorized("Invalid Google token");
+
+    const googleUser = await res.json() as {
+      sub: string;
+      email: string;
+      name?: string;
+      picture?: string;
+      email_verified?: boolean;
+    };
+
+    if (!googleUser.sub || !googleUser.email) {
+      throw ApiError.unauthorized("Invalid Google token");
+    }
+
+    // 1. Try to find by googleId (returning Google user)
+    let user = await prisma.user.findUnique({ where: { googleId: googleUser.sub } });
+
+    if (user) {
+      if (user.isBanned) throw ApiError.forbidden("Your account has been suspended");
+      await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+      const { passwordHash: _pw, ...safeUser } = user;
+      const token = this.generateAccessToken(safeUser as SafeUser);
+      const refreshToken = await this.createRefreshToken(user.id, deviceInfo);
+      return { requiresUsername: false, user: safeUser as SafeUser, token, refreshToken };
+    }
+
+    // 2. Try to find by email (existing password user — auto-link)
+    const existingByEmail = await prisma.user.findUnique({
+      where: { email: googleUser.email.toLowerCase() },
+    });
+
+    if (existingByEmail) {
+      if (existingByEmail.isBanned) throw ApiError.forbidden("Your account has been suspended");
+      // Link Google account + auto-verify email
+      const updated = await prisma.user.update({
+        where: { id: existingByEmail.id },
+        data: {
+          googleId: googleUser.sub,
+          isEmailVerified: true,
+          lastLoginAt: new Date(),
+        },
+      });
+      const { passwordHash: _pw, ...safeUser } = updated;
+      const token = this.generateAccessToken(safeUser as SafeUser);
+      const refreshToken = await this.createRefreshToken(updated.id, deviceInfo);
+      return { requiresUsername: false, user: safeUser as SafeUser, token, refreshToken };
+    }
+
+    // 3. New user — needs to pick a username
+    const payload: PendingGooglePayload = {
+      googleId: googleUser.sub,
+      email: googleUser.email,
+      avatarUrl: googleUser.picture,
+      pendingGoogle: true,
+    };
+    const pendingGoogleToken = jwt.sign(payload, config.jwt.secret, { expiresIn: "10m" } as jwt.SignOptions);
+    return { requiresUsername: true, pendingGoogleToken };
+  }
+
+  async googleComplete(pendingGoogleToken: string, username: string, deviceInfo?: string): Promise<AuthResult> {
+    let payload: PendingGooglePayload;
+    try {
+      payload = jwt.verify(pendingGoogleToken, config.jwt.secret) as PendingGooglePayload;
+    } catch {
+      throw ApiError.unauthorized("Google session expired. Please try signing in again.");
+    }
+
+    if (!payload.pendingGoogle) throw ApiError.unauthorized("Invalid pending token");
+
+    // Guard against race conditions — check again before creating
+    const existingGoogle = await prisma.user.findUnique({ where: { googleId: payload.googleId } });
+    if (existingGoogle) throw ApiError.conflict("This Google account is already linked to a user.");
+
+    const existingUsername = await this.userRepository.findByUsername(username);
+    if (existingUsername) throw ApiError.conflict("Username already taken");
+
+    const existingEmail = await this.userRepository.findByEmail(payload.email);
+    if (existingEmail) throw ApiError.conflict("Email already in use");
+
+    const user = await this.userRepository.create({
+      email: payload.email,
+      username,
+      googleId: payload.googleId,
+      avatarUrl: payload.avatarUrl,
+      isEmailVerified: true,
+    });
+
+    // Create Stripe customer (fire-and-forget)
+    this.stripeService.createCustomer(user.id, user.email)
+      .then((customerId) =>
+        prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } })
+      )
+      .catch((err) => logger.error("Failed to create Stripe customer on Google register", { userId: user.id, err }));
+
+    const token = this.generateAccessToken(user);
+    const refreshToken = await this.createRefreshToken(user.id, deviceInfo);
+    return { user, token, refreshToken };
+  }
+
   async isUsernameAvailable(username: string): Promise<boolean> {
     const existingUser = await this.userRepository.findByUsername(username);
     return !existingUser;
@@ -376,9 +483,11 @@ export class AuthService implements IAuthService {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw ApiError.notFound("User not found");
 
-    // Verify password before deleting
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) throw ApiError.unauthorized("Invalid password");
+    // Verify password before deleting (Google-only users have no password — JWT is sufficient proof)
+    if (user.passwordHash) {
+      const isValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isValid) throw ApiError.unauthorized("Invalid password");
+    }
 
     // Check if user has any active trades
     const activeTrades = await prisma.trade.findFirst({

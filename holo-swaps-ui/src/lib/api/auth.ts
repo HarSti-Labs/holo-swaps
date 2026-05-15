@@ -17,6 +17,14 @@ export interface AuthResult {
   token: string;
 }
 
+export interface GoogleAuthResult {
+  requiresUsername: boolean;
+  pendingGoogleToken?: string;
+  user?: User;
+  token?: string;
+  refreshToken?: string;
+}
+
 export const authApi = {
   register: async (data: RegisterPayload): Promise<AuthResult> => {
     const res = await api.post<ApiResponse<AuthResult>>("/auth/register", data);
@@ -58,6 +66,16 @@ export const authApi = {
 
   deleteAccount: async (password: string): Promise<void> => {
     await api.delete<ApiResponse<null>>("/auth/delete-account", { data: { password } });
+  },
+
+  googleAuth: async (accessToken: string): Promise<GoogleAuthResult> => {
+    const res = await api.post<ApiResponse<GoogleAuthResult>>("/auth/google", { accessToken });
+    return res.data.data!;
+  },
+
+  googleComplete: async (pendingGoogleToken: string, username: string): Promise<AuthResult> => {
+    const res = await api.post<ApiResponse<AuthResult>>("/auth/google/complete", { pendingGoogleToken, username });
+    return res.data.data!;
   },
 
   forgotPassword: async (email: string): Promise<void> => {

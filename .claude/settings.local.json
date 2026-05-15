@@ -29,7 +29,9 @@
       "Bash(npx ts-node:*)",
       "Bash(node:*)",
       "Bash(grep -n \"useAuthStore\\\\|currentUser\\\\|authUser\" /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-ui/src/app/trades/[tradeId]/page.tsx)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ls -la /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-ui/.env*)",
+      "Bash(ls -la /Users/kristinakollari/Desktop/holo-swaps/holo-swaps-service/.env*)"
     ]
   }
 }

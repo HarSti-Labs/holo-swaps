@@ -10,6 +10,8 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (identifier: string, password: string) => Promise<void>;
   register: (email: string, username: string, password: string) => Promise<void>;
+  loginWithGoogle: (accessToken: string) => Promise<{ requiresUsername: boolean; pendingGoogleToken?: string }>;
+  completeGoogleSignup: (pendingGoogleToken: string, username: string) => Promise<void>;
   logout: () => void;
   loadUser: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -38,6 +40,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { user, token } = await authApi.register({ email, username, password });
       localStorage.setItem("auth_token", token);
       set({ user, token, isAuthenticated: true });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  loginWithGoogle: async (accessToken) => {
+    set({ isLoading: true });
+    try {
+      const result = await authApi.googleAuth(accessToken);
+      if (result.requiresUsername) {
+        return { requiresUsername: true, pendingGoogleToken: result.pendingGoogleToken };
+      }
+      localStorage.setItem("auth_token", result.token!);
+      set({ user: result.user!, token: result.token!, isAuthenticated: true });
+      return { requiresUsername: false };
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  completeGoogleSignup: async (pendingGoogleToken, username) => {
+    set({ isLoading: true });
+    try {
+      const result = await authApi.googleComplete(pendingGoogleToken, username);
+      localStorage.setItem("auth_token", result.token);
+      set({ user: result.user, token: result.token, isAuthenticated: true });
     } finally {
       set({ isLoading: false });
     }

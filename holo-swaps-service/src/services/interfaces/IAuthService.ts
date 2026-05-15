@@ -10,6 +10,8 @@ export interface IAuthService {
   verifyEmail(token: string): Promise<void>;
   forgotPassword(email: string): Promise<void>;
   resetPassword(token: string, newPassword: string): Promise<void>;
+  googleAuth(accessToken: string, deviceInfo?: string): Promise<GoogleAuthResult>;
+  googleComplete(pendingGoogleToken: string, username: string, deviceInfo?: string): Promise<AuthResult>;
   // 2FA management
   setup2FA(userId: string): Promise<{ secret: string; qrCodeDataUrl: string; backupCodes: string[] }>;
   confirm2FA(userId: string, code: string): Promise<void>;
@@ -49,4 +51,16 @@ export interface TokenPayload {
 export interface TwoFactorTokenPayload {
   userId: string;
   twoFactorPending: true;
+}
+
+/** Returned when Google auth succeeds immediately (existing user) */
+export type GoogleAuthResult =
+  | { requiresUsername: false } & AuthResult
+  | { requiresUsername: true; pendingGoogleToken: string };
+
+export interface PendingGooglePayload {
+  googleId: string;
+  email: string;
+  avatarUrl?: string;
+  pendingGoogle: true;
 }

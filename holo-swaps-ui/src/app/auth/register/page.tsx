@@ -7,6 +7,7 @@ import { useAuthStore } from "@/lib/hooks/useAuth";
 import { authApi } from "@/lib/api/auth";
 import { Eye, EyeOff, UserPlus, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { FloatingLabelInput } from "@/components/ui/FloatingLabelInput";
+import { GoogleSignInButton } from "@/components/ui/GoogleSignInButton";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -276,6 +277,16 @@ export default function RegisterPage() {
               Create account
             </button>
           </form>
+
+          <div className="mt-6 flex items-center gap-3">
+            <div className="flex-1 h-px bg-slate-700" />
+            <span className="text-slate-500 text-sm">or</span>
+            <div className="flex-1 h-px bg-slate-700" />
+          </div>
+
+          <div className="mt-4">
+            <GoogleSignInButton label="Sign up with Google" />
+          </div>
 
           <p className="text-center text-base text-slate-400 mt-6">
             Already have an account?{" "}

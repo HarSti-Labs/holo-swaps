@@ -12,6 +12,8 @@ import {
   checkEmailAvailability,
   resendVerificationEmail,
   deleteAccount,
+  googleAuth,
+  googleComplete,
 } from "@/controllers/authController";
 import {
   setup2FA,
@@ -36,6 +38,10 @@ router.post("/resend-verification", authenticate, resendVerificationEmail);
 router.delete("/delete-account", authenticate, deleteAccount);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+
+// Google OAuth
+router.post("/google", googleAuth);
+router.post("/google/complete", googleComplete);
 
 // 2FA — setup/disable require a valid session; verify is public (second step of login)
 router.post("/2fa/setup", authenticate, setup2FA);

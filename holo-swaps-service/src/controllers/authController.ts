@@ -196,6 +196,37 @@ export const checkEmailAvailability = async (req: Request, res: Response): Promi
   });
 };
 
+const googleCompleteSchema = z.object({
+  pendingGoogleToken: z.string().min(1),
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username must be at most 20 characters")
+    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
+});
+
+export const googleAuth = async (req: Request, res: Response): Promise<void> => {
+  const { accessToken } = req.body;
+  if (!accessToken || typeof accessToken !== "string") {
+    throw ApiError.badRequest("accessToken is required");
+  }
+
+  const deviceInfo = req.headers["user-agent"];
+  const result = await authService.googleAuth(accessToken, deviceInfo);
+  sendSuccess(res, result);
+};
+
+export const googleComplete = async (req: Request, res: Response): Promise<void> => {
+  const parsed = googleCompleteSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw ApiError.badRequest("Validation failed", parsed.error.errors.map((e) => e.message));
+  }
+
+  const deviceInfo = req.headers["user-agent"];
+  const result = await authService.googleComplete(parsed.data.pendingGoogleToken, parsed.data.username, deviceInfo);
+  sendCreated(res, result, "Account created successfully");
+};
+
 export const resendVerificationEmail = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   if (!req.user?.id) throw ApiError.unauthorized("Not authenticated");
 
